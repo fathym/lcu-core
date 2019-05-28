@@ -189,7 +189,7 @@ namespace LCU.Presentation
 
 			services.AddMvc(o =>
 			{
-				//o.Filters.Add(new LCUAuthorizationFilter());
+				o.Filters.Add(new LCUAuthorizationFilter());
 			});
 
 			return services;
@@ -239,9 +239,15 @@ namespace LCU.Presentation
 			{
 				//routes.MapRoute("dev-stream", "dev-stream/{*path}", defaults: new { controller = "LCU", action = "DevStream" });
 
+				routes.MapRoute("devops-authorize", ".devops/authorize", defaults: new { controller = "LCU", action = "DevOpsAuthorize" });
+
+				routes.MapRoute("devops-oauth", ".devops/oauth", defaults: new { controller = "LCU", action = "DevOpsOAuth" });
+
+				routes.MapRoute("devops-refresh", ".devops/refresh", defaults: new { controller = "LCU", action = "DevOpsRefresh" });
+
 				routes.MapRoute("github-oauth", ".github/oauth", defaults: new { controller = "LCU", action = "GitHubOAuth" });
 
-				routes.MapRoute("github-confirm", ".github/authorize", defaults: new { controller = "LCU", action = "GitHubAuthorize" });
+				routes.MapRoute("github-authorize", ".github/authorize", defaults: new { controller = "LCU", action = "GitHubAuthorize" });
 
 				routes.MapRoute("logout", "identity/logout", defaults: new { controller = "LCU", action = "Logout" });
 

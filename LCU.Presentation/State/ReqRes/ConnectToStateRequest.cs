@@ -20,5 +20,8 @@ namespace LCU.Presentation.State.ReqRes
 
 		[DataMember]
 		public virtual string State { get; set; }
+
+		[DataMember]
+		public virtual string UsernameMock { get; set; }
 	}
 }

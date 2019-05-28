@@ -15,16 +15,19 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Net.Http.Headers;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
+using Newtonsoft.Json.Linq;
 using Octokit;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using ProductHeaderValue = Octokit.ProductHeaderValue;
 
 namespace LCU.Presentation
 {
@@ -35,11 +38,17 @@ namespace LCU.Presentation
 
 		protected readonly IDistributedCache cache;
 
-		protected readonly CloudBlobContainer fsContainer;
-
 		protected const string defaultBaseHrefSearch = @"<base [^>]*href=""(.*?)""(>|/>| />)";
 
 		protected const string defaultLcuRegSearch = @"<script id=""lcu-reg"">*.</script>";
+
+		protected readonly string devOpsAppId;
+
+		protected readonly string devOpsAppClientSecret;
+
+		protected readonly string devOpsAppSecret;
+
+		protected readonly CloudBlobContainer fsContainer;
 
 		protected readonly string gitHubAppClientId;
 
@@ -64,6 +73,12 @@ namespace LCU.Presentation
 			this.memCache = memCache;
 
 			blobClient = storageAccount.CreateCloudBlobClient();
+
+			devOpsAppId = config["LCU-DEV-OPS-APP-ID"];
+
+			devOpsAppClientSecret = config["LCU-DEV-OPS-APP-CLIENT-SECRET"];
+
+			devOpsAppSecret = config["LCU-DEV-OPS-APP-SECRET"];
 
 			fsContainer = blobClient.GetContainerReference("filesystem");
 
@@ -109,6 +124,81 @@ namespace LCU.Presentation
 
 				return new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError);
 			}
+		}
+
+		[Authorize]
+		public virtual async Task<IActionResult> DevOpsAuthorize(string code, string state, string error = null)
+		{
+			var expectedState = HttpContext.Session.GetString("DEVOPS:CSRF:State");
+
+			var redirectUri = HttpContext.Session.GetString("DEVOPS:RedirectURI");
+
+			redirectUri = redirectUri ?? "/";
+
+			if (code.IsNullOrEmpty())
+				return Redirect(redirectUri);
+
+			if (state != expectedState)
+				throw new InvalidOperationException("SECURITY FAIL!");
+
+			HttpContext.Session.Remove("DEVOPS:CSRF:State");
+
+			HttpContext.Session.Remove("DEVOPS:RedirectURI");
+
+			await processDevOpsAuthTokenForAccessToken(code);
+
+			return Redirect(redirectUri);
+		}
+
+		[Authorize]
+		public virtual async Task<IActionResult> DevOpsOAuth(string redirectUri = null)
+		{
+			string csrf = Guid.NewGuid().ToString();
+
+			HttpContext.Session.SetString("DEVOPS:CSRF:State", csrf);
+
+			HttpContext.Session.SetString("DEVOPS:RedirectURI", csrf);
+
+			var req = HttpContext.Request;
+
+			var callBackUrl = $"{req.Scheme}://{req.Host}/.devops/authorize";
+
+			var scopes = new StringBuilder();
+			scopes.Append("vso.build_execute vso.code_full vso.code_status vso.connected_server vso.dashboards ");
+			scopes.Append("vso.dashboards_manage vso.entitlements vso.extension.data_write vso.extension_manage ");
+			scopes.Append("vso.gallery_acquire vso.gallery_manage vso.graph_manage vso.identity_manage vso.loadtest_write ");
+			scopes.Append("vso.machinegroup_manage vso.memberentitlementmanagement_write vso.notification_diagnostics ");
+			scopes.Append("vso.notification_manage vso.packaging_manage vso.profile_write vso.project_manage vso.release_manage ");
+			scopes.Append("vso.security_manage vso.serviceendpoint_manage vso.symbols_manage vso.taskgroups_manage ");
+			scopes.Append("vso.test_write vso.tokenadministration vso.tokens vso.variablegroups_manage vso.wiki_write vso.work_full");
+
+			var oauthLoginUrl = new StringBuilder("https://app.vssps.visualstudio.com/oauth2/authorize?");
+			oauthLoginUrl.Append($"client_id={devOpsAppId}");
+			oauthLoginUrl.Append($"&response_type=Assertion");
+			oauthLoginUrl.Append($"&state={csrf}");
+			oauthLoginUrl.Append($"&scope={scopes.ToString()}");
+			oauthLoginUrl.Append($"&redirect_uri={callBackUrl}");
+
+			return Redirect(oauthLoginUrl.ToString());
+		}
+
+		[Authorize]
+		public virtual async Task<IActionResult> DevOpsRefresh()
+		{
+			//	TODO:  This needs to be set to wherever the user is coming from?
+			var redirectUri = HttpContext.Session.GetString("DEVOPS:RedirectURI");
+
+			redirectUri = redirectUri ?? "/";
+
+			HttpContext.Session.Remove("DEVOPS:RedirectURI");
+
+			var entCtxt = HttpContext.ResolveContext<EnterpriseContext>(EnterpriseContext.Lookup);
+
+			var refreshToken = await idGraph.RetrieveThirdPartyAccessToken(entCtxt.PrimaryAPIKey, HttpContext.LoadUserID(), "AZURE-DEV-OPS-REFRESH");
+
+			await processDevOpsAuthTokenForAccessToken(refreshToken);
+
+			return Redirect(redirectUri);
 		}
 
 		[Authorize]
@@ -185,17 +275,19 @@ namespace LCU.Presentation
 		}
 
 		[Authorize]
-		public virtual async Task<IActionResult> GitHubAuthorize(string code, string state, string redirectUri = "/")
+		public virtual async Task<IActionResult> GitHubAuthorize(string code, string state, string redirectUri = null)
 		{
+			redirectUri = redirectUri ?? "/";
+
 			if (code.IsNullOrEmpty())
 				return Redirect(redirectUri);
 
-			var expectedState = HttpContext.Session.GetString("CSRF:State");
+			var expectedState = HttpContext.Session.GetString("GITHUB:CSRF:State");
 
 			if (state != expectedState)
 				throw new InvalidOperationException("SECURITY FAIL!");
 
-			HttpContext.Session.Remove("CSRF:State");
+			HttpContext.Session.Remove("GITHUB:CSRF:State");
 
 			var request = new OauthTokenRequest(gitHubAppClientId, gitHubAppClientSecret, code);
 
@@ -211,9 +303,9 @@ namespace LCU.Presentation
 		[Authorize]
 		public virtual async Task<IActionResult> GitHubOAuth(string redirectUri = null)
 		{
-			string csrf = Guid.NewGuid().ToString();// Membership.GeneratePassword(24, 1);
+			string csrf = Guid.NewGuid().ToString();
 
-			HttpContext.Session.SetString("CSRF:State", csrf);
+			HttpContext.Session.SetString("GITHUB:CSRF:State", csrf);
 
 			var req = HttpContext.Request;
 
@@ -255,6 +347,22 @@ namespace LCU.Presentation
 				contentType = "text/plain";
 
 			return new FileContentResult(file, contentType);
+		}
+
+		protected virtual Dictionary<string, string> generateRequestPostData(string authToken)
+		{
+			var req = HttpContext.Request;
+
+			var callBackUrl = $"{req.Scheme}://{req.Host}/.devops/authorize";
+
+			return new Dictionary<string, string>()
+			{
+				{ "client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer" },
+				{ "client_assertion", devOpsAppClientSecret },
+				{ "grant_type", "refresh_token" },
+				{ "assertion", authToken },
+				{ "redirect_uri", callBackUrl }
+			};
 		}
 
 		protected virtual async Task<byte[]> handleDefaultFile(string target, byte[] file, DFSContext dfsCtxt)
@@ -433,6 +541,42 @@ namespace LCU.Presentation
 			}
 
 			return bytes;
+		}
+
+		protected virtual async Task processDevOpsAuthTokenForAccessToken(string authToken)
+		{
+			var req = HttpContext.Request;
+
+			var callBackUrl = $"{req.Scheme}://{req.Host}/.devops/authorize";
+
+			var requestMessage = new HttpRequestMessage(HttpMethod.Post, "https://app.vssps.visualstudio.com/oauth2/token");
+
+			requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+			var form = generateRequestPostData(authToken);
+
+			requestMessage.Content = new FormUrlEncodedContent(form);
+
+			var httpClient = new HttpClient();
+
+			var responseMessage = await httpClient.SendAsync(requestMessage);
+
+			if (responseMessage.IsSuccessStatusCode)
+			{
+				var body = await responseMessage.Content.ReadAsStringAsync();
+
+				var tokenRes = body.FromJSON<JObject>();
+
+				var entCtxt = HttpContext.ResolveContext<EnterpriseContext>(EnterpriseContext.Lookup);
+
+				await idGraph.SetThirdPartyAccessToken(entCtxt.PrimaryAPIKey, HttpContext.LoadUserID(), "AZURE-DEV-OPS", tokenRes["access_token"].ToString());
+
+				await idGraph.SetThirdPartyAccessToken(entCtxt.PrimaryAPIKey, HttpContext.LoadUserID(), "AZURE-DEV-OPS-REFRESH", tokenRes["refresh_token"].ToString());
+			}
+			else
+			{
+				//	TODO:  Handle Error
+			}
 		}
 
 		protected virtual DAFAPIContext resolveDafApiContext(DAFAPIsContext dafApisCtxt, string path, string method)

@@ -36,9 +36,11 @@ namespace LCU.Presentation.State
 		#region API Methods
 		public virtual async Task ConnectToState(ConnectToStateRequest request)
 		{
-			await groupClient(request.State, request.Key);
-
 			Context.Items["Environment"] = request.Environment;
+
+			Context.Items["UsernameMock"] = request.UsernameMock;
+
+			await groupClient(request.State, request.Key);
 
 			if (request.ShouldSend.HasValue && request.ShouldSend.Value)
 				await sendState(Context.GetHttpContext(), request.State, request.Key);
@@ -249,7 +251,7 @@ namespace LCU.Presentation.State
 
 		protected virtual string loadUsername(HttpContext context)
 		{
-			return context.LoadUserID();
+			return context.LoadUserID() ?? Context.Items["UsernameMock"]?.ToString();
 		}
 
 		protected virtual async Task sendState(HttpContext context, string stateName, string stateKey)
