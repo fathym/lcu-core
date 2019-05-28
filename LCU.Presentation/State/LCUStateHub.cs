@@ -7,274 +7,284 @@ using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace LCU.Presentation.State
 {
-	public class LCUStateHub : Hub
-	{
-		#region Fields
-		protected readonly LCUStateManager stateMgr;
-		#endregion
+    public class LCUStateHub : Hub
+    {
+        #region Fields
+        protected readonly LCUStateManager stateMgr;
+        #endregion
 
-		#region Constructors
-		public LCUStateHub(LCUStateManager stateMgr)
-		{
-			this.stateMgr = stateMgr;
-		}
-		#endregion
+        #region Constructors
+        public LCUStateHub(LCUStateManager stateMgr)
+        {
+            this.stateMgr = stateMgr;
+        }
+        #endregion
 
-		#region Runtime
-		public override async Task OnConnectedAsync()
-		{
-			await base.OnConnectedAsync();
-		}
-		#endregion
+        #region Runtime
+        public override async Task OnConnectedAsync()
+        {
+            await base.OnConnectedAsync();
+        }
+        #endregion
 
-		#region API Methods
-		public virtual async Task ConnectToState(ConnectToStateRequest request)
-		{
-			Context.Items["Environment"] = request.Environment;
+        #region API Methods
+        public virtual async Task ConnectToState(ConnectToStateRequest request)
+        {
+            Context.Items["Environment"] = request.Environment;
 
-			Context.Items["UsernameMock"] = request.UsernameMock;
+            Context.Items["UsernameMock"] = request.UsernameMock;
 
-			await groupClient(request.State, request.Key);
+            await groupClient(request.State, request.Key);
 
-			if (request.ShouldSend.HasValue && request.ShouldSend.Value)
-				await sendState(Context.GetHttpContext(), request.State, request.Key);
-		}
+            if (request.ShouldSend.HasValue && request.ShouldSend.Value)
+                await sendState(Context.GetHttpContext(), request.State, request.Key);
+        }
 
-		public virtual async Task ExecuteAction(ExecuteActionRequest request)
-		{
-			await handleAction(Context.GetHttpContext(), request.State, request.Key, request.Type,
-				request.Arguments);
-		}
-		#endregion
+        public virtual async Task ExecuteAction(ExecuteActionRequest request)
+        {
+            await handleAction(Context.GetHttpContext(), request.State, request.Key, request.Type,
+                request.Arguments);
+        }
+        #endregion
 
-		#region Helpers
-		protected virtual async Task<string> buildGroupName(string stateName, string stateKey,
-			LCUStateConfiguration stateCfg = null)
-		{
-			var context = Context.GetHttpContext();
+        #region Helpers
+        protected virtual async Task<string> buildGroupName(string stateName, string stateKey,
+            LCUStateConfiguration stateCfg = null)
+        {
+            var context = Context.GetHttpContext();
 
-			var entApiKey = loadEntApiKey(context);
+            var entApiKey = loadEntApiKey(context);
 
-			if (stateCfg == null)
-				stateCfg = await loadStateConfig(context, stateName);
+            if (stateCfg == null)
+                stateCfg = await loadStateConfig(context, stateName);
 
-			var username = stateCfg.UseUsername ? loadUsername(context) : null;
+            var username = stateCfg.UseUsername ? loadUsername(context) : null;
 
-			return $"{entApiKey}|{stateName}|{stateKey}|{username}";
-		}
+            return $"{entApiKey}|{stateName}|{stateKey}|{username}";
+        }
 
-		protected virtual async Task groupClient(string stateName, string stateKey)
-		{
-			var groupName = await buildGroupName(stateName, stateKey);
+        protected virtual async Task groupClient(string stateName, string stateKey)
+        {
+            var groupName = await buildGroupName(stateName, stateKey);
 
-			await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-		}
+            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+        }
 
-		protected virtual async Task handleAction(HttpContext context, string stateName, string stateKey, string actionName,
-			MetadataModel arguments)
-		{
-			var stateCfg = await loadStateConfig(context, stateName);
+        protected virtual async Task handleAction(HttpContext context, string stateName, string stateKey, string actionName,
+            MetadataModel arguments)
+        {
+            var stateCfg = await loadStateConfig(context, stateName);
 
-			if (stateCfg?.Actions != null && stateCfg.Actions.ContainsKey(actionName))
-			{
-				var username = stateCfg.UseUsername ? loadUsername(context) : null;
+            if (stateCfg != null)
+            {
+                if (stateCfg.Actions.IsNullOrEmpty())
+                    stateCfg.Actions = new Dictionary<string, LCUStateAction>();
 
-				var action = stateCfg.Actions[actionName];
+                if (!stateCfg.Actions.ContainsKey(actionName))
+                    stateCfg.Actions.Add(actionName, new LCUStateAction()
+                    {
+                        APIRoot = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(actionName.Replace("-", " ")).Replace(" ", "")
+                    });
 
-				var proxiedAddress = loadProxiedAddress(context, action, stateCfg, stateName, stateKey, username);
+                var username = stateCfg.UseUsername ? loadUsername(context) : null;
 
-				if (!proxiedAddress.IsNullOrEmpty())
-				{
-					var client = loadSecureProxyClient(context, action, stateCfg);
+                var action = stateCfg.Actions[actionName];
 
-					//	TODO:  serialize response and do something with it on top of returning the state
-					var actionResp = await client.PostAsJsonAsync(proxiedAddress, arguments);
+                var proxiedAddress = loadProxiedAddress(context, action, stateCfg, stateName, stateKey, username);
 
-					var responseBody = await actionResp.Content.ReadAsStringAsync();
-				}
-			}
+                if (!proxiedAddress.IsNullOrEmpty())
+                {
+                    var client = loadSecureProxyClient(context, action, stateCfg);
 
-			await sendState(context, stateName, stateKey);
-		}
+                    //	TODO:  serialize response and do something with it on top of returning the state
+                    var actionResp = await client.PostAsJsonAsync(proxiedAddress, arguments);
 
-		protected virtual HttpClient loadSecureProxyClient(HttpContext context, LCUStateAction action, LCUStateConfiguration stateCfg)
-		{
-			var client = new HttpClient();
+                    var responseBody = await actionResp.Content.ReadAsStringAsync();
+                }
+            }
 
-			client.Timeout = new TimeSpan(1, 0, 0);
+            await sendState(context, stateName, stateKey);
+        }
 
-			var env = loadEnvironment(stateCfg);
+        protected virtual HttpClient loadSecureProxyClient(HttpContext context, LCUStateAction action, LCUStateConfiguration stateCfg)
+        {
+            var client = new HttpClient();
 
-			var security = action.Security;
+            client.Timeout = new TimeSpan(1, 0, 0);
 
-			if (security.IsNullOrEmpty() && !env.IsNullOrEmpty())
-				security = stateCfg.Environments[env].Security;
+            var env = loadEnvironment(stateCfg);
 
-			if (!security.IsNullOrEmpty())
-			{
-				var securityParts = security.Split('~');
+            var security = action.Security;
 
-				var securityKey = securityParts[0];
+            if (security.IsNullOrEmpty() && !env.IsNullOrEmpty())
+                security = stateCfg.Environments[env].Security;
 
-				var securityValue = securityParts[1];
+            if (!security.IsNullOrEmpty())
+            {
+                var securityParts = security.Split('~');
 
-				if (!securityKey.IsNullOrEmpty() && !securityValue.IsNullOrEmpty())
-					client.DefaultRequestHeaders.Add(securityKey, securityValue);
-			}
+                var securityKey = securityParts[0];
 
-			return client;
-		}
+                var securityValue = securityParts[1];
 
-		protected virtual string loadEnvironment(LCUStateConfiguration stateCfg)
-		{
-			var env = Context.Items.ContainsKey("Environment") ? Context.Items["Environment"]?.ToString() : null;
+                if (!securityKey.IsNullOrEmpty() && !securityValue.IsNullOrEmpty())
+                    client.DefaultRequestHeaders.Add(securityKey, securityValue);
+            }
 
-			if (env.IsNullOrEmpty())
-				env = stateCfg.ActiveEnvironment;
+            return client;
+        }
 
-			return env;
-		}
+        protected virtual string loadEnvironment(LCUStateConfiguration stateCfg)
+        {
+            var env = Context.Items.ContainsKey("Environment") ? Context.Items["Environment"]?.ToString() : null;
 
-		protected virtual string loadProxiedAddress(HttpContext context, LCUStateAction action,
-			LCUStateConfiguration stateCfg, string stateName, string stateKey, string username)
-		{
-			var apiRoot = action.APIRoot;
+            if (env.IsNullOrEmpty())
+                env = stateCfg.ActiveEnvironment;
 
-			var env = loadEnvironment(stateCfg);
+            return env;
+        }
 
-			if (!apiRoot.StartsWith("http") && !env.IsNullOrEmpty())
-				apiRoot = $"{stateCfg.Environments[env].ServerAPIRoot}{action.APIRoot}";
+        protected virtual string loadProxiedAddress(HttpContext context, LCUStateAction action,
+            LCUStateConfiguration stateCfg, string stateName, string stateKey, string username)
+        {
+            var apiRoot = action.APIRoot;
 
-			var security = action.Security;
+            var env = loadEnvironment(stateCfg);
 
-			if (security.IsNullOrEmpty() && !env.IsNullOrEmpty())
-				security = stateCfg.Environments[env].Security;
+            if (!apiRoot.StartsWith("http") && !env.IsNullOrEmpty())
+                apiRoot = $"{stateCfg.Environments[env].ServerAPIRoot}{action.APIRoot}";
 
-			var proxiedAddress = context.GetProxiedAddress(new API.DAFAPIContext()
-			{
-				APIRoot = apiRoot,
-				InboundPath = context.Request.Path.ToString(),
-				Methods = new List<string> { context.Request.Method },
-				Security = security
-			}, "");
+            var security = action.Security;
 
-			if (!proxiedAddress.IsNullOrEmpty())
-			{
-				var entApiKey = loadEntApiKey(context);
+            if (security.IsNullOrEmpty() && !env.IsNullOrEmpty())
+                security = stateCfg.Environments[env].Security;
 
-				var appEntApiKey = loadAppEntApiKey(context);
+            var proxiedAddress = context.GetProxiedAddress(new API.DAFAPIContext()
+            {
+                APIRoot = apiRoot,
+                InboundPath = context.Request.Path.ToString(),
+                Methods = new List<string> { context.Request.Method },
+                Security = security
+            }, "");
 
-				var host = loadEntHost(context);
+            if (!proxiedAddress.IsNullOrEmpty())
+            {
+                var entApiKey = loadEntApiKey(context);
 
-				var uriBldr = new UriBuilder(proxiedAddress);
+                var appEntApiKey = loadAppEntApiKey(context);
 
-				uriBldr.Query += $"&entApiKey={entApiKey}";
+                var host = loadEntHost(context);
 
-				uriBldr.Query += $"&appEntApiKey={appEntApiKey}";
+                var uriBldr = new UriBuilder(proxiedAddress);
 
-				uriBldr.Query += $"&state={stateName}";
+                uriBldr.Query += $"&entApiKey={entApiKey}";
 
-				uriBldr.Query += $"&key={stateKey}";
+                uriBldr.Query += $"&appEntApiKey={appEntApiKey}";
 
-				uriBldr.Query += $"&host={host}";
+                uriBldr.Query += $"&state={stateName}";
 
-				if (!username.IsNullOrEmpty())
-					uriBldr.Query += $"&username={username}";
+                uriBldr.Query += $"&key={stateKey}";
 
-				proxiedAddress = uriBldr.ToString();
+                uriBldr.Query += $"&host={host}";
 
-				return proxiedAddress;
-			}
-			else
-				return null;
-		}
+                if (!username.IsNullOrEmpty())
+                    uriBldr.Query += $"&username={username}";
 
-		protected virtual string loadEntApiKey(HttpContext context)
-		{
-			var entCtxt = context.ResolveContext<EnterpriseContext>(EnterpriseContext.Lookup);
+                proxiedAddress = uriBldr.ToString();
 
-			return context.User?.Claims?.FirstOrDefault(c => c.Type == "lcu-ent-api-key")?.Value ?? entCtxt?.PrimaryAPIKey;
-		}
+                return proxiedAddress;
+            }
+            else
+                return null;
+        }
 
-		protected virtual string loadAppEntApiKey(HttpContext context)
-		{
-			var appCtxt = context.ResolveContext<ApplicationContext>(ApplicationContext.CreateLookup(context));
+        protected virtual string loadEntApiKey(HttpContext context)
+        {
+            var entCtxt = context.ResolveContext<EnterpriseContext>(EnterpriseContext.Lookup);
 
-			return context.User?.Claims?.FirstOrDefault(c => c.Type == "lcu-app-ent-api-key")?.Value ??
-				appCtxt?.EnterprisePrimaryAPIKey;
-		}
+            return context.User?.Claims?.FirstOrDefault(c => c.Type == "lcu-ent-api-key")?.Value ?? entCtxt?.PrimaryAPIKey;
+        }
 
-		protected virtual string loadEntHost(HttpContext context)
-		{
-			var entCtxt = context.ResolveContext<EnterpriseContext>(EnterpriseContext.Lookup);
+        protected virtual string loadAppEntApiKey(HttpContext context)
+        {
+            var appCtxt = context.ResolveContext<ApplicationContext>(ApplicationContext.CreateLookup(context));
 
-			return entCtxt?.Host ?? context.User?.Claims?.FirstOrDefault(c => c.Type == "lcu-host")?.Value;
-		}
+            return context.User?.Claims?.FirstOrDefault(c => c.Type == "lcu-app-ent-api-key")?.Value ??
+                appCtxt?.EnterprisePrimaryAPIKey;
+        }
 
-		protected virtual async Task<JToken> loadState(HttpContext context, string stateName, string stateKey)
-		{
-			var entApiKey = loadEntApiKey(context);
+        protected virtual string loadEntHost(HttpContext context)
+        {
+            var entCtxt = context.ResolveContext<EnterpriseContext>(EnterpriseContext.Lookup);
 
-			var stateCfg = await loadStateConfig(context, stateName);
+            return entCtxt?.Host ?? context.User?.Claims?.FirstOrDefault(c => c.Type == "lcu-host")?.Value;
+        }
 
-			var username = stateCfg.UseUsername ? loadUsername(context) : null;
+        protected virtual async Task<JToken> loadState(HttpContext context, string stateName, string stateKey)
+        {
+            var entApiKey = loadEntApiKey(context);
 
-			var stateRef = stateMgr.LoadStateRef(entApiKey, stateName, stateKey, username);
+            var stateCfg = await loadStateConfig(context, stateName);
 
-			//	TODO:  Update to proxy to some configured API
-			var state = await stateMgr.LoadState<JToken>(stateRef);
+            var username = stateCfg.UseUsername ? loadUsername(context) : null;
 
-			//	TODO:  Need a more sophisticated way (i think)... certainly needed a different way to pass in 'path'
-			//		Concept should be like Redux Reducers?
-			//if (state != null && !path.IsNullOrEmpty())
-			//{
-			//	var dotPath = path.Replace('/', '.');
+            var stateRef = stateMgr.LoadStateRef(entApiKey, stateName, stateKey, username);
 
-			//	state = state.SelectToken($"$.{dotPath}");
-			//}
+            //	TODO:  Update to proxy to some configured API
+            var state = await stateMgr.LoadState<JToken>(stateRef);
 
-			return state;
-		}
+            //	TODO:  Need a more sophisticated way (i think)... certainly needed a different way to pass in 'path'
+            //		Concept should be like Redux Reducers?
+            //if (state != null && !path.IsNullOrEmpty())
+            //{
+            //	var dotPath = path.Replace('/', '.');
 
-		protected virtual async Task<LCUStateConfiguration> loadStateConfig(HttpContext context, string stateName)
-		{
-			var entApiKey = loadAppEntApiKey(context) ?? loadEntApiKey(context);
+            //	state = state.SelectToken($"$.{dotPath}");
+            //}
 
-			return await stateMgr.LoadStateConfig(entApiKey, stateName);
-		}
+            return state;
+        }
 
-		protected virtual string loadUsername(HttpContext context)
-		{
-			return context.LoadUserID() ?? Context.Items["UsernameMock"]?.ToString();
-		}
+        protected virtual async Task<LCUStateConfiguration> loadStateConfig(HttpContext context, string stateName)
+        {
+            var entApiKey = loadAppEntApiKey(context) ?? loadEntApiKey(context);
 
-		protected virtual async Task sendState(HttpContext context, string stateName, string stateKey)
-		{
-			var state = await loadState(context, stateName, stateKey);
+            return await stateMgr.LoadStateConfig(entApiKey, stateName);
+        }
 
-			var request = new ReceiveStateRequest();
+        protected virtual string loadUsername(HttpContext context)
+        {
+            return context.LoadUserID() ?? Context.Items["UsernameMock"]?.ToString();
+        }
 
-			LCUStateConfiguration stateCfg = null;
+        protected virtual async Task sendState(HttpContext context, string stateName, string stateKey)
+        {
+            var state = await loadState(context, stateName, stateKey);
 
-			if (state != null)
-				request.State = state.JSONConvert<IDictionary<string, object>>();
-			else
-			{
-				stateCfg = await loadStateConfig(context, stateName);
+            var request = new ReceiveStateRequest();
 
-				request.State = stateCfg?.DefaultValue;
-			}
+            LCUStateConfiguration stateCfg = null;
 
-			var groupName = await buildGroupName(stateName, stateKey, stateCfg);
+            if (state != null)
+                request.State = state.JSONConvert<IDictionary<string, object>>();
+            else
+            {
+                stateCfg = await loadStateConfig(context, stateName);
 
-			await Clients.Group(groupName).SendAsync($"ReceiveState{stateName}{stateKey}", request.JSONConvert<object>());
-		}
-		#endregion
-	}
+                request.State = stateCfg?.DefaultValue;
+            }
+
+            var groupName = await buildGroupName(stateName, stateKey, stateCfg);
+
+            await Clients.Group(groupName).SendAsync($"ReceiveState{stateName}{stateKey}", request.JSONConvert<object>());
+        }
+        #endregion
+    }
 }
