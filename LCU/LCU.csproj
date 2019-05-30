@@ -6,8 +6,8 @@
 
   <ItemGroup>
     <PackageReference Include="Fathym" Version="1.1.19121.2" />
-    <PackageReference Include="IdentityServer4" Version="2.3.2" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="2.1.2" />
+    <PackageReference Include="IdentityServer4" Version="2.4.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="2.2.0" />
   </ItemGroup>
 
 </Project>
