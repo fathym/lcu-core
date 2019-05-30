@@ -126,7 +126,7 @@ namespace LCU.Presentation
 			}
 		}
 
-		[Authorize]
+		//[Authorize]
 		public virtual async Task<IActionResult> DevOpsAuthorize(string code, string state, string error = null)
 		{
 			var expectedState = HttpContext.Session.GetString("DEVOPS:CSRF:State");
@@ -150,7 +150,7 @@ namespace LCU.Presentation
 			return Redirect(redirectUri);
 		}
 
-		[Authorize]
+		//[Authorize]
 		public virtual async Task<IActionResult> DevOpsOAuth(string redirectUri = null)
 		{
 			string csrf = Guid.NewGuid().ToString();

@@ -189,7 +189,7 @@ namespace LCU.Presentation
 
 			services.AddMvc(o =>
 			{
-				o.Filters.Add(new LCUAuthorizationFilter());
+				//o.Filters.Add(new LCUAuthorizationFilter());
 			});
 
 			return services;
