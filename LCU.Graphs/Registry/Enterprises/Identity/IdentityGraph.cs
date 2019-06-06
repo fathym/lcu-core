@@ -175,11 +175,11 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					.Has("Registry", email)
 					.Has("Key", key);
 
-				var tptResults = await Submit<dynamic>(existingQuery);
+				var tptResults = await Submit<BusinessModel<Guid>>(existingQuery);
 
 				var tptResult = tptResults.FirstOrDefault();
 
-				return tptResult?.Token;
+				return tptResult?.Metadata["Token"].ToString();
 			});
 		}
 
