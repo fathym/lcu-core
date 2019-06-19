@@ -98,7 +98,7 @@ namespace LCU.Graphs.Registry.Enterprises
 
                 var tpdResult = tpdResults.FirstOrDefault();
 
-                return tpdResult?.Metadata["Data"].ToString();
+                return tpdResult?.Metadata["Value"].ToString();
             });
         }
 
