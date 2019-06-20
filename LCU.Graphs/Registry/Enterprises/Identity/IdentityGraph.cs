@@ -34,8 +34,9 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				var existingQuery = g.V()
 					.Has("Registry", registry)
 					.Has("Email", email)
-					.OutE(EntGraphConstants.CarriesEdgeName)
-					.Has("IsActive", true);
+					.Out(EntGraphConstants.CarriesEdgeName)
+                    .HasLabel(EntGraphConstants.PassportVertexName)
+                    .Has("IsActive", true);
 
 				var accResults = await Submit<dynamic>(existingQuery);
 

@@ -44,6 +44,8 @@
 
 		public const string SourceControlVertexName = "SourceControl";
 
-		public const string ThirdPartyTokenVertexName = "ThirdPartyToken";
-	}
+        public const string ThirdPartyDataVertexName = "ThirdPartyIdentifier";
+
+        public const string ThirdPartyTokenVertexName = "ThirdPartyToken";
+    }
 }
