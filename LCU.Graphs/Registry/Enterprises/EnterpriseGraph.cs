@@ -1,5 +1,6 @@
 ﻿using Gremlin.Net.Process.Traversal;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -48,6 +49,20 @@ namespace LCU.Graphs.Registry.Enterprises
 				var entHost = await Submit<Enterprise>(query);
 
 				return entHost != null && entHost.Count > 0;
+			});
+		}
+
+		public virtual async Task<List<string>> ListRegistrationHosts(string apiKey)
+		{
+			return await withG(async (client, g) =>
+			{
+				var query = g.V().HasLabel(EntGraphConstants.EnterpriseRegistrationVertexName)
+					.Has("Registry", apiKey)
+					.Values<string>("Hosts");
+
+				var results = await Submit<string>(query);
+
+				return results.ToList();
 			});
 		}
 

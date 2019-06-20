@@ -18,6 +18,8 @@
 
 		public const string DefaultAppsVertexName = "DefaultApplications";
 
+		public const string EnterpriseRegistrationVertexName = "EnterpriseRegistration";
+
 		public const string EnterpriseVertexName = "Enterprise";
 
 		public const string EnvironmentVertexName = "Environment";

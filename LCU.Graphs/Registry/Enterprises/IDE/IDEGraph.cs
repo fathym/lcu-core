@@ -288,7 +288,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 			var client = new HttpClient();
 
 			//	TODO: Support HTTPs only once supported
-			client.BaseAddress = new Uri($"http://{host}");
+			client.BaseAddress = new Uri($"https://{host}");
 
 			var lcuConfigResp = await client.GetAsync($"/_lcu/{lcuLookup}/lcu.json");
 
