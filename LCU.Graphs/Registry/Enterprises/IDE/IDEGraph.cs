@@ -495,7 +495,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 						.Out(EntGraphConstants.ConsumesEdgeName)
 						.HasLabel(EntGraphConstants.LCUConfigVertexName)
 						.Has("Lookup", lcu.Lookup)
-						.Has("Registry", registry);
+						.Has("Registry", registry)
+						.Has("EnterprisePrimaryAPIKey", entApiKey);
 
 				var existingLCUResults = await Submit<BusinessModel<Guid>>(existingLCUQuery);
 
@@ -504,7 +505,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var saveQuery = existingLCUResult != null ? g.V(existingLCUResult.ID) :
 					g.AddV(EntGraphConstants.LCUConfigVertexName)
 						.Property("Lookup", lcu.Lookup)
-						.Property("Registry", registry);
+						.Property("Registry", registry)
+						.Property("EnterprisePrimaryAPIKey", entApiKey);
 
 				saveQuery = saveQuery
 					.Property("NPMPackage", lcu.NPMPackage)
