@@ -405,7 +405,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					.HasLabel(EntGraphConstants.ActivityVertexName)
 					.Has("Lookup", activityLookup)
 					.Has("Registry", registry)
-					.Values<string>("Section");
+					.Values<string>("Section")
+					.Dedup();
 
 				var results = await Submit<string>(query);
 
