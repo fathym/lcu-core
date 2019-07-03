@@ -23,7 +23,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 		#endregion
 
 		#region API Methods
-		public virtual async Task<Status> Exists(string email)
+		public virtual async Task<Status> Exists(string email, string entApiKey = null)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -35,8 +35,11 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					.Has("Registry", registry)
 					.Has("Email", email)
 					.Out(EntGraphConstants.CarriesEdgeName)
-                    .HasLabel(EntGraphConstants.PassportVertexName)
-                    .Has("IsActive", true);
+					.HasLabel(EntGraphConstants.PassportVertexName)
+					.Has("IsActive", true);
+
+				if (!entApiKey.IsNullOrEmpty())
+					existingQuery = existingQuery.Has("EnterpriseAPIKey", entApiKey);
 
 				var accResults = await Submit<dynamic>(existingQuery);
 
@@ -145,7 +148,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 						await Submit(edgeQuery);
 					}
 
-                    status = Status.Success;
+					status = Status.Success;
 				}
 				else
 					return Status.Conflict.Clone("Passport already exists.");
