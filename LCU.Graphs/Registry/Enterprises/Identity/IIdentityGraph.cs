@@ -7,7 +7,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 {
 	public interface IIdentityGraph
 	{
-		Task<Status> Exists(string email);
+		Task<Status> Exists(string email, string entApiKey = null);
 
 		Task<Account> Get(string email);
 
