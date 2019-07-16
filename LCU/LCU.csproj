@@ -8,6 +8,7 @@
     <PackageReference Include="Fathym" Version="1.1.19154.2" />
     <PackageReference Include="IdentityServer4" Version="2.4.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="2.2.0" />
+    <PackageReference Include="System.Net.Http.Formatting.Extension" Version="5.2.3" />
   </ItemGroup>
 
 </Project>
