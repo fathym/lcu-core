@@ -136,7 +136,8 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 		{
 			return await withG(async (client, g) =>
 			{
-				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
+				var 
+				query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
 					.Has("Registry", apiKey)
 					.Has("PrimaryAPIKey", apiKey)
 					.Out(EntGraphConstants.ConsumesEdgeName)
@@ -144,18 +145,6 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 					.Order().By("Priority", Order.Decr);
 
 				var results = await Submit<Application>(query);
-
-				if (results.IsNullOrEmpty())
-				{
-					query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-						.Has("Registry", apiKey)
-						.Has("PrimaryAPIKey", apiKey)
-						.Out(EntGraphConstants.ConsumesEdgeName)
-						.HasLabel(EntGraphConstants.AppVertexName)
-						.Order().By("Priority", Order.Decr);
-
-					results = await Submit<Application>(query);
-				}
 
 				return results.ToList();
 			});

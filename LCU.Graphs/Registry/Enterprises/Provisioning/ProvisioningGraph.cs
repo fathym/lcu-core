@@ -1,4 +1,7 @@
-﻿using Gremlin.Net.Process.Traversal;
+﻿using Fathym;
+using Fathym.Business.Models;
+using Gremlin.Net.Process.Traversal;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -31,6 +34,25 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 					.Has("Lookup", lookup);
 
 				var results = await Submit<Environment>(query);
+
+				return results.FirstOrDefault();
+			});
+		}
+
+		public virtual async Task<MetadataModel> GetEnvironmentSettings(string apiKey, string envLookup)
+		{
+			return await withG(async (client, g) =>
+			{
+				var query = g.V().HasLabel(EntGraphConstants.EnvironmentVertexName)
+					.Has("Registry", apiKey)
+					.Has("EnterprisePrimaryAPIKey", apiKey)
+					.Has("Lookup", envLookup)
+					.Out(EntGraphConstants.ConsumesEdgeName)
+					.HasLabel(EntGraphConstants.EnvironmentVertexName + "Settings")
+					.Has("Registry", apiKey)
+					.Has("EnterprisePrimaryAPIKey", apiKey);
+
+				var results = await Submit<MetadataModel>(query);
 
 				return results.FirstOrDefault();
 			});
@@ -129,6 +151,65 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 				}
 
 				return envResult;
+			});
+		}
+
+		public virtual async Task<MetadataModel> SaveEnvironmentSettings(string apiKey, string envLookup, MetadataModel settings)
+		{
+			return await withG(async (client, g) =>
+			{
+				var existingQuery = g.V().HasLabel(EntGraphConstants.EnvironmentVertexName)
+					.Has("Registry", apiKey)
+					.Has("EnterprisePrimaryAPIKey", apiKey)
+					.Has("Lookup", envLookup)
+					.HasLabel(EntGraphConstants.EnvironmentVertexName + "Settings")
+					.Has("Registry", apiKey)
+					.Has("EnterprisePrimaryAPIKey", apiKey);
+
+				var existingEnvSetResults = await Submit<BusinessModel<Guid>>(existingQuery);
+
+				var existingEnvSetResult = existingEnvSetResults.FirstOrDefault();
+
+				var query = existingEnvSetResult == null ?
+					g.AddV(EntGraphConstants.EnvironmentVertexName + "Settings")
+					.Property("EnterprisePrimaryAPIKey", apiKey)
+					.Property("Registry", apiKey) : existingQuery;
+
+				settings.Metadata.Each(md =>
+				{
+					query = query.Property(md.Key, md.Value?.ToString() ?? "");
+				});
+
+				var envSetResults = await Submit<BusinessModel<Guid>>(query);
+
+				var envSetResult = envSetResults.FirstOrDefault();
+
+				var envQuery = g.V().HasLabel(EntGraphConstants.EnvironmentVertexName)
+					.Has("Registry", apiKey)
+					.Has("EnterprisePrimaryAPIKey", apiKey)
+					.Has("Lookup", envLookup);
+
+				var envResults = await Submit<Graphs.Registry.Enterprises.Provisioning.Environment>(envQuery);
+
+				var envResult = envResults.FirstOrDefault();
+
+				var edgeResults = await Submit<BusinessModel<Guid>>(g.V(envResult.ID).Out(EntGraphConstants.OwnsEdgeName).HasId(envSetResult.ID));
+
+				var edgeResult = edgeResults.FirstOrDefault();
+
+				if (edgeResult == null)
+				{
+					var edgeQueries = new[] {
+						g.V(envResult.ID).AddE(EntGraphConstants.ConsumesEdgeName).To(g.V(envSetResult.ID)),
+						g.V(envResult.ID).AddE(EntGraphConstants.OwnsEdgeName).To(g.V(envSetResult.ID)),
+						g.V(envResult.ID).AddE(EntGraphConstants.ManagesEdgeName).To(g.V(envSetResult.ID))
+					};
+
+					foreach (var edgeQuery in edgeQueries)
+						await Submit(edgeQuery);
+				}
+
+				return envSetResult;
 			});
 		}
 
