@@ -15,11 +15,11 @@ namespace LCU.Rest
 		#endregion
 
 		#region Constructors
-		public RestClient(string apiRoot, ILoggerFactory loggerFactory)
+		public RestClient(string apiRoot, ILogger logger)
 		{
-			logger = loggerFactory.CreateLogger(GetType());
+			this.logger = logger;
 
-			web = new HttpClient(new LoggingHandler(new HttpClientHandler(), logger));
+			web = new HttpClient(new LoggingHandler(new HttpClientHandler(), this.logger));
 
 			web.BaseAddress = new Uri(apiRoot);
 		}
