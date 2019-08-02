@@ -1,6 +1,8 @@
 ﻿using Fathym;
 using Fathym.Business.Models;
 using Gremlin.Net.Process.Traversal;
+using LCU.Logging;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -13,13 +15,16 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 	public class IDEGraph : LCUGraph, IIDEGraph
 	{
 		#region Properties
+		protected readonly ILogger<IDEGraph> logger;
 		#endregion
 
 		#region Constructors
-		public IDEGraph(LCUGraphConfig config)
+		public IDEGraph(LCUGraphConfig config, ILogger<IDEGraph> logger)
 			: base(config)
 		{
 			ListProperties.Add("Hosts");
+
+			this.logger = logger;
 		}
 		#endregion
 
@@ -285,7 +290,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 		public virtual async Task<List<string>> ListLCUFiles(string lcuLookup, string host)
 		{
-			var client = new HttpClient();
+			var client = new HttpClient(new LoggingHandler(new HttpClientHandler(), logger));
 
 			//	TODO: Support HTTPs only once supported
 			client.BaseAddress = new Uri($"https://{host}");
