@@ -1,4 +1,6 @@
-﻿using System;
+﻿using LCU.Logging;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -7,13 +9,17 @@ namespace LCU.Rest
 	public class RestClient
 	{
 		#region Fields
+		protected readonly ILogger logger;
+
 		protected readonly HttpClient web;
 		#endregion
 
 		#region Constructors
-		public RestClient(string apiRoot)
+		public RestClient(string apiRoot, ILoggerFactory loggerFactory)
 		{
-			web = new HttpClient();
+			logger = loggerFactory.CreateLogger(GetType());
+
+			web = new HttpClient(new LoggingHandler(new HttpClientHandler(), logger));
 
 			web.BaseAddress = new Uri(apiRoot);
 		}
