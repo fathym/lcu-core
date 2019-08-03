@@ -146,11 +146,11 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 					.HasLabel(EntGraphConstants.AppVertexName)
 					.HasId(appId);
 
-				var defAppsResults = await Submit<BusinessModel<Guid>>(defAppsQuery);
+				var appsResults = await Submit<Application>(defAppsQuery);
 
-				var defAppsResult = defAppsResults.FirstOrDefault();
+				var appsResult = appsResults.FirstOrDefault();
 
-				return defAppsResult != null ? Status.Success : Status.NotLocated;
+				return appsResult != null ? Status.Success : Status.NotLocated;
 			});
 		}
 
