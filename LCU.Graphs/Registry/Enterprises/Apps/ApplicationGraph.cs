@@ -132,6 +132,28 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			});
 		}
 
+		public virtual async Task<Status> IsDefaultApp(string apiKey, Guid appId)
+		{
+			return await withG(async (client, g) =>
+			{
+				var defAppsQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
+					.Has("Registry", apiKey)
+					.Has("PrimaryAPIKey", apiKey)
+					.Out(EntGraphConstants.OwnsEdgeName)
+					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
+					.Has("Registry", apiKey)
+					.Out(EntGraphConstants.ConsumesEdgeName)
+					.HasLabel(EntGraphConstants.AppVertexName)
+					.HasId(appId);
+
+				var defAppsResults = await Submit<BusinessModel<Guid>>(defAppsQuery);
+
+				var defAppsResult = defAppsResults.FirstOrDefault();
+
+				return defAppsResult != null ? Status.Success : Status.NotLocated;
+			});
+		}
+
 		public virtual async Task<List<Application>> ListApplications(string apiKey)
 		{
 			return await withG(async (client, g) =>
