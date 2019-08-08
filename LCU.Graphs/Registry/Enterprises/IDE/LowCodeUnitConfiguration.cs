@@ -7,15 +7,12 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 {
 	[Serializable]
 	[DataContract]
-	public class LowCodeUnitConfig
+	public class LowCodeUnitConfiguration
 	{
 		[DataMember]
-		public virtual string Lookup { get; set; }
+		public virtual List<string> Files { get; set; }
 
 		[DataMember]
-		public virtual string NPMPackage { get; set; }
-
-		[DataMember]
-		public virtual string PackageVersion { get; set; }
+		public virtual List<IdeSettingsConfigSolution> Solutions { get; set; }
 	}
 }
