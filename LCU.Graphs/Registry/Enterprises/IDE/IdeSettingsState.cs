@@ -70,7 +70,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 		public virtual string EditLCU { get; set; }
 
 		[DataMember]
-		public virtual List<LowCodeUnitConfig> LCUs { get; set; }
+		public virtual List<LowCodeUnitSetupConfig> LCUs { get; set; }
 	}
 
 	[Serializable]

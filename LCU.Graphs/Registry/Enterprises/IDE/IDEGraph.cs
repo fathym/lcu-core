@@ -197,7 +197,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 			});
 		}
 
-		public virtual async Task<LowCodeUnitConfig> GetLCU(string lcuLookup, string entApiKey, string container)
+		public virtual async Task<LowCodeUnitSetupConfig> GetLCU(string lcuLookup, string entApiKey, string container)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -212,7 +212,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					.Has("Lookup", lcuLookup)
 					.Has("Registry", registry);
 
-				var lcus = await Submit<LowCodeUnitConfig>(dropActivityQuery);
+				var lcus = await Submit<LowCodeUnitSetupConfig>(dropActivityQuery);
 
 				return lcus.FirstOrDefault();
 			});
@@ -352,7 +352,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 			});
 		}
 
-		public virtual async Task<List<LowCodeUnitConfig>> ListLCUs(string entApiKey, string container)
+		public virtual async Task<List<LowCodeUnitSetupConfig>> ListLCUs(string entApiKey, string container)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -365,7 +365,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.LCUConfigVertexName);
 
-				var results = await Submit<LowCodeUnitConfig>(query);
+				var results = await Submit<LowCodeUnitSetupConfig>(query);
 
 				return results?.ToList();
 			});
@@ -482,7 +482,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 			});
 		}
 
-		public virtual async Task<LowCodeUnitConfig> SaveLCU(LowCodeUnitConfig lcu, string entApiKey, string container)
+		public virtual async Task<LowCodeUnitSetupConfig> SaveLCU(LowCodeUnitSetupConfig lcu, string entApiKey, string container)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -534,7 +534,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 						await Submit(edgeQuery);
 				}
 
-				return lcuResult.JSONConvert<LowCodeUnitConfig>();
+				return lcuResult.JSONConvert<LowCodeUnitSetupConfig>();
 			});
 		}
 
