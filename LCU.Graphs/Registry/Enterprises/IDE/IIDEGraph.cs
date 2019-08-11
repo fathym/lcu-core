@@ -24,7 +24,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 		Task<IdeSettingsConfigSolution> GetLCUSolution(string lcuLookup, string solution, string entApiKey, string container);
 
-		Task<IdeSettingsSectionAction> GetSectionAction(string activityLookup, string section, string action, string group, string entApiKey, string container);
+		Task<IDESideBarAction> GetSectionAction(string activityLookup, string section, string action, string group, string entApiKey, string container);
 
 		Task<List<IDEActivity>> ListActivities(string entApiKey, string container);
 
@@ -34,7 +34,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 		Task<List<IdeSettingsConfigSolution>> ListLCUSolutions(string lcuLookup, string entApiKey, string container);
 
-		Task<List<IdeSettingsSectionAction>> ListSectionActions(string activityLookup, string section, string entApiKey, string container);
+		Task<List<IDESideBarAction>> ListSectionActions(string activityLookup, string section, string entApiKey, string container);
 
 		Task<List<string>> ListSideBarSections(string activityLookup, string entApiKey, string container);
 
@@ -44,6 +44,6 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 		Task<Status> SaveLCUCapabilities(string lcuLookup, List<string> files, List<IdeSettingsConfigSolution> solutions, string entApiKey, string container);
 
-		Task<IdeSettingsSectionAction> SaveSectionAction(string activityLookup, string section, IdeSettingsSectionAction action, string entApiKey, string container);
+		Task<IDESideBarAction> SaveSectionAction(string activityLookup, string section, IDESideBarAction action, string entApiKey, string container);
 	}
 }

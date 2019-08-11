@@ -242,7 +242,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 			});
 		}
 
-		public virtual async Task<IdeSettingsSectionAction> GetSectionAction(string activityLookup, string section, string action, string group, string entApiKey, string container)
+		public virtual async Task<IDESideBarAction> GetSectionAction(string activityLookup, string section, string action, string group, string entApiKey, string container)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -263,7 +263,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					.Has("Group", group)
 					.Has("Registry", registry);
 
-				var results = await Submit<IdeSettingsSectionAction>(query);
+				var results = await Submit<IDESideBarAction>(query);
 
 				return results?.FirstOrDefault();
 			});
@@ -371,7 +371,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 			});
 		}
 
-		public virtual async Task<List<IdeSettingsSectionAction>> ListSectionActions(string activityLookup, string section, string entApiKey, string container)
+		public virtual async Task<List<IDESideBarAction>> ListSectionActions(string activityLookup, string section, string entApiKey, string container)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -390,7 +390,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					.Has("Section", section)
 					.Has("Registry", registry);
 
-				var results = await Submit<IdeSettingsSectionAction>(query);
+				var results = await Submit<IDESideBarAction>(query);
 
 				return results?.ToList();
 			});
@@ -563,9 +563,9 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 			});
 		}
 
-		public virtual async Task<IdeSettingsSectionAction> SaveSectionAction(string activityLookup, string section, IdeSettingsSectionAction action, string entApiKey, string container)
+		public virtual async Task<IDESideBarAction> SaveSectionAction(string activityLookup, string section, IDESideBarAction action, string entApiKey, string container)
 		{
-			return await withG(async (client, g) =>
+			return await base.withG((Func<Gremlin.Net.Driver.GremlinClient, GraphTraversalSource, Task<IDESideBarAction>>)(async (client, g) =>
 			{
 				var registry = $"{entApiKey}|{container}";
 
@@ -578,33 +578,33 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					.Has("Lookup", activityLookup)
 					.Has("Registry", registry);
 
-				var activityResults = await Submit<BusinessModel<Guid>>(activityQuery);
+				var activityResults = await base.Submit<BusinessModel<Guid>>(activityQuery);
 
 				var activityResult = activityResults.FirstOrDefault();
 
 				var existingSecActQuery = g.V(activityResult.ID)
 						.Out(EntGraphConstants.ConsumesEdgeName)
 						.HasLabel(EntGraphConstants.SectionActionVertexName)
-						.Has("Action", action.Action)
-						.Has("Group", action.Group)
+						.Has("Action", (object)action.Action)
+						.Has("Group", (object)action.Group)
 						.Has("Section", section)
 						.Has("Registry", registry);
 
-				var existingSecActResults = await Submit<BusinessModel<Guid>>(existingSecActQuery);
+				var existingSecActResults = await base.Submit<BusinessModel<Guid>>(existingSecActQuery);
 
 				var existingSecActResult = existingSecActResults.FirstOrDefault();
 
 				var saveQuery = existingSecActResult != null ? g.V(existingSecActResult.ID) :
 					g.AddV(EntGraphConstants.SectionActionVertexName)
-						.Property("Action", action.Action)
-						.Property("Group", action.Group)
+						.Property("Action", (object)action.Action)
+						.Property("Group", (object)action.Group)
 						.Property("Section", section)
 						.Property("Registry", registry);
 
 				saveQuery = saveQuery
-					.Property("Name", action.Name);
+					.Property("Title", action.Title);
 
-				var secActResults = await Submit<BusinessModel<Guid>>(saveQuery);
+				var secActResults = await base.Submit<BusinessModel<Guid>>(saveQuery);
 
 				var secActResult = secActResults.FirstOrDefault();
 
@@ -617,11 +617,11 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					};
 
 					foreach (var edgeQuery in edgeQueries)
-						await Submit(edgeQuery);
+						await base.Submit(edgeQuery);
 				}
 
-				return secActResult.JSONConvert<IdeSettingsSectionAction>();
-			});
+				return secActResult.JSONConvert<IDESideBarAction>();
+			}));
 		}
 		#endregion
 
