@@ -563,7 +563,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 			});
 		}
 
-		public virtual async Task<IDESideBarAction> SaveSectionAction(string activityLookup, string section, IDESideBarAction action, string entApiKey, string container)
+		public virtual async Task<IDESideBarAction> SaveSectionAction(string activityLookup, IDESideBarAction action, string entApiKey, string container)
 		{
 			return await base.withG((async (client, g) =>
 			{
@@ -585,9 +585,9 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var existingSecActQuery = g.V(activityResult.ID)
 						.Out(EntGraphConstants.ConsumesEdgeName)
 						.HasLabel(EntGraphConstants.SectionActionVertexName)
-						.Has("Action", (object)action.Action)
-						.Has("Group", (object)action.Group)
-						.Has("Section", section)
+						.Has("Action", action.Action)
+						.Has("Group", action.Group)
+						.Has("Section", action.Section)
 						.Has("Registry", registry);
 
 				var existingSecActResults = await base.Submit<BusinessModel<Guid>>(existingSecActQuery);
@@ -598,7 +598,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					g.AddV(EntGraphConstants.SectionActionVertexName)
 						.Property("Action", (object)action.Action)
 						.Property("Group", (object)action.Group)
-						.Property("Section", section)
+						.Property("Section", action.Section)
 						.Property("Registry", registry);
 
 				saveQuery = saveQuery

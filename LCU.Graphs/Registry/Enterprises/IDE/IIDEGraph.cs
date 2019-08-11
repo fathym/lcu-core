@@ -44,6 +44,6 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 		Task<Status> SaveLCUCapabilities(string lcuLookup, List<string> files, List<IdeSettingsConfigSolution> solutions, string entApiKey, string container);
 
-		Task<IDESideBarAction> SaveSectionAction(string activityLookup, string section, IDESideBarAction action, string entApiKey, string container);
+		Task<IDESideBarAction> SaveSectionAction(string activityLookup, IDESideBarAction action, string entApiKey, string container);
 	}
 }
