@@ -565,7 +565,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 		public virtual async Task<IDESideBarAction> SaveSectionAction(string activityLookup, string section, IDESideBarAction action, string entApiKey, string container)
 		{
-			return await base.withG((Func<Gremlin.Net.Driver.GremlinClient, GraphTraversalSource, Task<IDESideBarAction>>)(async (client, g) =>
+			return await base.withG((async (client, g) =>
 			{
 				var registry = $"{entApiKey}|{container}";
 
