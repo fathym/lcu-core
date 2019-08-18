@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netcoreapp2.2</TargetFramework>
+		<AssetTargetFallback>$(AssetTargetFallback);portable-net451+win8</AssetTargetFallback>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Identity\Core\**" />
+	  <EmbeddedResource Remove="Identity\Core\**" />
+	  <None Remove="Identity\Core\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Fathym.Presentation" Version="1.1.19154.2" />
+		<PackageReference Include="IdentityServer4" Version="2.5.2" />
+		<PackageReference Include="IdentityServer4.AspNetIdentity" Version="2.5.2" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
+		<PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.12" />
+		<PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="16.143.2" />
+		<PackageReference Include="Octokit" Version="0.32.0" />
+		<PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Rest\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\LCU.Graphs\LCU.Graphs.csproj" />
+	</ItemGroup>
+
+</Project>
