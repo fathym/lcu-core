@@ -15,11 +15,14 @@ namespace LCU.Rest
 		#endregion
 
 		#region Constructors
-		public RestClient(string apiRoot, ILogger logger)
+		public RestClient(string apiRoot, ILogger logger, string bearerToken = null)
 		{
 			this.logger = logger;
 
 			web = new HttpClient(new LoggingHandler(new HttpClientHandler(), this.logger));
+
+			if (!bearerToken.IsNullOrEmpty())
+				web.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearerToken);
 
 			web.BaseAddress = new Uri(apiRoot);
 		}
