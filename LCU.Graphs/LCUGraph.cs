@@ -84,6 +84,14 @@ namespace LCU.Graphs
 				return new ResultSet<T>(vals, res.StatusAttributes);
 			});
 		}
+
+		public virtual async Task<T> SubmitFirst<T>(ITraversal traversal)
+			where T : class
+		{
+			var resSet = await Submit<T>(traversal.ToGremlinQuery());
+
+			return resSet?.FirstOrDefault();
+		}
 		#endregion
 
 		#region Helpers

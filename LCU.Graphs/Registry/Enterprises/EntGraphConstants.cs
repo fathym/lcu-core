@@ -40,6 +40,8 @@
 
 		public const string ProvidesEdgeName = "Provides";
 
+		public const string RelyingPartyVertexName = "RelyingParty";
+
 		public const string SectionActionVertexName = "SectionAction";
 
 		public const string SourceControlVertexName = "SourceControl";
