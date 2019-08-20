@@ -15,7 +15,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 		public virtual List<Guid> AcceptedProviderIDs { get; set; }
 
 		[DataMember]
-		public virtual List<Guid> AccessRightIDs { get; set; }
+		public virtual List<string> AccessRights { get; set; }
 
 		[DataMember]
 		public virtual string Type { get; set; }

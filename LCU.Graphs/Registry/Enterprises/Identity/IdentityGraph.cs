@@ -340,8 +340,8 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 						.Property("AccessConfigurationType", accessCard.AccessConfigurationType);
 
 				setQuery = setQuery
-					.Property("ExcludeAccessRightIDs", accessCard.ExcludeAccessRightIDs.ToJSON())
-					.Property("IncludeAccessRightIDs", accessCard.IncludeAccessRightIDs.ToJSON())
+					.Property("ExcludeAccessRightIDs", accessCard.ExcludeAccessRights.ToJSON())
+					.Property("IncludeAccessRightIDs", accessCard.IncludeAccessRights.ToJSON())
 					.Property("ProviderID", accessCard.ProviderID);
 
 				acResult = await SubmitFirst<BusinessModel<Guid>>(setQuery);
