@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LCU.Rest
 {
-	public class RestClient
+	public class LCURestClient : IDisposable
 	{
 		#region Fields
 		protected readonly ILogger logger;
@@ -15,7 +15,7 @@ namespace LCU.Rest
 		#endregion
 
 		#region Constructors
-		public RestClient(string apiRoot, ILogger logger, string bearerToken = null)
+		public LCURestClient(string apiRoot, ILogger logger, string bearerToken = null)
 		{
 			this.logger = logger;
 
@@ -37,6 +37,11 @@ namespace LCU.Rest
 			var respStr = await response.Content.ReadAsStringAsync();
 
 			return respStr?.FromJSON<T>();
+		}
+
+		public virtual void Dispose()
+		{
+			web.Dispose();
 		}
 
 		public virtual async Task<T> Get<T>(string requestUri)
