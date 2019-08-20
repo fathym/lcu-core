@@ -1,4 +1,5 @@
 ﻿using Fathym;
+using Fathym.Business.Models;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -6,7 +7,7 @@ using System.Runtime.Serialization;
 namespace LCU.Graphs.Registry.Enterprises.Identity
 {
 	[DataContract]
-	public class AccessCard : MetadataModel
+	public class AccessCard : BusinessModel<Guid>
 	{
 		[DataMember]
 		public virtual string AccessConfigurationType { get; set; }

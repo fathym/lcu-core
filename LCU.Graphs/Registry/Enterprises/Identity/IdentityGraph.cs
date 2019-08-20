@@ -1,5 +1,6 @@
 ﻿using Fathym;
 using Fathym.Business.Models;
+using Gremlin.Net.Process.Traversal;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -100,15 +101,9 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					.Has("EnterpriseAPIKey", entApiKey)
 					.Has("AccessConfigurationType", accessConfigType);
 
-				var acResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
+				var acResult = await SubmitFirst<AccessCard>(existingQuery);
 
-				acResult.Metadata["ExcludeAccessRightIDs"] = acResult.Metadata["ExcludeAccessRightIDs"].ToString().FromJSON<JToken>();
-
-				acResult.Metadata["IncludeAccessRightIDs"] = acResult.Metadata["IncludeAccessRightIDs"].ToString().FromJSON<JToken>();
-
-				var accessCard = acResult.JSONConvert<AccessCard>();
-
-				return accessCard;
+				return acResult;
 			});
 		}
 
@@ -144,18 +139,9 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					.Has("Registry", $"{entApiKey}|{username}")
 					.Has("EnterpriseAPIKey", entApiKey);
 
-				var acResults = await Submit<BusinessModel<Guid>>(existingQuery);
+				var acResults = await Submit<AccessCard>(existingQuery);
 
-				var accessCards = acResults.Select(acResult =>
-				{
-					acResult.Metadata["ExcludeAccessRightIDs"] = acResult.Metadata["ExcludeAccessRightIDs"].ToString().FromJSON<JToken>();
-
-					acResult.Metadata["IncludeAccessRightIDs"] = acResult.Metadata["IncludeAccessRightIDs"].ToString().FromJSON<JToken>();
-
-					return acResult.JSONConvert<AccessCard>();
-				}).ToList();
-
-				return accessCards;
+				return acResults?.ToList();
 			});
 		}
 
@@ -331,7 +317,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					.Has("EnterpriseAPIKey", entApiKey)
 					.Has("AccessConfigurationType", accessCard.AccessConfigurationType);
 
-				var acResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
+				var acResult = await SubmitFirst<AccessCard>(existingQuery);
 
 				var setQuery = acResult != null ? existingQuery :
 					g.AddV(EntGraphConstants.AccessCardVertexName)
@@ -340,11 +326,25 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 						.Property("AccessConfigurationType", accessCard.AccessConfigurationType);
 
 				setQuery = setQuery
-					.Property("ExcludeAccessRightIDs", accessCard.ExcludeAccessRights.ToJSON())
-					.Property("IncludeAccessRightIDs", accessCard.IncludeAccessRights.ToJSON())
 					.Property("ProviderID", accessCard.ProviderID);
 
-				acResult = await SubmitFirst<BusinessModel<Guid>>(setQuery);
+				accessCard.ExcludeAccessRights.Each(ear =>
+				{
+					if (ear == accessCard.ExcludeAccessRights.First())
+						setQuery = setQuery.Property("ExcludeAccessRights", ear);
+					else
+						setQuery = setQuery.Property(Cardinality.List, "ExcludeAccessRights", ear);
+				});
+
+				accessCard.IncludeAccessRights.Each(iar =>
+				{
+					if (iar == accessCard.IncludeAccessRights.First())
+						setQuery = setQuery.Property("IncludeAccessRights", iar);
+					else
+						setQuery = setQuery.Property(Cardinality.List, "IncludeAccessRights", iar);
+				});
+
+				acResult = await SubmitFirst<AccessCard>(setQuery);
 
 				if (acResult != null)
 				{
@@ -375,11 +375,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 							await Submit(edgeQuery);
 					}
 
-					acResult.Metadata["ExcludeAccessRightIDs"] = acResult.Metadata["ExcludeAccessRightIDs"].ToString().FromJSON<JToken>();
-
-					acResult.Metadata["IncludeAccessRightIDs"] = acResult.Metadata["IncludeAccessRightIDs"].ToString().FromJSON<JToken>();
-
-					accessCard = acResult.JSONConvert<AccessCard>();
+					accessCard = acResult;
 				}
 
 				return accessCard;
