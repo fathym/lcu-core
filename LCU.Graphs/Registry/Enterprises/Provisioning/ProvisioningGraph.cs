@@ -22,7 +22,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 		#endregion
 
 		#region API Methods
-		public virtual async Task<Environment> GetEnvironment(string apiKey, string lookup)
+		public virtual async Task<LCUEnvironment> GetEnvironment(string apiKey, string lookup)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -33,7 +33,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 					.HasLabel(EntGraphConstants.EnvironmentVertexName)
 					.Has("Lookup", lookup);
 
-				var results = await Submit<Environment>(query);
+				var results = await Submit<LCUEnvironment>(query);
 
 				return results.FirstOrDefault();
 			});
@@ -83,7 +83,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 			});
 		}
 
-		public virtual async Task<List<Environment>> ListEnvironments(string apiKey)
+		public virtual async Task<List<LCUEnvironment>> ListEnvironments(string apiKey)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -94,13 +94,13 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 					.HasLabel(EntGraphConstants.EnvironmentVertexName)
 					.Order().By("Priority", Order.Decr);
 
-				var results = await Submit<Environment>(query);
+				var results = await Submit<LCUEnvironment>(query);
 
 				return results.ToList();
 			});
 		}
 
-		public virtual async Task<Environment> SaveEnvironment(Environment env)
+		public virtual async Task<LCUEnvironment> SaveEnvironment(LCUEnvironment env)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -109,7 +109,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 						.Has("EnterprisePrimaryAPIKey", env.EnterprisePrimaryAPIKey)
 						.Has("Registry", env.EnterprisePrimaryAPIKey);
 
-				var existingEnvResults = await Submit<Environment>(existingQuery);
+				var existingEnvResults = await Submit<LCUEnvironment>(existingQuery);
 
 				var existingEnvResult = existingEnvResults.FirstOrDefault();
 
@@ -122,7 +122,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 					.Property("Lookup", env.Lookup ?? "")
 					.Property("Name", env.Name ?? "");
 
-				var envResults = await Submit<Environment>(query);
+				var envResults = await Submit<LCUEnvironment>(query);
 
 				var envResult = envResults.FirstOrDefault();
 
@@ -134,7 +134,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 
 				var entResult = entResults.FirstOrDefault();
 
-				var edgeResults = await Submit<Environment>(g.V(entResult.ID).Out(EntGraphConstants.OwnsEdgeName).HasId(envResult.ID));
+				var edgeResults = await Submit<LCUEnvironment>(g.V(entResult.ID).Out(EntGraphConstants.OwnsEdgeName).HasId(envResult.ID));
 
 				var edgeResult = edgeResults.FirstOrDefault();
 
@@ -189,7 +189,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 					.Has("EnterprisePrimaryAPIKey", apiKey)
 					.Has("Lookup", envLookup);
 
-				var envResults = await Submit<Graphs.Registry.Enterprises.Provisioning.Environment>(envQuery);
+				var envResults = await Submit<Graphs.Registry.Enterprises.Provisioning.LCUEnvironment>(envQuery);
 
 				var envResult = envResults.FirstOrDefault();
 
@@ -259,7 +259,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 					.Has("EnterprisePrimaryAPIKey", apiKey)
 					.Has("Registry", apiKey);
 
-				var envResults = await Submit<Environment>(envQuery);
+				var envResults = await Submit<LCUEnvironment>(envQuery);
 
 				var envResult = envResults.FirstOrDefault();
 
