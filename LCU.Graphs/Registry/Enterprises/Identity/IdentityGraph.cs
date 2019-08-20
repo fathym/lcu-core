@@ -25,6 +25,23 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 		#endregion
 
 		#region API Methods
+		public virtual async Task<Status> DeleteAccessCard(string entApiKey, string username, string accessConfigType)
+		{
+			return await withG(async (client, g) =>
+			{
+				var dropQuery = g.V()
+					.HasLabel(EntGraphConstants.AccessCardVertexName)
+					.Has("Registry", $"{entApiKey}|{username}")
+					.Has("EnterpriseAPIKey", entApiKey)
+					.Has("AccessConfigurationType", accessConfigType)
+					.Drop();
+
+				await Submit(dropQuery);
+
+				return Status.Success;
+			});
+		}
+
 		public virtual async Task<Status> Exists(string email, string entApiKey = null)
 		{
 			return await withG(async (client, g) =>
