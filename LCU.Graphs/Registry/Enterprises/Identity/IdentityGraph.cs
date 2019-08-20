@@ -431,15 +431,12 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
 					var entResult = await SubmitFirst<BusinessModel<Guid>>(entQuery);
 
-					if (entResult == null)
-					{
-						var edgeQueries = new[] {
+					var edgeQueries = new[] {
 							g.V(entResult.ID).AddE(EntGraphConstants.OwnsEdgeName).To(g.V(rpResult.ID))
 						};
 
-						foreach (var edgeQuery in edgeQueries)
-							await Submit(edgeQuery);
-					}
+					foreach (var edgeQuery in edgeQueries)
+						await Submit(edgeQuery);
 
 					rpResult.Metadata["AccessConfigurations"] = rpResult.Metadata["AccessConfigurations"].ToString().FromJSON<JToken>();
 
