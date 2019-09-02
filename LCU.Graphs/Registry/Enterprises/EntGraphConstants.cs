@@ -22,6 +22,8 @@
 
 		public const string EnterpriseVertexName = "Enterprise";
 
+		public const string EnterpriseAPIKeyName = "EnterpriseAPIKey";
+
 		public const string EnvironmentVertexName = "Environment";
 
 		public const string IDEContainerVertexName = "IDEContainer";
@@ -39,6 +41,8 @@
 		public const string PassportVertexName = "Passport";
 
 		public const string ProvidesEdgeName = "Provides";
+
+		public const string RegistryName = "Registry";
 
 		public const string RelyingPartyVertexName = "RelyingParty";
 

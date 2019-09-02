@@ -28,11 +28,11 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			return await withG(async (client, g) =>
 			{
 				var defAppsQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("PrimaryAPIKey", apiKey)
 					.Out(EntGraphConstants.OffersEdgeName)
 					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
-					.Has("Registry", apiKey);
+					.Has(EntGraphConstants.RegistryName, apiKey);
 
 				var defAppsResults = await Submit<BusinessModel<Guid>>(defAppsQuery);
 
@@ -59,7 +59,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			return await withG(async (client, g) =>
 			{
 				var entQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("PrimaryAPIKey", apiKey);
 
 				var entResults = await Submit<Enterprise>(entQuery);
@@ -74,7 +74,8 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				await Submit(dropDefaultsQuery);
 
 				var defAppsQuery = g.AddV(EntGraphConstants.DefaultAppsVertexName)
-					.Property("Registry", apiKey);
+					.Property(EntGraphConstants.RegistryName, apiKey)
+					.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey);
 
 				var defAppsResults = await Submit<BusinessModel<Guid>>(defAppsQuery);
 
@@ -104,7 +105,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 					.Out(EntGraphConstants.ProvidesEdgeName)
 					.HasLabel(EntGraphConstants.DAFAppVertexName)
 					.Has("ApplicationID", appId)
-					.Has("Registry", $"{apiKey}|{appId}")
+					.Has(EntGraphConstants.RegistryName, $"{apiKey}|{appId}")
 					.Order().By("Priority", Order.Decr);
 
 				var appAppResults = await Submit<DAFApplicationConfiguration>(query);
@@ -118,11 +119,11 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			return await withG(async (client, g) =>
 			{
 				var defAppsQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("PrimaryAPIKey", apiKey)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
-					.Has("Registry", apiKey);
+					.Has(EntGraphConstants.RegistryName, apiKey);
 
 				var defAppsResults = await Submit<BusinessModel<Guid>>(defAppsQuery);
 
@@ -137,11 +138,11 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			return await withG(async (client, g) =>
 			{
 				var defAppsQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("PrimaryAPIKey", apiKey)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.AppVertexName)
 					.HasId(appId);
@@ -160,7 +161,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			{
 				var 
 				query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("PrimaryAPIKey", apiKey)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.AppVertexName)
@@ -177,7 +178,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			return await withG(async (client, g) =>
 			{
 				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("PrimaryAPIKey", apiKey)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.AppVertexName)
@@ -198,7 +199,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				//	TODO:  Need to support attaching Enterprise to appropriate DefaultApplications node through some edge so this is pull not as a global default, but enterprise default
 
 				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("PrimaryAPIKey", apiKey)
 					.Out(EntGraphConstants.OffersEdgeName)
 					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
@@ -219,7 +220,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				var existingQuery = g.V().HasLabel(EntGraphConstants.DAFAppVertexName)
 						.HasId(config.ID)
 						.Has("ApplicationID", config.ApplicationID)
-						.Has("Registry", $"{apiKey}|{config.ApplicationID}")
+						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}")
 						.Drop();
 
 				var existingResults = await Submit<DAFApplicationConfiguration>(existingQuery);
@@ -235,11 +236,11 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			return await withG(async (client, g) =>
 			{
 				var dropQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("PrimaryAPIKey", apiKey)
 					.Out(EntGraphConstants.OffersEdgeName)
 					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.BothE().Where(__.InV().HasId(appId))
 					.Drop();
 
@@ -255,8 +256,8 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			{
 				var existingQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
 						.HasId(application.ID)
-						.Has("EnterprisePrimaryAPIKey", application.EnterprisePrimaryAPIKey)
-						.Has("Registry", application.EnterprisePrimaryAPIKey);
+						.Has(EntGraphConstants.EnterpriseAPIKeyName, application.EnterprisePrimaryAPIKey)
+						.Has(EntGraphConstants.RegistryName, application.EnterprisePrimaryAPIKey);
 
 				var existingResults = await Submit<Application>(existingQuery);
 
@@ -264,12 +265,12 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 
 				var query = existingAppResult == null ?
 					g.AddV(EntGraphConstants.AppVertexName)
-					.Property("EnterprisePrimaryAPIKey", application.EnterprisePrimaryAPIKey)
-					.Property("Registry", application.EnterprisePrimaryAPIKey) :
+						.Property(EntGraphConstants.RegistryName, application.EnterprisePrimaryAPIKey)
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, application.EnterprisePrimaryAPIKey) :
 					g.V().HasLabel(EntGraphConstants.AppVertexName)
 						.HasId(existingAppResult.ID)
-						.Has("EnterprisePrimaryAPIKey", application.EnterprisePrimaryAPIKey)
-						.Has("Registry", application.EnterprisePrimaryAPIKey);
+						.Has(EntGraphConstants.EnterpriseAPIKeyName, application.EnterprisePrimaryAPIKey)
+						.Has(EntGraphConstants.RegistryName, application.EnterprisePrimaryAPIKey);
 
 				query = query
 					.Property("Container", application.Container ?? "")
@@ -291,7 +292,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				var appResult = appResults.FirstOrDefault();
 
 				var entQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has("Registry", application.EnterprisePrimaryAPIKey)
+					.Has(EntGraphConstants.RegistryName, application.EnterprisePrimaryAPIKey)
 					.Has("PrimaryAPIKey", application.EnterprisePrimaryAPIKey);
 
 				var entResults = await Submit<Enterprise>(entQuery);
@@ -325,7 +326,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				var existingQuery = g.V().HasLabel(EntGraphConstants.DAFAppVertexName)
 						.HasId(config.ID)
 						.Has("ApplicationID", config.ApplicationID)
-						.Has("Registry", $"{apiKey}|{config.ApplicationID}");
+						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}");
 
 				var existingResults = await Submit<DAFApplicationConfiguration>(existingQuery);
 
@@ -334,11 +335,12 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				var query = existingAppResult == null ?
 					g.AddV(EntGraphConstants.DAFAppVertexName)
 						.Property("ApplicationID", config.ApplicationID)
-						.Property("Registry", $"{apiKey}|{config.ApplicationID}") :
+						.Property(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}")
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey) :
 					g.V().HasLabel(EntGraphConstants.DAFAppVertexName)
 						.HasId(existingAppResult.ID)
 						.Has("ApplicationID", config.ApplicationID)
-						.Has("Registry", $"{apiKey}|{config.ApplicationID}");
+						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}");
 
 				query = query.Property("Priority", config.Priority);
 
@@ -362,7 +364,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 
 				var appQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
 					.HasId(config.ApplicationID)
-					.Has("Registry", apiKey);
+					.Has(EntGraphConstants.RegistryName, apiKey);
 
 				var appResults = await Submit<Application>(appQuery);
 
@@ -391,14 +393,14 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			return await withG(async (client, g) =>
 			{
 				var defaultsQuery = g.V().HasLabel(EntGraphConstants.DefaultAppsVertexName)
-					.Has("Registry", sourceApiKey);
+					.Has(EntGraphConstants.RegistryName, sourceApiKey);
 
 				var defaultApps = await Submit<BusinessModel<Guid>>(defaultsQuery);
 
 				var defaultApp = defaultApps.FirstOrDefault();
 
 				var entQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has("Registry", targetApiKey)
+					.Has(EntGraphConstants.RegistryName, targetApiKey)
 					.Has("PrimaryAPIKey", targetApiKey);
 
 				var entResults = await Submit<Enterprise>(entQuery);

@@ -37,12 +37,12 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has("EnterprisePrimaryAPIKey", entApiKey)
-					.Has("Registry", entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entApiKey)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.ActivityVertexName)
 					.Has("Lookup", activityLookup)
-					.Has("Registry", registry)
+					.Has(EntGraphConstants.RegistryName, registry)
 					.Property(Cardinality.List, "Section", section);
 
 				await Submit(query);
@@ -59,12 +59,12 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 				var dropActivityQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has("EnterprisePrimaryAPIKey", entApiKey)
-					.Has("Registry", entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entApiKey)
 					.Out(EntGraphConstants.ManagesEdgeName)
 					.HasLabel(EntGraphConstants.ActivityVertexName)
 					.Has("Lookup", activityLookup)
-					.Has("Registry", registry)
+					.Has(EntGraphConstants.RegistryName, registry)
 					.Drop();
 
 				await Submit(dropActivityQuery);
@@ -81,12 +81,12 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 				var dropActivityQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has("EnterprisePrimaryAPIKey", entApiKey)
-					.Has("Registry", entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entApiKey)
 					.Out(EntGraphConstants.ManagesEdgeName)
 					.HasLabel(EntGraphConstants.LCUConfigVertexName)
 					.Has("Lookup", lcuLookup)
-					.Has("Registry", registry)
+					.Has(EntGraphConstants.RegistryName, registry)
 					.Drop();
 
 				await Submit(dropActivityQuery);
@@ -103,18 +103,18 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 				var dropActivityQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has("EnterprisePrimaryAPIKey", entApiKey)
-					.Has("Registry", entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entApiKey)
 					.Out(EntGraphConstants.ManagesEdgeName)
 					.HasLabel(EntGraphConstants.ActivityVertexName)
 					.Has("Lookup", activityLookup)
-					.Has("Registry", registry)
+					.Has(EntGraphConstants.RegistryName, registry)
 					.Out(EntGraphConstants.ManagesEdgeName)
 					.HasLabel(EntGraphConstants.SectionActionVertexName)
 					.Has("Action", action)
 					.Has("Group", group)
 					.Has("Section", section)
-					.Has("Registry", registry)
+					.Has(EntGraphConstants.RegistryName, registry)
 					.Drop();
 
 				await Submit(dropActivityQuery);
@@ -131,12 +131,12 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has("EnterprisePrimaryAPIKey", entApiKey)
-					.Has("Registry", entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entApiKey)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.ActivityVertexName)
 					.Has("Lookup", activityLookup)
-					.Has("Registry", registry)
+					.Has(EntGraphConstants.RegistryName, registry)
 					.Properties<string>("Section")
 					.HasValue(section)
 					.Drop();
@@ -153,8 +153,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 			{
 				var existingIdeQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", settings.Container)
-					.Has("EnterprisePrimaryAPIKey", settings.EnterprisePrimaryAPIKey)
-					.Has("Registry", settings.EnterprisePrimaryAPIKey);
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, settings.EnterprisePrimaryAPIKey)
+					.Has(EntGraphConstants.RegistryName, settings.EnterprisePrimaryAPIKey);
 
 				var existingIdeResults = await Submit<IDEContainerSettings>(existingIdeQuery);
 
@@ -164,8 +164,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				{
 					var ideQuery = g.AddV(EntGraphConstants.IDEContainerVertexName)
 						.Property("Container", settings.Container)
-						.Property("EnterprisePrimaryAPIKey", settings.EnterprisePrimaryAPIKey)
-						.Property("Registry", settings.EnterprisePrimaryAPIKey);
+						.Property(EntGraphConstants.RegistryName, settings.EnterprisePrimaryAPIKey)
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, settings.EnterprisePrimaryAPIKey);
 
 					var newIdeResults = await Submit<IDEContainerSettings>(ideQuery);
 
@@ -184,12 +184,12 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has("EnterprisePrimaryAPIKey", entApiKey)
-					.Has("Registry", entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entApiKey)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.ActivityVertexName)
 					.Has("Lookup", activityLookup)
-					.Has("Registry", registry);
+					.Has(EntGraphConstants.RegistryName, registry);
 
 				var results = await Submit<IDEActivity>(query);
 
@@ -205,12 +205,12 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 				var dropActivityQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has("EnterprisePrimaryAPIKey", entApiKey)
-					.Has("Registry", entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entApiKey)
 					.Out(EntGraphConstants.ManagesEdgeName)
 					.HasLabel(EntGraphConstants.LCUConfigVertexName)
 					.Has("Lookup", lcuLookup)
-					.Has("Registry", registry);
+					.Has(EntGraphConstants.RegistryName, registry);
 
 				var lcus = await Submit<LowCodeUnitSetupConfig>(dropActivityQuery);
 
@@ -226,12 +226,12 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has("EnterprisePrimaryAPIKey", entApiKey)
-					.Has("Registry", entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entApiKey)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.LCUConfigVertexName)
 					.Has("Lookup", lcuLookup)
-					.Has("Registry", registry)
+					.Has(EntGraphConstants.RegistryName, registry)
 					.Values<string>("Solutions");
 
 				var results = await Submit<string>(query);
@@ -250,18 +250,18 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has("EnterprisePrimaryAPIKey", entApiKey)
-					.Has("Registry", entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entApiKey)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.ActivityVertexName)
 					.Has("Lookup", activityLookup)
-					.Has("Registry", registry)
+					.Has(EntGraphConstants.RegistryName, registry)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.SectionActionVertexName)
 					.Has("Section", section)
 					.Has("Action", action)
 					.Has("Group", group)
-					.Has("Registry", registry);
+					.Has(EntGraphConstants.RegistryName, registry);
 
 				var results = await Submit<IDESideBarAction>(query);
 
@@ -277,8 +277,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has("EnterprisePrimaryAPIKey", entApiKey)
-					.Has("Registry", entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entApiKey)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.ActivityVertexName);
 
@@ -316,12 +316,12 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 			//     var query = g.V().HasLabel(IDEGraphConstants.IDEContainerVertexName)
 			//         .Has("Container", container)
-			//         .Has("EnterprisePrimaryAPIKey", entApiKey)
-			//         .Has("Registry", entApiKey)
+			//         .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+			//         .Has(EntGraphConstants.RegistryName, entApiKey)
 			//         .Out(IDEGraphConstants.ConsumesEdgeName)
 			//         .HasLabel(IDEGraphConstants.LCUConfigVertexName)
 			//         .Has("Lookup", lcuLookup)
-			//         .Has("Registry", registry)
+			//         .Has(EntGraphConstants.RegistryName, registry)
 			//         .Values<string>("CapabilityFiles");
 
 			//     var results = await Submit<string>(query);
@@ -338,12 +338,12 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has("EnterprisePrimaryAPIKey", entApiKey)
-					.Has("Registry", entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entApiKey)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.LCUConfigVertexName)
 					.Has("Lookup", lcuLookup)
-					.Has("Registry", registry)
+					.Has(EntGraphConstants.RegistryName, registry)
 					.Values<string>("Solutions");
 
 				var results = await Submit<string>(query);
@@ -360,8 +360,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has("EnterprisePrimaryAPIKey", entApiKey)
-					.Has("Registry", entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entApiKey)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.LCUConfigVertexName);
 
@@ -379,16 +379,16 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has("EnterprisePrimaryAPIKey", entApiKey)
-					.Has("Registry", entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entApiKey)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.ActivityVertexName)
 					.Has("Lookup", activityLookup)
-					.Has("Registry", registry)
+					.Has(EntGraphConstants.RegistryName, registry)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.SectionActionVertexName)
 					.Has("Section", section)
-					.Has("Registry", registry);
+					.Has(EntGraphConstants.RegistryName, registry);
 
 				var results = await Submit<IDESideBarAction>(query);
 
@@ -404,12 +404,12 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has("EnterprisePrimaryAPIKey", entApiKey)
-					.Has("Registry", entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entApiKey)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.ActivityVertexName)
 					.Has("Lookup", activityLookup)
-					.Has("Registry", registry)
+					.Has(EntGraphConstants.RegistryName, registry)
 					.Values<string>("Section")
 					.Dedup();
 
@@ -433,8 +433,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 			{
 				var ideQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has("EnterprisePrimaryAPIKey", entApiKey)
-					.Has("Registry", entApiKey);
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entApiKey);
 
 				var ideResults = await Submit<IDEContainerSettings>(ideQuery);
 
@@ -446,7 +446,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 						.Out(EntGraphConstants.ConsumesEdgeName)
 						.HasLabel(EntGraphConstants.ActivityVertexName)
 						.Has("Lookup", activity.Lookup)
-						.Has("Registry", registry);
+						.Has(EntGraphConstants.RegistryName, registry);
 
 				var existingActivityResults = await Submit<BusinessModel<Guid>>(existingActivityQuery);
 
@@ -455,7 +455,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var saveQuery = existingActivityResult != null ? g.V(existingActivityResult.ID) :
 					g.AddV(EntGraphConstants.ActivityVertexName)
 						.Property("Lookup", activity.Lookup)
-						.Property("Registry", registry);
+						.Property(EntGraphConstants.RegistryName, registry)
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
 				saveQuery = saveQuery
 					.Property("Title", activity.Title)
@@ -488,8 +489,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 			{
 				var ideQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has("EnterprisePrimaryAPIKey", entApiKey)
-					.Has("Registry", entApiKey);
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entApiKey);
 
 				var ideResults = await Submit<IDEContainerSettings>(ideQuery);
 
@@ -501,8 +502,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 						.Out(EntGraphConstants.ConsumesEdgeName)
 						.HasLabel(EntGraphConstants.LCUConfigVertexName)
 						.Has("Lookup", lcu.Lookup)
-						.Has("Registry", registry)
-						.Has("EnterprisePrimaryAPIKey", entApiKey);
+						.Has(EntGraphConstants.RegistryName, registry)
+						.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
 				var existingLCUResults = await Submit<BusinessModel<Guid>>(existingLCUQuery);
 
@@ -511,8 +512,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var saveQuery = existingLCUResult != null ? g.V(existingLCUResult.ID) :
 					g.AddV(EntGraphConstants.LCUConfigVertexName)
 						.Property("Lookup", lcu.Lookup)
-						.Property("Registry", registry)
-						.Property("EnterprisePrimaryAPIKey", entApiKey);
+						.Property(EntGraphConstants.RegistryName, registry)
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
 				saveQuery = saveQuery
 					.Property("NPMPackage", lcu.NPMPackage)
@@ -546,12 +547,12 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 				var saveQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has("EnterprisePrimaryAPIKey", entApiKey)
-					.Has("Registry", entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entApiKey)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.LCUConfigVertexName)
 					.Has("Lookup", lcuLookup)
-					.Has("Registry", registry)
+					.Has(EntGraphConstants.RegistryName, registry)
 					.Property("CapabilityFiles", files)
 					.Property("Solutions", solutions);
 
@@ -571,12 +572,12 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 				var activityQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has("EnterprisePrimaryAPIKey", entApiKey)
-					.Has("Registry", entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entApiKey)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.ActivityVertexName)
 					.Has("Lookup", activityLookup)
-					.Has("Registry", registry);
+					.Has(EntGraphConstants.RegistryName, registry);
 
 				var activityResults = await base.Submit<BusinessModel<Guid>>(activityQuery);
 
@@ -588,7 +589,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 						.Has("Action", action.Action)
 						.Has("Group", action.Group)
 						.Has("Section", action.Section)
-						.Has("Registry", registry);
+						.Has(EntGraphConstants.RegistryName, registry);
 
 				var existingSecActResults = await base.Submit<BusinessModel<Guid>>(existingSecActQuery);
 
@@ -599,7 +600,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 						.Property("Action", (object)action.Action)
 						.Property("Group", (object)action.Group)
 						.Property("Section", action.Section)
-						.Property("Registry", registry);
+						.Property(EntGraphConstants.RegistryName, registry)
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
 				saveQuery = saveQuery
 					.Property("Title", action.Title);

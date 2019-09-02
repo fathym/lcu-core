@@ -34,7 +34,7 @@ namespace LCU.Graphs.Registry.Enterprises
 
 					var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
 						.Has("PrimaryAPIKey", entApiKey)
-						.Has("Registry", entApiKey)
+						.Has(EntGraphConstants.RegistryName, entApiKey)
 						.Property(Cardinality.List, "Hosts", host);
 
 					return await SubmitFirst<Enterprise>(query);
@@ -65,7 +65,7 @@ namespace LCU.Graphs.Registry.Enterprises
 						.Property("Description", description)
 						.Property("PreventDefaultApplications", false)
 						.Property("PrimaryAPIKey", apiKey)
-						.Property("Registry", apiKey);
+						.Property(EntGraphConstants.RegistryName, apiKey);
 
 					return await SubmitFirst<Enterprise>(query);
 				}
@@ -93,7 +93,7 @@ namespace LCU.Graphs.Registry.Enterprises
 			return await withG(async (client, g) =>
 			{
 				var query = g.V().HasLabel(EntGraphConstants.EnterpriseRegistrationVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Values<string>("Hosts");
 
 				var results = await Submit<string>(query);
@@ -117,7 +117,7 @@ namespace LCU.Graphs.Registry.Enterprises
 			return await withG(async (client, g) =>
 			{
 				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("PrimaryAPIKey", apiKey);
 
 				return await SubmitFirst<Enterprise>(query);
@@ -132,11 +132,11 @@ namespace LCU.Graphs.Registry.Enterprises
 
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("PrimaryAPIKey", apiKey)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.ThirdPartyDataVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("Key", key);
 
 				var tpdResults = await Submit<BusinessModel<Guid>>(existingQuery);
@@ -153,11 +153,11 @@ namespace LCU.Graphs.Registry.Enterprises
 			{
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("PrimaryAPIKey", apiKey)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.ThirdPartyDataVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("Key", key);
 
 				var tpdResults = await Submit<BusinessModel<Guid>>(existingQuery);
@@ -166,7 +166,8 @@ namespace LCU.Graphs.Registry.Enterprises
 
 				var setQuery = tpdResult != null ? existingQuery :
 					g.AddV(EntGraphConstants.ThirdPartyDataVertexName)
-						.Property("Registry", apiKey)
+						.Property(EntGraphConstants.RegistryName, apiKey)
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
 						.Property("Key", key);
 
 				setQuery = setQuery.Property("Value", value);
@@ -177,7 +178,7 @@ namespace LCU.Graphs.Registry.Enterprises
 
 				var entQuery = g.V()
 				   .HasLabel(EntGraphConstants.EnterpriseVertexName)
-				   .Has("Registry", apiKey)
+				   .Has(EntGraphConstants.RegistryName, apiKey)
 				   .Has("PrimaryAPIKey", apiKey);
 
 				var entResults = await Submit<Enterprise>(entQuery);

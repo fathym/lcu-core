@@ -31,8 +31,8 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 			{
 				var dropQuery = g.V()
 					.HasLabel(EntGraphConstants.AccessCardVertexName)
-					.Has("Registry", $"{entApiKey}|{username}")
-					.Has("EnterpriseAPIKey", entApiKey)
+					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
 					.Has("AccessConfigurationType", accessConfigType)
 					.Drop();
 
@@ -51,14 +51,14 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				var registry = email.Split('@')[1];
 
 				var existingQuery = g.V()
-					.Has("Registry", registry)
+					.Has(EntGraphConstants.RegistryName, registry)
 					.Has("Email", email)
 					.Out(EntGraphConstants.CarriesEdgeName)
 					.HasLabel(EntGraphConstants.PassportVertexName)
 					.Has("IsActive", true);
 
 				if (!entApiKey.IsNullOrEmpty())
-					existingQuery = existingQuery.Has("EnterpriseAPIKey", entApiKey);
+					existingQuery = existingQuery.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
 				var accResults = await Submit<dynamic>(existingQuery);
 
@@ -81,7 +81,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.AccountVertexName)
-					.Has("Registry", registry)
+					.Has(EntGraphConstants.RegistryName, registry)
 					.Has("Email", email);
 
 				var accResults = await Submit<Account>(existingQuery);
@@ -114,8 +114,8 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 			{
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.AccessCardVertexName)
-					.Has("Registry", $"{entApiKey}|{username}")
-					.Has("EnterpriseAPIKey", entApiKey)
+					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
 					.Has("AccessConfigurationType", accessConfigType);
 
 				var acResult = await SubmitFirst<AccessCard>(existingQuery);
@@ -130,8 +130,8 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 			{
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.RelyingPartyVertexName)
-					.Has("Registry", entApiKey)
-					.Has("EnterpriseAPIKey", entApiKey);
+					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
 				var rpResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
 
@@ -153,8 +153,8 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 			{
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.AccessCardVertexName)
-					.Has("Registry", $"{entApiKey}|{username}")
-					.Has("EnterpriseAPIKey", entApiKey);
+					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
 				var acResults = await Submit<AccessCard>(existingQuery);
 
@@ -172,7 +172,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.AccountVertexName)
-					.Has("Registry", registry)
+					.Has(EntGraphConstants.RegistryName, registry)
 					.Has("Email", email);
 
 				var existingResults = await Submit<Account>(existingQuery);
@@ -183,7 +183,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				{
 					var query = g.AddV(EntGraphConstants.AccountVertexName)
 						.Property("Email", email)
-						.Property("Registry", registry);
+						.Property(EntGraphConstants.RegistryName, registry);
 
 					var accResults = await Submit<Account>(query);
 
@@ -193,8 +193,8 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				var existingPassportQuery = g.V(existingAccResult.ID)
 						.Out(EntGraphConstants.CarriesEdgeName)
 						.HasLabel(EntGraphConstants.PassportVertexName)
-						.Has("EnterpriseAPIKey", entApiKey)
-						.Has("Registry", $"{entApiKey}|{registry}");
+						.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
+						.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
 				var existingPassportResults = await Submit<Passport>(existingPassportQuery);
 
@@ -203,10 +203,10 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				if (existingPassportResult == null)
 				{
 					var passportQuery = g.AddV(EntGraphConstants.PassportVertexName)
+					.Property(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
+					.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
 					.Property("PasswordHash", password.ToMD5Hash())
-					.Property("EnterpriseAPIKey", entApiKey)
-					.Property("IsActive", true)
-					.Property("Registry", $"{entApiKey}|{registry}");
+					.Property("IsActive", true);
 
 					var passportResults = await Submit<Passport>(passportQuery);
 
@@ -241,15 +241,15 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.AccountVertexName)
-					.Has("Registry", registry)
+					.Has(EntGraphConstants.RegistryName, registry)
 					.Has("Email", email)
 					.Out(EntGraphConstants.CarriesEdgeName)
 					.HasLabel(EntGraphConstants.PassportVertexName)
-					.Has("EnterpriseAPIKey", entApiKey)
-					.Has("Registry", $"{entApiKey}|{registry}")
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.ThirdPartyTokenVertexName)
-					.Has("Registry", email)
+					.Has(EntGraphConstants.RegistryName, email)
 					.Has("Key", key);
 
 				var tptResults = await Submit<BusinessModel<Guid>>(existingQuery);
@@ -268,15 +268,15 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.AccountVertexName)
-					.Has("Registry", registry)
+					.Has(EntGraphConstants.RegistryName, registry)
 					.Has("Email", email)
 					.Out(EntGraphConstants.CarriesEdgeName)
 					.HasLabel(EntGraphConstants.PassportVertexName)
-					.Has("EnterpriseAPIKey", entApiKey)
-					.Has("Registry", $"{entApiKey}|{registry}")
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.ThirdPartyTokenVertexName)
-					.Has("Registry", email)
+					.Has(EntGraphConstants.RegistryName, email)
 					.Has("Key", key);
 
 				var tptResults = await Submit<BusinessModel<Guid>>(existingQuery);
@@ -285,7 +285,8 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
 				var setQuery = tptResult != null ? existingQuery :
 					g.AddV(EntGraphConstants.ThirdPartyTokenVertexName)
-						.Property("Registry", email)
+						.Property(EntGraphConstants.RegistryName, email)
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
 						.Property("Key", key);
 
 				setQuery = setQuery.Property("Token", token);
@@ -295,12 +296,12 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				tptResult = tptResults.FirstOrDefault();
 
 				var passQuery = g.V().HasLabel(EntGraphConstants.AccountVertexName)
-					.Has("Registry", registry)
+					.Has(EntGraphConstants.RegistryName, registry)
 					.Has("Email", email)
 					.Out(EntGraphConstants.CarriesEdgeName)
 					.HasLabel(EntGraphConstants.PassportVertexName)
-					.Has("EnterpriseAPIKey", entApiKey)
-					.Has("Registry", $"{entApiKey}|{registry}");
+					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
 				var passResults = await Submit<Passport>(passQuery);
 
@@ -330,16 +331,16 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 			{
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.AccessCardVertexName)
-					.Has("Registry", $"{entApiKey}|{username}")
-					.Has("EnterpriseAPIKey", entApiKey)
+					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
 					.Has("AccessConfigurationType", accessCard.AccessConfigurationType);
 
 				var acResult = await SubmitFirst<AccessCard>(existingQuery);
 
 				var setQuery = acResult != null ? existingQuery :
 					g.AddV(EntGraphConstants.AccessCardVertexName)
-						.Property("Registry", $"{entApiKey}|{username}")
-						.Property("EnterpriseAPIKey", entApiKey)
+						.Property(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
 						.Property("AccessConfigurationType", accessCard.AccessConfigurationType);
 
 				setQuery = setQuery
@@ -367,8 +368,8 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				{
 					var rpQuery = g.V()
 						.HasLabel(EntGraphConstants.RelyingPartyVertexName)
-						.Has("Registry", entApiKey)
-						.Has("EnterpriseAPIKey", entApiKey);
+						.Has(EntGraphConstants.RegistryName, entApiKey)
+						.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
 					var rpResult = await SubmitFirst<BusinessModel<Guid>>(rpQuery);
 
@@ -378,7 +379,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
 						var accQuery = g.V()
 							.HasLabel(EntGraphConstants.AccountVertexName)
-							.Has("Registry", registry)
+							.Has(EntGraphConstants.RegistryName, registry)
 							.Has("Email", username);
 
 						var accResult = await SubmitFirst<Account>(accQuery);
@@ -405,15 +406,15 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 			{
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.RelyingPartyVertexName)
-					.Has("Registry", entApiKey)
-					.Has("EnterpriseAPIKey", entApiKey);
+					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
 				var rpResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
 
 				var setQuery = rpResult != null ? existingQuery :
 					g.AddV(EntGraphConstants.RelyingPartyVertexName)
-						.Property("Registry", entApiKey)
-						.Property("EnterpriseAPIKey", entApiKey);
+						.Property(EntGraphConstants.RegistryName, entApiKey)
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
 				setQuery = setQuery
 					.Property("AccessConfigurations", relyingParty.AccessConfigurations.ToJSON())
@@ -426,7 +427,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				if (rpResult != null)
 				{
 					var entQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-						.Has("Registry", entApiKey)
+						.Has(EntGraphConstants.RegistryName, entApiKey)
 						.Has("PrimaryAPIKey", entApiKey);
 
 					var entResult = await SubmitFirst<BusinessModel<Guid>>(entQuery);
@@ -462,12 +463,12 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.AccountVertexName)
 					.Has("Email", email)
-					.Has("Registry", registry)
+					.Has(EntGraphConstants.RegistryName, registry)
 					.Out(EntGraphConstants.CarriesEdgeName)
 					.HasLabel(EntGraphConstants.PassportVertexName)
 					.Has("IsActive", true)
 					.Has("PasswordHash", password.ToMD5Hash())
-					.Has("Registry", $"{entApiKey}|{registry}");
+					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}");
 
 				var accResults = await Submit<Passport>(existingQuery);
 

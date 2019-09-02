@@ -27,7 +27,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 			return await withG(async (client, g) =>
 			{
 				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("PrimaryAPIKey", apiKey)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.EnvironmentVertexName)
@@ -44,13 +44,13 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 			return await withG(async (client, g) =>
 			{
 				var query = g.V().HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Has("Registry", apiKey)
-					.Has("EnterprisePrimaryAPIKey", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
 					.Has("Lookup", envLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.EnvironmentVertexName + "Settings")
-					.Has("Registry", apiKey)
-					.Has("EnterprisePrimaryAPIKey", apiKey);
+					.Has(EntGraphConstants.RegistryName, apiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey);
 
 				var results = await Submit<MetadataModel>(query);
 
@@ -65,17 +65,17 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 				var registry = $"{apiKey}|{envLookup}";
 
 				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("PrimaryAPIKey", apiKey)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.EnvironmentVertexName)
 					.Has("Lookup", envLookup)
-					.Has("EnterprisePrimaryAPIKey", apiKey)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.SourceControlVertexName)
-					.Has("EnterprisePrimaryAPIKey", apiKey)
-					.Has("Registry", registry);
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has(EntGraphConstants.RegistryName, registry);
 
 				var results = await Submit<SourceControl>(query);
 
@@ -88,7 +88,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 			return await withG(async (client, g) =>
 			{
 				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("PrimaryAPIKey", apiKey)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.EnvironmentVertexName)
@@ -106,8 +106,8 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 			{
 				var existingQuery = g.V().HasLabel(EntGraphConstants.EnvironmentVertexName)
 						.Has("Lookup", env.Lookup)
-						.Has("EnterprisePrimaryAPIKey", env.EnterprisePrimaryAPIKey)
-						.Has("Registry", env.EnterprisePrimaryAPIKey);
+						.Has(EntGraphConstants.EnterpriseAPIKeyName, env.EnterprisePrimaryAPIKey)
+						.Has(EntGraphConstants.RegistryName, env.EnterprisePrimaryAPIKey);
 
 				var existingEnvResults = await Submit<LCUEnvironment>(existingQuery);
 
@@ -115,8 +115,8 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 
 				var query = existingEnvResult == null ?
 					g.AddV(EntGraphConstants.EnvironmentVertexName)
-					.Property("EnterprisePrimaryAPIKey", env.EnterprisePrimaryAPIKey)
-					.Property("Registry", env.EnterprisePrimaryAPIKey) : existingQuery;
+					.Property(EntGraphConstants.RegistryName, env.EnterprisePrimaryAPIKey)
+					.Property(EntGraphConstants.EnterpriseAPIKeyName, env.EnterprisePrimaryAPIKey) : existingQuery;
 
 				query = query
 					.Property("Lookup", env.Lookup ?? "")
@@ -127,7 +127,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 				var envResult = envResults.FirstOrDefault();
 
 				var entQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has("Registry", env.EnterprisePrimaryAPIKey)
+					.Has(EntGraphConstants.RegistryName, env.EnterprisePrimaryAPIKey)
 					.Has("PrimaryAPIKey", env.EnterprisePrimaryAPIKey);
 
 				var entResults = await Submit<Enterprise>(entQuery);
@@ -159,12 +159,13 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 			return await withG(async (client, g) =>
 			{
 				var existingQuery = g.V().HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Has("Registry", apiKey)
-					.Has("EnterprisePrimaryAPIKey", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
 					.Has("Lookup", envLookup)
+					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.EnvironmentVertexName + "Settings")
-					.Has("Registry", apiKey)
-					.Has("EnterprisePrimaryAPIKey", apiKey);
+					.Has(EntGraphConstants.RegistryName, apiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey);
 
 				var existingEnvSetResults = await Submit<BusinessModel<Guid>>(existingQuery);
 
@@ -172,8 +173,8 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 
 				var query = existingEnvSetResult == null ?
 					g.AddV(EntGraphConstants.EnvironmentVertexName + "Settings")
-					.Property("EnterprisePrimaryAPIKey", apiKey)
-					.Property("Registry", apiKey) : existingQuery;
+						.Property(EntGraphConstants.RegistryName, apiKey)
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey) : existingQuery;
 
 				settings.Metadata.Each(md =>
 				{
@@ -185,8 +186,8 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 				var envSetResult = envSetResults.FirstOrDefault();
 
 				var envQuery = g.V().HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Has("Registry", apiKey)
-					.Has("EnterprisePrimaryAPIKey", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
 					.Has("Lookup", envLookup);
 
 				var envResults = await Submit<Graphs.Registry.Enterprises.Provisioning.LCUEnvironment>(envQuery);
@@ -220,17 +221,17 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 				var registry = $"{apiKey}|{envLookup}";
 
 				var existingQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("PrimaryAPIKey", apiKey)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.EnvironmentVertexName)
 					.Has("Lookup", envLookup)
-					.Has("EnterprisePrimaryAPIKey", apiKey)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.SourceControlVertexName)
-					.Has("EnterprisePrimaryAPIKey", apiKey)
-					.Has("Registry", registry);
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has(EntGraphConstants.RegistryName, registry);
 
 				var existingSCResults = await Submit<SourceControl>(existingQuery);
 
@@ -238,8 +239,8 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 
 				var query = existingSCResult == null ?
 					g.AddV(EntGraphConstants.SourceControlVertexName)
-					.Property("EnterprisePrimaryAPIKey", apiKey)
-					.Property("Registry", registry) : existingQuery;
+					.Property(EntGraphConstants.RegistryName, registry)
+					.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey) : existingQuery;
 
 				query = query
 					.Property("Name", sc.Name ?? "")
@@ -251,13 +252,13 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 				var scResult = scResults.FirstOrDefault();
 
 				var envQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has("Registry", apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("PrimaryAPIKey", apiKey)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.EnvironmentVertexName)
 					.Has("Lookup", envLookup)
-					.Has("EnterprisePrimaryAPIKey", apiKey)
-					.Has("Registry", apiKey);
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has(EntGraphConstants.RegistryName, apiKey);
 
 				var envResults = await Submit<LCUEnvironment>(envQuery);
 
