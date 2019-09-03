@@ -10,7 +10,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 	public class LCUEnvironment : BusinessModel<Guid>
 	{
 		[DataMember]
-		public virtual string EnterprisePrimaryAPIKey { get; set; }
+		public virtual string EnterpriseAPIKey { get; set; }
 
 		[DataMember]
 		public virtual string Lookup { get; set; }

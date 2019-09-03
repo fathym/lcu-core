@@ -153,8 +153,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 			{
 				var existingIdeQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", settings.Container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, settings.EnterprisePrimaryAPIKey)
-					.Has(EntGraphConstants.RegistryName, settings.EnterprisePrimaryAPIKey);
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, settings.EnterpriseAPIKey)
+					.Has(EntGraphConstants.RegistryName, settings.EnterpriseAPIKey);
 
 				var existingIdeResults = await Submit<IDEContainerSettings>(existingIdeQuery);
 
@@ -164,8 +164,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				{
 					var ideQuery = g.AddV(EntGraphConstants.IDEContainerVertexName)
 						.Property("Container", settings.Container)
-						.Property(EntGraphConstants.RegistryName, settings.EnterprisePrimaryAPIKey)
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, settings.EnterprisePrimaryAPIKey);
+						.Property(EntGraphConstants.RegistryName, settings.EnterpriseAPIKey)
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, settings.EnterpriseAPIKey);
 
 					var newIdeResults = await Submit<IDEContainerSettings>(ideQuery);
 

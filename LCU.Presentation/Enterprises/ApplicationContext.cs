@@ -20,7 +20,7 @@ namespace LCU.Presentation.Enterprises
 
 		public virtual Guid EnterpriseID { get; set; }
 
-		public virtual string EnterprisePrimaryAPIKey { get; set; }
+		public virtual string EnterpriseAPIKey { get; set; }
 
 		public virtual Guid ID { get; set; }
 

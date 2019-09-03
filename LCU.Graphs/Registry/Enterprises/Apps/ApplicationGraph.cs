@@ -256,8 +256,8 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			{
 				var existingQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
 						.HasId(application.ID)
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, application.EnterprisePrimaryAPIKey)
-						.Has(EntGraphConstants.RegistryName, application.EnterprisePrimaryAPIKey);
+						.Has(EntGraphConstants.EnterpriseAPIKeyName, application.EnterpriseAPIKey)
+						.Has(EntGraphConstants.RegistryName, application.EnterpriseAPIKey);
 
 				var existingResults = await Submit<Application>(existingQuery);
 
@@ -265,12 +265,12 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 
 				var query = existingAppResult == null ?
 					g.AddV(EntGraphConstants.AppVertexName)
-						.Property(EntGraphConstants.RegistryName, application.EnterprisePrimaryAPIKey)
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, application.EnterprisePrimaryAPIKey) :
+						.Property(EntGraphConstants.RegistryName, application.EnterpriseAPIKey)
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, application.EnterpriseAPIKey) :
 					g.V().HasLabel(EntGraphConstants.AppVertexName)
 						.HasId(existingAppResult.ID)
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, application.EnterprisePrimaryAPIKey)
-						.Has(EntGraphConstants.RegistryName, application.EnterprisePrimaryAPIKey);
+						.Has(EntGraphConstants.EnterpriseAPIKeyName, application.EnterpriseAPIKey)
+						.Has(EntGraphConstants.RegistryName, application.EnterpriseAPIKey);
 
 				query = query
 					.Property("Container", application.Container ?? "")
@@ -292,8 +292,8 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				var appResult = appResults.FirstOrDefault();
 
 				var entQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, application.EnterprisePrimaryAPIKey)
-					.Has("PrimaryAPIKey", application.EnterprisePrimaryAPIKey);
+					.Has(EntGraphConstants.RegistryName, application.EnterpriseAPIKey)
+					.Has("PrimaryAPIKey", application.EnterpriseAPIKey);
 
 				var entResults = await Submit<Enterprise>(entQuery);
 

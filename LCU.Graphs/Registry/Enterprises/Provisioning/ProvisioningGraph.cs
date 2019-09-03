@@ -106,8 +106,8 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 			{
 				var existingQuery = g.V().HasLabel(EntGraphConstants.EnvironmentVertexName)
 						.Has("Lookup", env.Lookup)
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, env.EnterprisePrimaryAPIKey)
-						.Has(EntGraphConstants.RegistryName, env.EnterprisePrimaryAPIKey);
+						.Has(EntGraphConstants.EnterpriseAPIKeyName, env.EnterpriseAPIKey)
+						.Has(EntGraphConstants.RegistryName, env.EnterpriseAPIKey);
 
 				var existingEnvResults = await Submit<LCUEnvironment>(existingQuery);
 
@@ -115,8 +115,8 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 
 				var query = existingEnvResult == null ?
 					g.AddV(EntGraphConstants.EnvironmentVertexName)
-					.Property(EntGraphConstants.RegistryName, env.EnterprisePrimaryAPIKey)
-					.Property(EntGraphConstants.EnterpriseAPIKeyName, env.EnterprisePrimaryAPIKey) : existingQuery;
+					.Property(EntGraphConstants.RegistryName, env.EnterpriseAPIKey)
+					.Property(EntGraphConstants.EnterpriseAPIKeyName, env.EnterpriseAPIKey) : existingQuery;
 
 				query = query
 					.Property("Lookup", env.Lookup ?? "")
@@ -127,8 +127,8 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 				var envResult = envResults.FirstOrDefault();
 
 				var entQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, env.EnterprisePrimaryAPIKey)
-					.Has("PrimaryAPIKey", env.EnterprisePrimaryAPIKey);
+					.Has(EntGraphConstants.RegistryName, env.EnterpriseAPIKey)
+					.Has("PrimaryAPIKey", env.EnterpriseAPIKey);
 
 				var entResults = await Submit<Enterprise>(entQuery);
 

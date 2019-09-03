@@ -14,6 +14,6 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 		public virtual string Container { get; set; }
 
 		[DataMember]
-		public virtual string EnterprisePrimaryAPIKey { get; set; }
+		public virtual string EnterpriseAPIKey { get; set; }
 	}
 }

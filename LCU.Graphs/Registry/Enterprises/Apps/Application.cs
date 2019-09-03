@@ -13,7 +13,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 		public virtual string Container { get; set; }
 
 		[DataMember]
-		public virtual string EnterprisePrimaryAPIKey { get; set; }
+		public virtual string EnterpriseAPIKey { get; set; }
 
 		[DataMember]
 		public virtual List<string> Hosts { get; set; }
