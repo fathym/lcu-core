@@ -1,6 +1,7 @@
 ﻿using Fathym;
 using Fathym.API;
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace LCU.Presentation.State.ReqRes
@@ -11,6 +12,9 @@ namespace LCU.Presentation.State.ReqRes
 	{
 		[DataMember]
 		public virtual MetadataModel Arguments { get; set; }
+
+		[DataMember]
+		public virtual List<ImageMessage> Images { get; set; }
 
 		[DataMember]
 		public virtual string Key { get; set; }
