@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace LCU.Graphs.Registry.Enterprises.Provisioning
+namespace LCU.Graphs.Registry.Enterprises.DataFlows
 {
 	[Serializable]
 	[DataContract]
@@ -11,9 +11,6 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 	{
 		[DataMember]
 		public virtual string Description { get; set; }
-
-		[DataMember]
-		public virtual string EnterpriseAPIKey { get; set; }
 
 		[DataMember]
 		public virtual string Lookup { get; set; }

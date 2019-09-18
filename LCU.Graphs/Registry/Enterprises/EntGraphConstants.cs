@@ -1,4 +1,6 @@
-﻿namespace LCU.Graphs.Registry.Enterprises
+﻿using Gremlin.Net.Process.Traversal;
+
+namespace LCU.Graphs.Registry.Enterprises
 {
 	public class EntGraphConstants
 	{
@@ -15,6 +17,8 @@
 		public const string ConsumesEdgeName = "Consumes";
 
 		public const string DAFAppVertexName = "DAFApplication";
+
+		public const string DataFlowVertexName = "DataFlow";
 
 		public const string DefaultAppsVertexName = "DefaultApplications";
 
@@ -53,5 +57,5 @@
         public const string ThirdPartyDataVertexName = "ThirdPartyIdentifier";
 
         public const string ThirdPartyTokenVertexName = "ThirdPartyToken";
-    }
+	}
 }
