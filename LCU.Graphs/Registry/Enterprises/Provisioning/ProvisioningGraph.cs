@@ -52,9 +52,18 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey);
 
-				var results = await Submit<MetadataModel>(query);
+				var result = await SubmitFirst<MetadataModel>(query);
 
-				return results.FirstOrDefault();
+				if (result.Metadata.ContainsKey("Registry"))
+					result.Metadata.Remove("Registry");
+
+				if (result.Metadata.ContainsKey("EnterpriseAPIKey"))
+					result.Metadata.Remove("EnterpriseAPIKey");
+
+				if (result.Metadata.ContainsKey("id"))
+					result.Metadata.Remove("id");
+
+				return result;
 			});
 		}
 
@@ -159,13 +168,13 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 			return await withG(async (client, g) =>
 			{
 				var existingQuery = g.V().HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has("Registry", apiKey)
+					.Has("EnterpriseAPIKey", apiKey)
 					.Has("Lookup", envLookup)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.EnvironmentVertexName + "Settings")
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey);
+					.Has("Registry", apiKey)
+					.Has("EnterpriseAPIKey", apiKey);
 
 				var existingEnvSetResults = await Submit<BusinessModel<Guid>>(existingQuery);
 
@@ -173,8 +182,8 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 
 				var query = existingEnvSetResult == null ?
 					g.AddV(EntGraphConstants.EnvironmentVertexName + "Settings")
-						.Property(EntGraphConstants.RegistryName, apiKey)
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey) : existingQuery;
+					.Property("EnterpriseAPIKey", apiKey)
+					.Property("Registry", apiKey) : existingQuery;
 
 				settings.Metadata.Each(md =>
 				{
@@ -186,8 +195,8 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 				var envSetResult = envSetResults.FirstOrDefault();
 
 				var envQuery = g.V().HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has("Registry", apiKey)
+					.Has("EnterpriseAPIKey", apiKey)
 					.Has("Lookup", envLookup);
 
 				var envResults = await Submit<Graphs.Registry.Enterprises.Provisioning.LCUEnvironment>(envQuery);
