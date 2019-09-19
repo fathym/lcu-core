@@ -23,6 +23,33 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		#endregion
 
 		#region API Methods
+		public virtual async Task<Status> DeleteDataFlow(string apiKey, string envLookup, string dfLookup)
+		{
+			return await withG(async (client, g) =>
+			{
+				var registry = $"{apiKey}|{envLookup}";
+
+				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
+					.Has(EntGraphConstants.RegistryName, apiKey)
+					.Has("PrimaryAPIKey", apiKey)
+					.Out(EntGraphConstants.ConsumesEdgeName)
+					.HasLabel(EntGraphConstants.EnvironmentVertexName)
+					.Has(EntGraphConstants.RegistryName, apiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has("Lookup", envLookup)
+					.Out(EntGraphConstants.OwnsEdgeName)
+					.HasLabel(EntGraphConstants.DataFlowVertexName)
+					.Has(EntGraphConstants.RegistryName, registry)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has("Lookup", dfLookup)
+					.Drop();
+
+				await Submit(query);
+
+				return Status.Success;
+			});
+		}
+
 		public virtual async Task<DataFlow> GetDataFlow(string apiKey, string envLookup, string dfLookup)
 		{
 			return await withG(async (client, g) =>
