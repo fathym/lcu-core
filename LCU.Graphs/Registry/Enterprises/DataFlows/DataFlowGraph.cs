@@ -27,7 +27,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{apiKey}|{envLookup}";
+				var registry = $"{apiKey}|{envLookup}|DataFlow";
 
 				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
 					.Has(EntGraphConstants.RegistryName, apiKey)
@@ -54,7 +54,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{apiKey}|{envLookup}";
+				var registry = $"{apiKey}|{envLookup}|DataFlow";
 
 				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
 					.Has(EntGraphConstants.RegistryName, apiKey)
@@ -80,7 +80,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{apiKey}|{envLookup}";
+				var registry = $"{apiKey}|{envLookup}|DataFlow";
 
 				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
 					.Has(EntGraphConstants.RegistryName, apiKey)
