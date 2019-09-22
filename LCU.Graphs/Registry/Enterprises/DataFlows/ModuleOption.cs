@@ -13,16 +13,10 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		public virtual bool Active { get; set; }
 
 		[DataMember]
-		public virtual string Category { get; set; }
-
-		[DataMember]
 		public virtual ModuleControlType ControlType { get; set; }
 
 		[DataMember]
 		public virtual string Description { get; set; }
-
-		[DataMember]
-		public virtual string Icon { get; set; }
 
 		[DataMember]
 		public virtual int IncomingConnectionLimit { get; set; }

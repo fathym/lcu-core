@@ -69,9 +69,9 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
 					.Has("Lookup", dfLookup);
 
-				var results = await Submit<DataFlow>(query);
+				var result = await SubmitFirst<DataFlow>(query);
 
-				return results.FirstOrDefault();
+				return result;
 			});
 		}
 
@@ -82,27 +82,19 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 			{
 				var registry = $"{apiKey}|{envLookup}|DataFlow";
 
-				var envQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
+				var mpQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
 					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("PrimaryAPIKey", apiKey)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.EnvironmentVertexName)
 					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
-					.Has("Lookup", envLookup);
-
-				var envResult = await SubmitFirst<LCUEnvironment>(envQuery);
-
-				var dfQuery = envQuery
+					.Has("Lookup", envLookup)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.DataFlowVertexName)
 					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
 					.Has(EntGraphConstants.RegistryName, registry)
-					.Has("Lookup", dfLookup);
-
-				var dfResult = await SubmitFirst<DataFlow>(dfQuery);
-
-				var mpQuery = envQuery
+					.Has("Lookup", dfLookup)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.ModulePackVertexName)
 					.Has(EntGraphConstants.RegistryName, registry)
@@ -113,6 +105,16 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
 				setup.Pack = await SubmitFirst<ModulePack>(mpQuery);
 
+				var mdQuery = g.V((setup.Pack.ID, registry))
+					.Out(EntGraphConstants.OwnsEdgeName)
+					.HasLabel(EntGraphConstants.ModuleDisplayVertexName)
+					.Has(EntGraphConstants.RegistryName, registry)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey);
+
+				var msResults = await Submit<ModuleDisplay>(mdQuery);
+
+				setup.Displays = msResults.ToList();
+
 				var moQuery = g.V((setup.Pack.ID, registry))
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.ModuleOptionVertexName)
@@ -122,16 +124,6 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 				var moResults = await Submit<ModuleOption>(moQuery);
 
 				setup.Options = moResults.ToList();
-
-				var msQuery = g.V((setup.Pack.ID, registry))
-					.Out(EntGraphConstants.OwnsEdgeName)
-					.HasLabel(EntGraphConstants.ModuleStyleVertexName)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey);
-
-				var msResults = await Submit<ModuleStyle>(moQuery);
-
-				setup.Styles = msResults.ToList();
 
 				return new ModulePackSetup()
 				{
@@ -188,9 +180,9 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 					.Has(EntGraphConstants.RegistryName, registry)
 					.Has("Lookup", dataFlow.Lookup);
 
-				var existingSCResult = await SubmitFirst<DataFlow>(existingQuery);
+				var existingResult = await SubmitFirst<DataFlow>(existingQuery);
 
-				var query = existingSCResult == null ?
+				var query = existingResult == null ?
 					g.AddV(EntGraphConstants.DataFlowVertexName)
 					.Property(EntGraphConstants.RegistryName, registry)
 					.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey) : existingQuery;
@@ -200,21 +192,13 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 					.Property("Description", dataFlow.Description ?? "")
 					.Property("Lookup", dataFlow.Lookup ?? "");
 
+				query.SideEffect(__.Properties<string>("ModulePacks").Drop());
+
+				dataFlow.ModulePacks.Each(mp => query = query.Property(Cardinality.List, "ModulePacks", mp));
+
 				var dfResult = await SubmitFirst<DataFlow>(query);
 
-				var edgeResult = await SubmitFirst<DataFlow>(g.V(envResult.ID).Out(EntGraphConstants.OwnsEdgeName).HasId(dfResult.ID));
-
-				if (edgeResult == null)
-				{
-					var edgeQueries = new[] {
-						g.V(envResult.ID).AddE(EntGraphConstants.ConsumesEdgeName).To(g.V(dfResult.ID)),
-						g.V(envResult.ID).AddE(EntGraphConstants.OwnsEdgeName).To(g.V(dfResult.ID)),
-						g.V(envResult.ID).AddE(EntGraphConstants.ManagesEdgeName).To(g.V(dfResult.ID))
-					};
-
-					foreach (var edgeQuery in edgeQueries)
-						await Submit(edgeQuery);
-				}
+				await ensureEdgeRelationships(g, envResult.ID, dfResult.ID);
 
 				return dfResult;
 			});
@@ -227,18 +211,14 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 			{
 				var registry = $"{apiKey}|{envLookup}|DataFlow";
 
-				var envQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
+				var dfQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
 					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("PrimaryAPIKey", apiKey)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.EnvironmentVertexName)
 					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
-					.Has("Lookup", envLookup);
-
-				var envResult = await SubmitFirst<LCUEnvironment>(envQuery);
-
-				var dfQuery = envQuery
+					.Has("Lookup", envLookup)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.DataFlowVertexName)
 					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
@@ -247,7 +227,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
 				var dfResult = await SubmitFirst<DataFlow>(dfQuery);
 
-				var existingQuery = envQuery
+				var existingQuery = dfQuery
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.ModulePackVertexName)
 					.Has(EntGraphConstants.RegistryName, registry)
@@ -283,9 +263,9 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 					await unpackModuleOption(g, registry, apiKey, dfResult.ID, mpResult, option);
 				});
 
-				await module.Styles.Each(async style =>
+				await module.Displays.Each(async display =>
 				{
-					await unpackModuleStyle(g, registry, apiKey, dfResult.ID, mpResult, style);
+					await unpackModuleDisplay(g, registry, apiKey, dfResult.ID, mpResult, display);
 				});
 
 				return mpResult;
@@ -309,12 +289,27 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 			var query = existingResult == null ?
 				g.AddV(EntGraphConstants.ModuleOptionVertexName)
 				.Property(EntGraphConstants.RegistryName, registry)
-				.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey) : existingQuery;
+				.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+				.Property("Active", true)
+				.Property("Visible", true) : existingQuery;
 
 			query = query
-				.Property("Name", option.Name ?? "")
+				.Property("ControlType", option.ControlType)
 				.Property("Description", option.Description ?? "")
-				.Property("ModuleType", option.ModuleType ?? "");
+				.Property("IncomingConnectionLimit", option.IncomingConnectionLimit)
+				.Property("ModuleType", option.ModuleType ?? "")
+				.Property("Name", option.Name ?? "")
+				.Property("OutgoingConnectionLimit", option.OutgoingConnectionLimit);
+
+			query.SideEffect(__.Properties<string>("IncomingConnectionTypes").Drop());
+
+			option.IncomingConnectionTypes.Each(ict => 
+				query = query.Property(Cardinality.List, "IncomingConnectionTypes", ict));
+
+			query.SideEffect(__.Properties<string>("OutgoingConnectionTypes").Drop());
+
+			option.OutgoingConnectionTypes.Each(oct => 
+				query = query.Property(Cardinality.List, "OutgoingConnectionTypes", oct));
 
 			var moResult = await SubmitFirst<ModuleOption>(query);
 
@@ -323,30 +318,32 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 			return moResult;
 		}
 
-		protected virtual async Task<ModuleStyle> unpackModuleStyle(GraphTraversalSource g, string registry,
-			string apiKey, Guid dataFlowId, ModulePack modulePack, ModuleStyle style)
+		protected virtual async Task<ModuleDisplay> unpackModuleDisplay(GraphTraversalSource g, string registry,
+			string apiKey, Guid dataFlowId, ModulePack modulePack, ModuleDisplay display)
 		{
 			var existingQuery = g.V(modulePack.ID)
 				.Out(EntGraphConstants.OwnsEdgeName)
-				.HasLabel(EntGraphConstants.ModuleStyleVertexName)
+				.HasLabel(EntGraphConstants.ModuleDisplayVertexName)
 				.Has(EntGraphConstants.RegistryName, registry)
 				.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
-				.Has("ModuleType", style.ModuleType);
+				.Has("ModuleType", display.ModuleType);
 
-			var existingResult = await SubmitFirst<ModuleStyle>(existingQuery);
+			var existingResult = await SubmitFirst<ModuleDisplay>(existingQuery);
 
-			//	In case the Module Style has been updated, only create new, and don't update if it exists
+			//	In case the Module Display has been updated, only create new, and don't update if it exists
 			if (existingResult == null)
 			{
-				var query = g.AddV(EntGraphConstants.ModuleStyleVertexName)
+				var query = g.AddV(EntGraphConstants.ModuleDisplayVertexName)
 					.Property(EntGraphConstants.RegistryName, registry)
 					.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
-					.Property("Height", style.Height)
-					.Property("ModuleType", style.ModuleType)
-					.Property("Shape", style.Shape)
-					.Property("Width", style.Width);
+					.Property("Category", display.Category)
+					.Property("Height", display.Height)
+					.Property("Icon", display.Icon)
+					.Property("ModuleType", display.ModuleType)
+					.Property("Shape", display.Shape)
+					.Property("Width", display.Width);
 
-				var msResult = await SubmitFirst<ModuleStyle>(query);
+				var msResult = await SubmitFirst<ModuleDisplay>(query);
 
 				await ensureEdgeRelationships(g, dataFlowId, msResult.ID);
 

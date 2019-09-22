@@ -11,8 +11,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
 		Task<DataFlow> GetDataFlow(string apiKey, string envLookup, string dfLookup);
 
-		Task<ModulePackSetup> LoadModulePackSetup(string apiKey, string envLookup, string dfLookup,
-			string mdlPckLookup);
+		Task<DataFlow> GetModulePack(string apiKey, string envLookup, string dfLookup);
 
 		Task<List<DataFlow>> ListDataFlows(string apiKey, string envLookup);
 

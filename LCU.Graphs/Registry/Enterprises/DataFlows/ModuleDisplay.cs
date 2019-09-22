@@ -5,10 +5,16 @@ using System.Runtime.Serialization;
 namespace LCU.Graphs.Registry.Enterprises.DataFlows
 {
 	[DataContract]
-	public class ModuleStyle : BusinessModel<Guid>
+	public class ModuleDisplay : BusinessModel<Guid>
 	{
 		[DataMember]
+		public virtual string Category { get; set; }
+
+		[DataMember]
 		public virtual double Height { get; set; }
+
+		[DataMember]
+		public virtual string Icon { get; set; }
 
 		[DataMember]
 		public virtual string ModuleType { get; set; }

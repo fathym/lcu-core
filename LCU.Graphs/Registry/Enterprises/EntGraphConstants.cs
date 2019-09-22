@@ -42,7 +42,7 @@
 
 		public const string ModulePackVertexName = "ModulePack";
 
-		public const string ModuleStyleVertexName = "ModuleStyle";
+		public const string ModuleDisplayVertexName = "ModuleDisplay";
 
 		public const string OffersEdgeName = "Offers";
 

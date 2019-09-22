@@ -16,6 +16,6 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		public virtual List<ModuleOption> Options { get; set; }
 
 		[DataMember]
-		public virtual List<ModuleStyle> Styles { get; set; }
+		public virtual List<ModuleDisplay> Displays { get; set; }
 	}
 }
