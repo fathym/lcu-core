@@ -7,18 +7,15 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 {
 	[Serializable]
 	[DataContract]
-	public class DataFlow : BusinessModel<Guid>
+	public class ModulePackSetup
 	{
 		[DataMember]
-		public virtual string Description { get; set; }
+		public virtual ModulePack Pack { get; set; }
 
 		[DataMember]
-		public virtual string Lookup { get; set; }
+		public virtual List<ModuleOption> Options { get; set; }
 
 		[DataMember]
-		public virtual List<string> ModulePacks { get; set; }
-
-		[DataMember]
-		public virtual string Name { get; set; }
+		public virtual List<ModuleStyle> Styles { get; set; }
 	}
 }

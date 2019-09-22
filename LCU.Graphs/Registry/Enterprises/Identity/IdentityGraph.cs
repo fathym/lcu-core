@@ -60,9 +60,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				if (!entApiKey.IsNullOrEmpty())
 					existingQuery = existingQuery.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
-				var accResults = await Submit<dynamic>(existingQuery);
-
-				var accResult = accResults.FirstOrDefault();
+				var accResult = await SubmitFirst<dynamic>(existingQuery);
 
 				if (accResult != null)
 					status = Status.Success;
@@ -84,9 +82,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					.Has(EntGraphConstants.RegistryName, registry)
 					.Has("Email", email);
 
-				var accResults = await Submit<Account>(existingQuery);
-
-				var accResult = accResults.FirstOrDefault();
+				var accResult = await SubmitFirst<Account>(existingQuery);
 
 				return accResult;
 			});
@@ -175,9 +171,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					.Has(EntGraphConstants.RegistryName, registry)
 					.Has("Email", email);
 
-				var existingResults = await Submit<Account>(existingQuery);
-
-				var existingAccResult = existingResults.FirstOrDefault();
+				var existingAccResult = await SubmitFirst<Account>(existingQuery);
 
 				if (existingAccResult == null)
 				{
@@ -185,9 +179,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 						.Property("Email", email)
 						.Property(EntGraphConstants.RegistryName, registry);
 
-					var accResults = await Submit<Account>(query);
-
-					existingAccResult = accResults.FirstOrDefault();
+					existingAccResult = await SubmitFirst<Account>(query);
 				}
 
 				var existingPassportQuery = g.V(existingAccResult.ID)
@@ -196,9 +188,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 						.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
 						.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
-				var existingPassportResults = await Submit<Passport>(existingPassportQuery);
-
-				var existingPassportResult = existingPassportResults.FirstOrDefault();
+				var existingPassportResult = await SubmitFirst<Passport>(existingPassportQuery);
 
 				if (existingPassportResult == null)
 				{
@@ -208,18 +198,13 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					.Property("PasswordHash", password.ToMD5Hash())
 					.Property("IsActive", true);
 
-					var passportResults = await Submit<Passport>(passportQuery);
+					existingPassportResult = await SubmitFirst<Passport>(passportQuery);
 
-					existingPassportResult = passportResults.FirstOrDefault();
-
-					var edgeQueries = new[] {
-						g.V(existingAccResult.ID).AddE(EntGraphConstants.CarriesEdgeName).To(g.V(existingPassportResult.ID)),
-					};
-
-					foreach (var edgeQuery in edgeQueries)
-					{
-						await Submit(edgeQuery);
-					}
+					await ensureEdgeRelationships(g, existingAccResult.ID, existingPassportResult.ID,
+						edgeToCheckBuy: EntGraphConstants.CarriesEdgeName, edgesToCreate: new List<string>()
+						{
+								EntGraphConstants.CarriesEdgeName
+						});
 
 					status = Status.Success;
 				}
@@ -252,9 +237,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					.Has(EntGraphConstants.RegistryName, email)
 					.Has("Key", key);
 
-				var tptResults = await Submit<BusinessModel<Guid>>(existingQuery);
-
-				var tptResult = tptResults.FirstOrDefault();
+				var tptResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
 
 				return tptResult?.Metadata["Token"].ToString();
 			});
@@ -279,9 +262,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					.Has(EntGraphConstants.RegistryName, email)
 					.Has("Key", key);
 
-				var tptResults = await Submit<BusinessModel<Guid>>(existingQuery);
-
-				var tptResult = tptResults.FirstOrDefault();
+				var tptResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
 
 				var setQuery = tptResult != null ? existingQuery :
 					g.AddV(EntGraphConstants.ThirdPartyTokenVertexName)
@@ -291,9 +272,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
 				setQuery = setQuery.Property("Token", token);
 
-				tptResults = await Submit<BusinessModel<Guid>>(setQuery);
-
-				tptResult = tptResults.FirstOrDefault();
+				tptResult = await SubmitFirst<BusinessModel<Guid>>(setQuery);
 
 				var passQuery = g.V().HasLabel(EntGraphConstants.AccountVertexName)
 					.Has(EntGraphConstants.RegistryName, registry)
@@ -303,23 +282,13 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
 					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
-				var passResults = await Submit<Passport>(passQuery);
+				var passResult = await SubmitFirst<Passport>(passQuery);
 
-				var passResult = passResults.FirstOrDefault();
-
-				var edgeResults = await Submit<BusinessModel<Guid>>(g.V(passResult.ID).Out(EntGraphConstants.OwnsEdgeName).HasId(tptResult.ID));
-
-				var edgeResult = edgeResults.FirstOrDefault();
-
-				if (edgeResult == null)
-				{
-					var edgeQueries = new[] {
-							g.V(passResult.ID).AddE(EntGraphConstants.OwnsEdgeName).To(g.V(tptResult.ID)),
-						};
-
-					foreach (var edgeQuery in edgeQueries)
-						await Submit(edgeQuery);
-				}
+				await ensureEdgeRelationships(g, passResult.ID, tptResult.ID,
+					edgeToCheckBuy: EntGraphConstants.OwnsEdgeName, edgesToCreate: new List<string>()
+					{
+								EntGraphConstants.OwnsEdgeName
+					});
 
 				return Status.Success;
 			});
@@ -384,13 +353,17 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
 						var accResult = await SubmitFirst<Account>(accQuery);
 
-						var edgeQueries = new[] {
-							g.V(rpResult.ID).AddE(EntGraphConstants.ProvidesEdgeName).To(g.V(acResult.ID)),
-							g.V(accResult.ID).AddE(EntGraphConstants.ConsumesEdgeName).To(g.V(acResult.ID))
-						};
+						await ensureEdgeRelationships(g, rpResult.ID, acResult.ID,
+							edgeToCheckBuy: EntGraphConstants.ProvidesEdgeName, edgesToCreate: new List<string>()
+							{
+								EntGraphConstants.ProvidesEdgeName
+							});
 
-						foreach (var edgeQuery in edgeQueries)
-							await Submit(edgeQuery);
+						await ensureEdgeRelationships(g, accResult.ID, acResult.ID,
+							edgeToCheckBuy: EntGraphConstants.ConsumesEdgeName, edgesToCreate: new List<string>()
+							{
+								EntGraphConstants.ConsumesEdgeName
+							});
 					}
 
 					accessCard = acResult;
@@ -432,12 +405,11 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
 					var entResult = await SubmitFirst<BusinessModel<Guid>>(entQuery);
 
-					var edgeQueries = new[] {
-							g.V(entResult.ID).AddE(EntGraphConstants.OwnsEdgeName).To(g.V(rpResult.ID))
-						};
-
-					foreach (var edgeQuery in edgeQueries)
-						await Submit(edgeQuery);
+					await ensureEdgeRelationships(g, entResult.ID, rpResult.ID,
+						edgeToCheckBuy: EntGraphConstants.OwnsEdgeName, edgesToCreate: new List<string>()
+						{
+							EntGraphConstants.OwnsEdgeName
+						});
 
 					rpResult.Metadata["AccessConfigurations"] = rpResult.Metadata["AccessConfigurations"].ToString().FromJSON<JToken>();
 
@@ -470,9 +442,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					.Has("PasswordHash", password.ToMD5Hash())
 					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}");
 
-				var accResults = await Submit<Passport>(existingQuery);
-
-				var accResult = accResults.FirstOrDefault();
+				var accResult = await SubmitFirst<Passport>(existingQuery);
 
 				if (accResult != null)
 					status = Status.Success;

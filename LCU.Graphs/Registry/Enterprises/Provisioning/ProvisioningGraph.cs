@@ -33,9 +33,9 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 					.HasLabel(EntGraphConstants.EnvironmentVertexName)
 					.Has("Lookup", lookup);
 
-				var results = await Submit<LCUEnvironment>(query);
+				var result = await SubmitFirst<LCUEnvironment>(query);
 
-				return results.FirstOrDefault();
+				return result;
 			});
 		}
 
@@ -86,9 +86,9 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
 					.Has(EntGraphConstants.RegistryName, registry);
 
-				var results = await Submit<SourceControl>(query);
+				var result = await SubmitFirst<SourceControl>(query);
 
-				return results.FirstOrDefault();
+				return result;
 			});
 		}
 
@@ -114,13 +114,11 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 			return await withG(async (client, g) =>
 			{
 				var existingQuery = g.V().HasLabel(EntGraphConstants.EnvironmentVertexName)
-						.Has("Lookup", env.Lookup)
+						.Has(EntGraphConstants.RegistryName, env.EnterpriseAPIKey)
 						.Has(EntGraphConstants.EnterpriseAPIKeyName, env.EnterpriseAPIKey)
-						.Has(EntGraphConstants.RegistryName, env.EnterpriseAPIKey);
+						.Has("Lookup", env.Lookup);
 
-				var existingEnvResults = await Submit<LCUEnvironment>(existingQuery);
-
-				var existingEnvResult = existingEnvResults.FirstOrDefault();
+				var existingEnvResult = await SubmitFirst<LCUEnvironment>(existingQuery);
 
 				var query = existingEnvResult == null ?
 					g.AddV(EntGraphConstants.EnvironmentVertexName)
@@ -131,33 +129,15 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 					.Property("Lookup", env.Lookup ?? "")
 					.Property("Name", env.Name ?? "");
 
-				var envResults = await Submit<LCUEnvironment>(query);
-
-				var envResult = envResults.FirstOrDefault();
+				var envResult = await SubmitFirst<LCUEnvironment>(query);
 
 				var entQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
 					.Has(EntGraphConstants.RegistryName, env.EnterpriseAPIKey)
 					.Has("PrimaryAPIKey", env.EnterpriseAPIKey);
 
-				var entResults = await Submit<Enterprise>(entQuery);
+				var entResult = await SubmitFirst<Enterprise>(entQuery);
 
-				var entResult = entResults.FirstOrDefault();
-
-				var edgeResults = await Submit<LCUEnvironment>(g.V(entResult.ID).Out(EntGraphConstants.OwnsEdgeName).HasId(envResult.ID));
-
-				var edgeResult = edgeResults.FirstOrDefault();
-
-				if (edgeResult == null)
-				{
-					var edgeQueries = new[] {
-						g.V(entResult.ID).AddE(EntGraphConstants.ConsumesEdgeName).To(g.V(envResult.ID)),
-						g.V(entResult.ID).AddE(EntGraphConstants.OwnsEdgeName).To(g.V(envResult.ID)),
-						g.V(entResult.ID).AddE(EntGraphConstants.ManagesEdgeName).To(g.V(envResult.ID))
-					};
-
-					foreach (var edgeQuery in edgeQueries)
-						await Submit(edgeQuery);
-				}
+				await ensureEdgeRelationships(g, entResult.ID, envResult.ID);
 
 				return envResult;
 			});
@@ -176,9 +156,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 					.Has("Registry", apiKey)
 					.Has("EnterpriseAPIKey", apiKey);
 
-				var existingEnvSetResults = await Submit<BusinessModel<Guid>>(existingQuery);
-
-				var existingEnvSetResult = existingEnvSetResults.FirstOrDefault();
+				var existingEnvSetResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
 
 				var query = existingEnvSetResult == null ?
 					g.AddV(EntGraphConstants.EnvironmentVertexName + "Settings")
@@ -190,34 +168,16 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 					query = query.Property(md.Key, md.Value?.ToString() ?? "");
 				});
 
-				var envSetResults = await Submit<BusinessModel<Guid>>(query);
-
-				var envSetResult = envSetResults.FirstOrDefault();
+				var envSetResult = await SubmitFirst<BusinessModel<Guid>>(query);
 
 				var envQuery = g.V().HasLabel(EntGraphConstants.EnvironmentVertexName)
 					.Has("Registry", apiKey)
 					.Has("EnterpriseAPIKey", apiKey)
 					.Has("Lookup", envLookup);
 
-				var envResults = await Submit<Graphs.Registry.Enterprises.Provisioning.LCUEnvironment>(envQuery);
+				var envResult = await SubmitFirst<LCUEnvironment>(envQuery);
 
-				var envResult = envResults.FirstOrDefault();
-
-				var edgeResults = await Submit<BusinessModel<Guid>>(g.V(envResult.ID).Out(EntGraphConstants.OwnsEdgeName).HasId(envSetResult.ID));
-
-				var edgeResult = edgeResults.FirstOrDefault();
-
-				if (edgeResult == null)
-				{
-					var edgeQueries = new[] {
-						g.V(envResult.ID).AddE(EntGraphConstants.ConsumesEdgeName).To(g.V(envSetResult.ID)),
-						g.V(envResult.ID).AddE(EntGraphConstants.OwnsEdgeName).To(g.V(envSetResult.ID)),
-						g.V(envResult.ID).AddE(EntGraphConstants.ManagesEdgeName).To(g.V(envSetResult.ID))
-					};
-
-					foreach (var edgeQuery in edgeQueries)
-						await Submit(edgeQuery);
-				}
+				await ensureEdgeRelationships(g, envResult.ID, envSetResult.ID);
 
 				return envSetResult;
 			});
@@ -242,9 +202,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
 					.Has(EntGraphConstants.RegistryName, registry);
 
-				var existingSCResults = await Submit<SourceControl>(existingQuery);
-
-				var existingSCResult = existingSCResults.FirstOrDefault();
+				var existingSCResult = await SubmitFirst<SourceControl>(existingQuery);
 
 				var query = existingSCResult == null ?
 					g.AddV(EntGraphConstants.SourceControlVertexName)
@@ -256,9 +214,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 					.Property("Organization", sc.Organization ?? "")
 					.Property("Repository", sc.Repository ?? "");
 
-				var scResults = await Submit<SourceControl>(query);
-
-				var scResult = scResults.FirstOrDefault();
+				var scResult = await SubmitFirst<SourceControl>(query);
 
 				var envQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
 					.Has(EntGraphConstants.RegistryName, apiKey)
@@ -269,25 +225,9 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
 					.Has(EntGraphConstants.RegistryName, apiKey);
 
-				var envResults = await Submit<LCUEnvironment>(envQuery);
+				var envResult = await SubmitFirst<LCUEnvironment>(envQuery);
 
-				var envResult = envResults.FirstOrDefault();
-
-				var edgeResults = await Submit<SourceControl>(g.V(envResult.ID).Out(EntGraphConstants.OwnsEdgeName).HasId(scResult.ID));
-
-				var edgeResult = edgeResults.FirstOrDefault();
-
-				if (edgeResult == null)
-				{
-					var edgeQueries = new[] {
-						g.V(envResult.ID).AddE(EntGraphConstants.ConsumesEdgeName).To(g.V(scResult.ID)),
-						g.V(envResult.ID).AddE(EntGraphConstants.OwnsEdgeName).To(g.V(scResult.ID)),
-						g.V(envResult.ID).AddE(EntGraphConstants.ManagesEdgeName).To(g.V(scResult.ID))
-					};
-
-					foreach (var edgeQuery in edgeQueries)
-						await Submit(edgeQuery);
-				}
+				await ensureEdgeRelationships(g, envResult.ID, scResult.ID);
 
 				return scResult;
 			});

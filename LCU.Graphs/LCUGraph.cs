@@ -4,6 +4,7 @@ using Gremlin.Net.Driver;
 using Gremlin.Net.Driver.Remote;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure.IO.GraphSON;
+using LCU.Graphs.Registry.Enterprises;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -98,6 +99,28 @@ namespace LCU.Graphs
 		protected virtual GremlinServer createServer(LCUGraphConfig config, string username)
 		{
 			return new GremlinServer(config.Host, config.Port, config.EnableSSL, username, config.APIKey);
+		}
+
+		protected virtual async Task ensureEdgeRelationships(Gremlin.Net.Process.Traversal.GraphTraversalSource g, 
+			Guid parentId, Guid childId, string edgeToCheckBuy = EntGraphConstants.OwnsEdgeName,
+			List<string> edgesToCreate = null)
+		{
+			if (edgesToCreate.IsNullOrEmpty())
+				edgesToCreate = new List<string>()
+				{
+					EntGraphConstants.ConsumesEdgeName,
+					EntGraphConstants.OwnsEdgeName,
+					EntGraphConstants.ManagesEdgeName
+				};
+
+			var edgeResult = await SubmitFirst<dynamic>(g.V(parentId).Out(edgeToCheckBuy).HasId(childId));
+
+			if (edgeResult == null)
+			{
+				var edgeQueries = edgesToCreate.Select(eq => g.V(parentId).AddE(eq).To(g.V(childId))).ToList();
+
+				await edgeQueries.Each(async edgeQuery => await Submit(edgeQuery));
+			}
 		}
 
 		protected virtual IDictionary<string, object> mapGraphObjectProperties(JToken token)

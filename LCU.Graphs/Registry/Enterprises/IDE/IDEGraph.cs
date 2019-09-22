@@ -156,9 +156,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					.Has(EntGraphConstants.EnterpriseAPIKeyName, settings.EnterpriseAPIKey)
 					.Has(EntGraphConstants.RegistryName, settings.EnterpriseAPIKey);
 
-				var existingIdeResults = await Submit<IDEContainerSettings>(existingIdeQuery);
-
-				var ideResult = existingIdeResults.FirstOrDefault();
+				var ideResult = await SubmitFirst<IDEContainerSettings>(existingIdeQuery);
 
 				if (ideResult == null)
 				{
@@ -167,9 +165,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 						.Property(EntGraphConstants.RegistryName, settings.EnterpriseAPIKey)
 						.Property(EntGraphConstants.EnterpriseAPIKeyName, settings.EnterpriseAPIKey);
 
-					var newIdeResults = await Submit<IDEContainerSettings>(ideQuery);
-
-					ideResult = newIdeResults.FirstOrDefault();
+					ideResult = await SubmitFirst<IDEContainerSettings>(ideQuery);
 				}
 
 				return ideResult;
@@ -191,9 +187,9 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					.Has("Lookup", activityLookup)
 					.Has(EntGraphConstants.RegistryName, registry);
 
-				var results = await Submit<IDEActivity>(query);
+				var result = await SubmitFirst<IDEActivity>(query);
 
-				return results?.FirstOrDefault();
+				return result;
 			});
 		}
 
@@ -212,9 +208,9 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					.Has("Lookup", lcuLookup)
 					.Has(EntGraphConstants.RegistryName, registry);
 
-				var lcus = await Submit<LowCodeUnitSetupConfig>(dropActivityQuery);
+				var lcu = await SubmitFirst<LowCodeUnitSetupConfig>(dropActivityQuery);
 
-				return lcus.FirstOrDefault();
+				return lcu;
 			});
 		}
 
@@ -263,9 +259,9 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					.Has("Group", group)
 					.Has(EntGraphConstants.RegistryName, registry);
 
-				var results = await Submit<IDESideBarAction>(query);
+				var result = await SubmitFirst<IDESideBarAction>(query);
 
-				return results?.FirstOrDefault();
+				return result;
 			});
 		}
 
@@ -436,9 +432,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
 					.Has(EntGraphConstants.RegistryName, entApiKey);
 
-				var ideResults = await Submit<IDEContainerSettings>(ideQuery);
-
-				var ideResult = ideResults.FirstOrDefault();
+				var ideResult = await SubmitFirst<IDEContainerSettings>(ideQuery);
 
 				var registry = $"{entApiKey}|{container}";
 
@@ -448,9 +442,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 						.Has("Lookup", activity.Lookup)
 						.Has(EntGraphConstants.RegistryName, registry);
 
-				var existingActivityResults = await Submit<BusinessModel<Guid>>(existingActivityQuery);
-
-				var existingActivityResult = existingActivityResults.FirstOrDefault();
+				var existingActivityResult = await SubmitFirst<BusinessModel<Guid>>(existingActivityQuery);
 
 				var saveQuery = existingActivityResult != null ? g.V(existingActivityResult.ID) :
 					g.AddV(EntGraphConstants.ActivityVertexName)
@@ -463,21 +455,9 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					.Property("Icon", activity.Icon)
 					.Property("IconSet", activity.IconSet ?? "");
 
-				var activityResults = await Submit<BusinessModel<Guid>>(saveQuery);
+				var activityResult = await SubmitFirst<BusinessModel<Guid>>(saveQuery);
 
-				var activityResult = activityResults.FirstOrDefault();
-
-				if (existingActivityResult == null)
-				{
-					var edgeQueries = new[] {
-						g.V(ideResult.ID).AddE(EntGraphConstants.ConsumesEdgeName).To(g.V(activityResult.ID)),
-						g.V(ideResult.ID).AddE(EntGraphConstants.OwnsEdgeName).To(g.V(activityResult.ID)),
-						g.V(ideResult.ID).AddE(EntGraphConstants.ManagesEdgeName).To(g.V(activityResult.ID))
-					};
-
-					foreach (var edgeQuery in edgeQueries)
-						await Submit(edgeQuery);
-				}
+				await ensureEdgeRelationships(g, ideResult.ID, activityResult.ID);
 
 				return activityResult.JSONConvert<IDEActivity>();
 			});
@@ -492,9 +472,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
 					.Has(EntGraphConstants.RegistryName, entApiKey);
 
-				var ideResults = await Submit<IDEContainerSettings>(ideQuery);
-
-				var ideResult = ideResults.FirstOrDefault();
+				var ideResult = await SubmitFirst<IDEContainerSettings>(ideQuery);
 
 				var registry = $"{entApiKey}|{container}";
 
@@ -505,9 +483,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 						.Has(EntGraphConstants.RegistryName, registry)
 						.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
-				var existingLCUResults = await Submit<BusinessModel<Guid>>(existingLCUQuery);
-
-				var existingLCUResult = existingLCUResults.FirstOrDefault();
+				var existingLCUResult = await SubmitFirst<BusinessModel<Guid>>(existingLCUQuery);
 
 				var saveQuery = existingLCUResult != null ? g.V(existingLCUResult.ID) :
 					g.AddV(EntGraphConstants.LCUConfigVertexName)
@@ -519,21 +495,9 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					.Property("NPMPackage", lcu.NPMPackage)
 					.Property("PackageVersion", lcu.PackageVersion);
 
-				var lcuResults = await Submit<BusinessModel<Guid>>(saveQuery);
+				var lcuResult = await SubmitFirst<BusinessModel<Guid>>(saveQuery);
 
-				var lcuResult = lcuResults.FirstOrDefault();
-
-				if (existingLCUResult == null)
-				{
-					var edgeQueries = new[] {
-						g.V(ideResult.ID).AddE(EntGraphConstants.ConsumesEdgeName).To(g.V(lcuResult.ID)),
-						g.V(ideResult.ID).AddE(EntGraphConstants.OwnsEdgeName).To(g.V(lcuResult.ID)),
-						g.V(ideResult.ID).AddE(EntGraphConstants.ManagesEdgeName).To(g.V(lcuResult.ID))
-					};
-
-					foreach (var edgeQuery in edgeQueries)
-						await Submit(edgeQuery);
-				}
+				await ensureEdgeRelationships(g, ideResult.ID, lcuResult.ID);
 
 				return lcuResult.JSONConvert<LowCodeUnitSetupConfig>();
 			});
@@ -556,9 +520,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					.Property("CapabilityFiles", files)
 					.Property("Solutions", solutions);
 
-				var lcuResults = await Submit<BusinessModel<Guid>>(saveQuery);
-
-				var lcuResult = lcuResults.FirstOrDefault();
+				var lcuResult = await SubmitFirst<BusinessModel<Guid>>(saveQuery);
 
 				return Status.Success;
 			});
@@ -579,9 +541,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					.Has("Lookup", activityLookup)
 					.Has(EntGraphConstants.RegistryName, registry);
 
-				var activityResults = await base.Submit<BusinessModel<Guid>>(activityQuery);
-
-				var activityResult = activityResults.FirstOrDefault();
+				var activityResult = await SubmitFirst<BusinessModel<Guid>>(activityQuery);
 
 				var existingSecActQuery = g.V(activityResult.ID)
 						.Out(EntGraphConstants.ConsumesEdgeName)
@@ -591,9 +551,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 						.Has("Section", action.Section)
 						.Has(EntGraphConstants.RegistryName, registry);
 
-				var existingSecActResults = await base.Submit<BusinessModel<Guid>>(existingSecActQuery);
-
-				var existingSecActResult = existingSecActResults.FirstOrDefault();
+				var existingSecActResult = await SubmitFirst<BusinessModel<Guid>>(existingSecActQuery);
 
 				var saveQuery = existingSecActResult != null ? g.V(existingSecActResult.ID) :
 					g.AddV(EntGraphConstants.SectionActionVertexName)
@@ -606,21 +564,9 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				saveQuery = saveQuery
 					.Property("Title", action.Title);
 
-				var secActResults = await base.Submit<BusinessModel<Guid>>(saveQuery);
+				var secActResult = await SubmitFirst<BusinessModel<Guid>>(saveQuery);
 
-				var secActResult = secActResults.FirstOrDefault();
-
-				if (existingSecActResult == null)
-				{
-					var edgeQueries = new[] {
-						g.V(activityResult.ID).AddE(EntGraphConstants.ConsumesEdgeName).To(g.V(secActResult.ID)),
-						g.V(activityResult.ID).AddE(EntGraphConstants.OwnsEdgeName).To(g.V(secActResult.ID)),
-						g.V(activityResult.ID).AddE(EntGraphConstants.ManagesEdgeName).To(g.V(secActResult.ID))
-					};
-
-					foreach (var edgeQuery in edgeQueries)
-						await base.Submit(edgeQuery);
-				}
+				await ensureEdgeRelationships(g, activityResult.ID, secActResult.ID);
 
 				return secActResult.JSONConvert<IDESideBarAction>();
 			}));

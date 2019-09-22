@@ -1,6 +1,4 @@
-﻿using Gremlin.Net.Process.Traversal;
-
-namespace LCU.Graphs.Registry.Enterprises
+﻿namespace LCU.Graphs.Registry.Enterprises
 {
 	public class EntGraphConstants
 	{
@@ -38,6 +36,14 @@ namespace LCU.Graphs.Registry.Enterprises
 
 		public const string ManagesEdgeName = "Manages";
 
+		public const string ModuleVertexName = "Module";
+
+		public const string ModuleOptionVertexName = "ModuleOption";
+
+		public const string ModulePackVertexName = "ModulePack";
+
+		public const string ModuleStyleVertexName = "ModuleStyle";
+
 		public const string OffersEdgeName = "Offers";
 
 		public const string OwnsEdgeName = "Owns";
@@ -54,8 +60,8 @@ namespace LCU.Graphs.Registry.Enterprises
 
 		public const string SourceControlVertexName = "SourceControl";
 
-        public const string ThirdPartyDataVertexName = "ThirdPartyIdentifier";
+		public const string ThirdPartyDataVertexName = "ThirdPartyIdentifier";
 
-        public const string ThirdPartyTokenVertexName = "ThirdPartyToken";
+		public const string ThirdPartyTokenVertexName = "ThirdPartyToken";
 	}
 }

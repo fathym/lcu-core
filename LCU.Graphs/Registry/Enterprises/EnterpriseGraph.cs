@@ -139,9 +139,7 @@ namespace LCU.Graphs.Registry.Enterprises
 					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("Key", key);
 
-				var tpdResults = await Submit<BusinessModel<Guid>>(existingQuery);
-
-				var tpdResult = tpdResults.FirstOrDefault();
+				var tpdResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
 
 				return tpdResult?.Metadata["Value"].ToString();
 			});
@@ -160,9 +158,7 @@ namespace LCU.Graphs.Registry.Enterprises
 					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("Key", key);
 
-				var tpdResults = await Submit<BusinessModel<Guid>>(existingQuery);
-
-				var tpdResult = tpdResults.FirstOrDefault();
+				var tpdResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
 
 				var setQuery = tpdResult != null ? existingQuery :
 					g.AddV(EntGraphConstants.ThirdPartyDataVertexName)
@@ -172,32 +168,20 @@ namespace LCU.Graphs.Registry.Enterprises
 
 				setQuery = setQuery.Property("Value", value);
 
-				tpdResults = await Submit<BusinessModel<Guid>>(setQuery);
-
-				tpdResult = tpdResults.FirstOrDefault();
+				tpdResult = await SubmitFirst<BusinessModel<Guid>>(setQuery);
 
 				var entQuery = g.V()
 				   .HasLabel(EntGraphConstants.EnterpriseVertexName)
 				   .Has(EntGraphConstants.RegistryName, apiKey)
 				   .Has("PrimaryAPIKey", apiKey);
 
-				var entResults = await Submit<Enterprise>(entQuery);
+				var entResult = await SubmitFirst<Enterprise>(entQuery);
 
-				var entResult = entResults.FirstOrDefault();
-
-				var edgeResults = await Submit<BusinessModel<Guid>>(g.V(entResult.ID).Out(EntGraphConstants.OwnsEdgeName).HasId(tpdResult.ID));
-
-				var edgeResult = edgeResults.FirstOrDefault();
-
-				if (edgeResult == null)
-				{
-					var edgeQueries = new[] {
-							g.V(entResult.ID).AddE(EntGraphConstants.OwnsEdgeName).To(g.V(tpdResult.ID)),
-						};
-
-					foreach (var edgeQuery in edgeQueries)
-						await Submit(edgeQuery);
-				}
+				await ensureEdgeRelationships(g, entResult.ID, tpdResult.ID, 
+					edgeToCheckBuy: EntGraphConstants.OwnsEdgeName, edgesToCreate: new List<string>()
+					{
+						EntGraphConstants.OwnsEdgeName
+					});
 
 				return Status.Success;
 			});

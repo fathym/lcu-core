@@ -34,21 +34,13 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
 					.Has(EntGraphConstants.RegistryName, apiKey);
 
-				var defAppsResults = await Submit<BusinessModel<Guid>>(defAppsQuery);
+				var defAppsResult = await SubmitFirst<BusinessModel<Guid>>(defAppsQuery);
 
-				var defAppsResult = defAppsResults.FirstOrDefault();
-
-				//	TODO: Add edge if not exists
-
-				var edgeQueries = new List<GraphTraversal<Vertex, Edge>>()
-				{
-					g.V(defAppsResult.ID).AddE(EntGraphConstants.ConsumesEdgeName).To(g.V(appId))
-				};
-
-				foreach (var edgeQuery in edgeQueries)
-				{
-					await Submit(edgeQuery);
-				}
+				await ensureEdgeRelationships(g, defAppsResult.ID, appId,
+					edgeToCheckBuy: EntGraphConstants.ConsumesEdgeName, edgesToCreate: new List<string>()
+					{
+						EntGraphConstants.ConsumesEdgeName
+					});
 
 				return Status.Success;
 			});
@@ -62,9 +54,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("PrimaryAPIKey", apiKey);
 
-				var entResults = await Submit<Enterprise>(entQuery);
-
-				var entResult = entResults.FirstOrDefault();
+				var entResult = await SubmitFirst<Enterprise>(entQuery);
 
 				var dropDefaultsQuery = g.V(entResult.ID)
 					.Out(EntGraphConstants.OffersEdgeName)
@@ -77,21 +67,9 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 					.Property(EntGraphConstants.RegistryName, apiKey)
 					.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey);
 
-				var defAppsResults = await Submit<BusinessModel<Guid>>(defAppsQuery);
+				var dafAppsResult = await SubmitFirst<BusinessModel<Guid>>(defAppsQuery);
 
-				var defAppsResult = defAppsResults.FirstOrDefault();
-
-				var edgeQueries = new List<GraphTraversal<Vertex, Edge>>()
-				{
-					g.V(entResult.ID).AddE(EntGraphConstants.OwnsEdgeName).To(g.V(defAppsResult.ID)),
-					g.V(entResult.ID).AddE(EntGraphConstants.ManagesEdgeName).To(g.V(defAppsResult.ID)),
-					g.V(entResult.ID).AddE(EntGraphConstants.OffersEdgeName).To(g.V(defAppsResult.ID))
-				};
-
-				foreach (var edgeQuery in edgeQueries)
-				{
-					await Submit(edgeQuery);
-				}
+				await ensureEdgeRelationships(g, entResult.ID, dafAppsResult.ID);
 
 				return Status.Success;
 			});
@@ -125,9 +103,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
 					.Has(EntGraphConstants.RegistryName, apiKey);
 
-				var defAppsResults = await Submit<BusinessModel<Guid>>(defAppsQuery);
-
-				var defAppsResult = defAppsResults.FirstOrDefault();
+				var defAppsResult = await SubmitFirst<BusinessModel<Guid>>(defAppsQuery);
 
 				return defAppsResult != null ? Status.Success : Status.NotLocated;
 			});
@@ -147,9 +123,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 					.HasLabel(EntGraphConstants.AppVertexName)
 					.HasId(appId);
 
-				var appsResults = await Submit<Application>(defAppsQuery);
-
-				var appsResult = appsResults.FirstOrDefault();
+				var appsResult = await SubmitFirst<Application>(defAppsQuery);
 
 				return appsResult != null ? Status.Success : Status.NotLocated;
 			});
@@ -159,7 +133,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 		{
 			return await withG(async (client, g) =>
 			{
-				var 
+				var
 				query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
 					.Has(EntGraphConstants.RegistryName, apiKey)
 					.Has("PrimaryAPIKey", apiKey)
@@ -223,9 +197,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}")
 						.Drop();
 
-				var existingResults = await Submit<DAFApplicationConfiguration>(existingQuery);
-
-				var existingAppResult = existingResults.FirstOrDefault();
+				var existingResult = await SubmitFirst<DAFApplicationConfiguration>(existingQuery);
 
 				return Status.Success;
 			});
@@ -259,9 +231,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 						.Has(EntGraphConstants.EnterpriseAPIKeyName, application.EnterpriseAPIKey)
 						.Has(EntGraphConstants.RegistryName, application.EnterpriseAPIKey);
 
-				var existingResults = await Submit<Application>(existingQuery);
-
-				var existingAppResult = existingResults.FirstOrDefault();
+				var existingAppResult = await SubmitFirst<Application>(existingQuery);
 
 				var query = existingAppResult == null ?
 					g.AddV(EntGraphConstants.AppVertexName)
@@ -287,33 +257,15 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 					query = query.Property(Cardinality.List, "Hosts", host, new object[] { });
 				});
 
-				var appResults = await Submit<Application>(query);
-
-				var appResult = appResults.FirstOrDefault();
+				var appResult = await SubmitFirst<Application>(query);
 
 				var entQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
 					.Has(EntGraphConstants.RegistryName, application.EnterpriseAPIKey)
 					.Has("PrimaryAPIKey", application.EnterpriseAPIKey);
 
-				var entResults = await Submit<Enterprise>(entQuery);
+				var entResult = await SubmitFirst<Enterprise>(entQuery);
 
-				var entResult = entResults.FirstOrDefault();
-
-				var edgeResults = await Submit<Application>(g.V(entResult.ID).Out(EntGraphConstants.OwnsEdgeName).HasId(appResult.ID));
-
-				var edgeResult = edgeResults.FirstOrDefault();
-
-				if (edgeResult == null)
-				{
-					var edgeQueries = new[] {
-						g.V(entResult.ID).AddE(EntGraphConstants.ConsumesEdgeName).To(g.V(appResult.ID)),
-						g.V(entResult.ID).AddE(EntGraphConstants.OwnsEdgeName).To(g.V(appResult.ID)),
-						g.V(entResult.ID).AddE(EntGraphConstants.ManagesEdgeName).To(g.V(appResult.ID))
-					};
-
-					foreach (var edgeQuery in edgeQueries)
-						await Submit(edgeQuery);
-				}
+				await ensureEdgeRelationships(g, entResult.ID, appResult.ID);
 
 				return appResult;
 			});
@@ -328,9 +280,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 						.Has("ApplicationID", config.ApplicationID)
 						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}");
 
-				var existingResults = await Submit<DAFApplicationConfiguration>(existingQuery);
-
-				var existingAppResult = existingResults.FirstOrDefault();
+				var existingAppResult = await SubmitFirst<DAFApplicationConfiguration>(existingQuery);
 
 				var query = existingAppResult == null ?
 					g.AddV(EntGraphConstants.DAFAppVertexName)
@@ -358,31 +308,19 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 						.Property("Security", config.Metadata["Security"]);
 				}
 
-				var appAppResults = await Submit<DAFApplicationConfiguration>(query);
-
-				var appAppResult = appAppResults.FirstOrDefault();
+				var appAppResult = await SubmitFirst<DAFApplicationConfiguration>(query);
 
 				var appQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
 					.HasId(config.ApplicationID)
 					.Has(EntGraphConstants.RegistryName, apiKey);
 
-				var appResults = await Submit<Application>(appQuery);
+				var appResult = await SubmitFirst<Application>(appQuery);
 
-				var appResult = appResults.FirstOrDefault();
-
-				var edgeResults = await Submit<DAFApplicationConfiguration>(g.V(appResult.ID).Out(EntGraphConstants.ProvidesEdgeName).HasId(appAppResult.ID));
-
-				var edgeResult = edgeResults.FirstOrDefault();
-
-				if (edgeResult == null)
-				{
-					var edgeQueries = new[] {
-						g.V(appResult.ID).AddE(EntGraphConstants.ProvidesEdgeName).To(g.V(appAppResult.ID)),
-					};
-
-					foreach (var edgeQuery in edgeQueries)
-						await Submit(edgeQuery);
-				}
+				await ensureEdgeRelationships(g, appResult.ID, appAppResult.ID,
+					edgeToCheckBuy: EntGraphConstants.ProvidesEdgeName, edgesToCreate: new List<string>()
+					{
+						EntGraphConstants.ProvidesEdgeName
+					});
 
 				return appAppResult;
 			});
@@ -403,19 +341,13 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 					.Has(EntGraphConstants.RegistryName, targetApiKey)
 					.Has("PrimaryAPIKey", targetApiKey);
 
-				var entResults = await Submit<Enterprise>(entQuery);
+				var entResult = await SubmitFirst<Enterprise>(entQuery);
 
-				var entResult = entResults.FirstOrDefault();
-
-				var edgeQueries = new List<GraphTraversal<Vertex, Edge>>()
-				{
-					g.V(entResult.ID).AddE(EntGraphConstants.OffersEdgeName).To(g.V(defaultApp.ID))
-				};
-
-				foreach (var edgeQuery in edgeQueries)
-				{
-					await Submit(edgeQuery);
-				}
+				await ensureEdgeRelationships(g, entResult.ID, defaultApp.ID,
+					edgeToCheckBuy: EntGraphConstants.OffersEdgeName, edgesToCreate: new List<string>()
+					{
+						EntGraphConstants.OffersEdgeName
+					});
 
 				return Status.Success;
 			});
