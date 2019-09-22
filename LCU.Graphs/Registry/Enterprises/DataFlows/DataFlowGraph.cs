@@ -337,6 +337,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 					.Property(EntGraphConstants.RegistryName, registry)
 					.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
 					.Property("Category", display.Category)
+					.Property("Element", display.Element)
 					.Property("Height", display.Height)
 					.Property("Icon", display.Icon)
 					.Property("ModuleType", display.ModuleType)

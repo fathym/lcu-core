@@ -11,6 +11,9 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		public virtual string Category { get; set; }
 
 		[DataMember]
+		public virtual string Element { get; set; }
+
+		[DataMember]
 		public virtual double Height { get; set; }
 
 		[DataMember]
