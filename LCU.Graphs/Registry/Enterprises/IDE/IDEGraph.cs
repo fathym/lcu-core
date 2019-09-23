@@ -1,6 +1,7 @@
 ﻿using Fathym;
 using Fathym.Business.Models;
 using Gremlin.Net.Process.Traversal;
+using LCU.Graphs.Registry.Enterprises.DataFlows;
 using LCU.Logging;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
@@ -326,6 +327,28 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 			// });
 		}
 
+		public virtual async Task<ModulePackSetup> ListLCUModules(string lcuLookup, string entApiKey, string container)
+		{
+			return await withG(async (client, g) =>
+			{
+				var registry = $"{entApiKey}|{container}";
+
+				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
+					.Has("Container", container)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Out(EntGraphConstants.ConsumesEdgeName)
+					.HasLabel(EntGraphConstants.LCUConfigVertexName)
+					.Has("Lookup", lcuLookup)
+					.Has(EntGraphConstants.RegistryName, registry)
+					.Values<string>("Modules");
+
+				var results = await Submit<string>(query);
+
+				return results?.FirstOrDefault()?.FromJSON<ModulePackSetup>();
+			});
+		}
+
 		public virtual async Task<List<IdeSettingsConfigSolution>> ListLCUSolutions(string lcuLookup, string entApiKey, string container)
 		{
 			return await withG(async (client, g) =>
@@ -503,7 +526,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 			});
 		}
 
-		public virtual async Task<Status> SaveLCUCapabilities(string lcuLookup, List<string> files, List<IdeSettingsConfigSolution> solutions, string entApiKey, string container)
+		public virtual async Task<Status> SaveLCUCapabilities(string lcuLookup, List<string> files, 
+			List<IdeSettingsConfigSolution> solutions, ModulePackSetup modules, string entApiKey, string container)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -518,6 +542,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					.Has("Lookup", lcuLookup)
 					.Has(EntGraphConstants.RegistryName, registry)
 					.Property("CapabilityFiles", files)
+					.Property("Modules", modules)
 					.Property("Solutions", solutions);
 
 				var lcuResult = await SubmitFirst<BusinessModel<Guid>>(saveQuery);

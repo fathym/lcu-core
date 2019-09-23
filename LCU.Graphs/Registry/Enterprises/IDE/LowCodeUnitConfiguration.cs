@@ -11,10 +11,10 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 	public class LowCodeUnitConfiguration
 	{
 		[DataMember]
-		public virtual ModulePackSetup DataFlows { get; set; }
+		public virtual List<string> Files { get; set; }
 
 		[DataMember]
-		public virtual List<string> Files { get; set; }
+		public virtual ModulePackSetup Modules { get; set; }
 
 		[DataMember]
 		public virtual List<IdeSettingsConfigSolution> Solutions { get; set; }

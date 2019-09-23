@@ -1,4 +1,5 @@
 ﻿using Fathym;
+using LCU.Graphs.Registry.Enterprises.DataFlows;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -30,6 +31,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 		Task<List<string>> ListLCUFiles(string lcuLookup, string host);
 
+		Task<ModulePackSetup> ListLCUModules(string lcuLookup, string entApiKey, string container);
+
 		Task<List<LowCodeUnitSetupConfig>> ListLCUs(string entApiKey, string container);
 
 		Task<List<IdeSettingsConfigSolution>> ListLCUSolutions(string lcuLookup, string entApiKey, string container);
@@ -42,7 +45,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 		Task<LowCodeUnitSetupConfig> SaveLCU(LowCodeUnitSetupConfig lcu, string entApiKey, string container);
 
-		Task<Status> SaveLCUCapabilities(string lcuLookup, List<string> files, List<IdeSettingsConfigSolution> solutions, string entApiKey, string container);
+		Task<Status> SaveLCUCapabilities(string lcuLookup, List<string> files, List<IdeSettingsConfigSolution> solutions, ModulePackSetup modules, 
+			string entApiKey, string container);
 
 		Task<IDESideBarAction> SaveSectionAction(string activityLookup, IDESideBarAction action, string entApiKey, string container);
 	}
