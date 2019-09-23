@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
+using LCU.Graphs.Registry.Enterprises.DataFlows;
 
 namespace LCU.Graphs.Registry.Enterprises.IDE
 {
@@ -9,6 +10,9 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 	[DataContract]
 	public class LowCodeUnitConfiguration
 	{
+		[DataMember]
+		public virtual ModulePackSetup DataFlows { get; set; }
+
 		[DataMember]
 		public virtual List<string> Files { get; set; }
 
