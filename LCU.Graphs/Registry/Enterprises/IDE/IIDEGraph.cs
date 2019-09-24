@@ -33,7 +33,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 		Task<List<string>> ListLCUFiles(string lcuLookup, string host);
 
-		Task<ModulePackSetup> ListModulePackSetups(string entApiKey, string container);
+		Task<List<ModulePackSetup>> ListModulePackSetups(string entApiKey, string container);
 
 		Task<List<LowCodeUnitSetupConfig>> ListLCUs(string entApiKey, string container);
 
