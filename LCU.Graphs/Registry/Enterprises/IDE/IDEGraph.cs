@@ -215,7 +215,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 			});
 		}
 
-		public virtual async Task<ModulePackSetup> GetLCUModulePack(string lcuLookup, string entApiKey, string container)
+		public virtual async Task<ModulePackSetup> GetModulePackSetup(string lcuLookup, string entApiKey, string container)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -349,7 +349,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 			// });
 		}
 
-		public virtual async Task<List<ModulePackSetup>> ListLCUModules(string entApiKey, string container)
+		public virtual async Task<List<ModulePackSetup>> ListModulePackSetups(string entApiKey, string container)
 		{
 			return await withG(async (client, g) =>
 			{

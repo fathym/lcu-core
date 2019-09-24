@@ -25,13 +25,15 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 		Task<IdeSettingsConfigSolution> GetLCUSolution(string lcuLookup, string solution, string entApiKey, string container);
 
+		Task<ModulePackSetup> GetModulePackSetup(string lcuLookup, string entApiKey, string container);
+
 		Task<IDESideBarAction> GetSectionAction(string activityLookup, string section, string action, string group, string entApiKey, string container);
 
 		Task<List<IDEActivity>> ListActivities(string entApiKey, string container);
 
 		Task<List<string>> ListLCUFiles(string lcuLookup, string host);
 
-		Task<ModulePackSetup> ListLCUModules(string lcuLookup, string entApiKey, string container);
+		Task<ModulePackSetup> ListModulePackSetups(string entApiKey, string container);
 
 		Task<List<LowCodeUnitSetupConfig>> ListLCUs(string entApiKey, string container);
 
