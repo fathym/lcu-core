@@ -10,7 +10,10 @@ namespace LCU.Presentation
 		[DataMember]
 		public virtual byte[] Data { get; set; }
 
-		[DataMember]
+        [DataMember]
+        public virtual string DataString { get; set; }
+
+        [DataMember]
 		public virtual string Headers { get; set; }
 	}
 }
