@@ -215,6 +215,28 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 			});
 		}
 
+		public virtual async Task<ModulePackSetup> GetLCUModulePack(string lcuLookup, string entApiKey, string container)
+		{
+			return await withG(async (client, g) =>
+			{
+				var registry = $"{entApiKey}|{container}";
+
+				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
+					.Has("Container", container)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Out(EntGraphConstants.ConsumesEdgeName)
+					.HasLabel(EntGraphConstants.LCUConfigVertexName)
+					.Has("Lookup", lcuLookup)
+					.Has(EntGraphConstants.RegistryName, registry)
+					.Values<string>("Modules");
+
+				var results = await Submit<string>(query);
+
+				return results?.FirstOrDefault()?.FromJSON<ModulePackSetup>();
+			});
+		}
+
 		public virtual async Task<IdeSettingsConfigSolution> GetLCUSolution(string lcuLookup, string solution, string entApiKey, string container)
 		{
 			return await withG(async (client, g) =>
@@ -327,7 +349,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 			// });
 		}
 
-		public virtual async Task<ModulePackSetup> ListLCUModules(string lcuLookup, string entApiKey, string container)
+		public virtual async Task<List<ModulePackSetup>> ListLCUModules(string lcuLookup, string entApiKey, string container)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -339,13 +361,12 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					.Has(EntGraphConstants.RegistryName, entApiKey)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.LCUConfigVertexName)
-					.Has("Lookup", lcuLookup)
 					.Has(EntGraphConstants.RegistryName, registry)
 					.Values<string>("Modules");
 
 				var results = await Submit<string>(query);
 
-				return results?.FirstOrDefault()?.FromJSON<ModulePackSetup>();
+				return results?.Select(r => r.FromJSON<ModulePackSetup>()).ToList();
 			});
 		}
 
