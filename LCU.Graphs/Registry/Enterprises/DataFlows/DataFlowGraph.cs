@@ -190,7 +190,12 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 				query = query
 					.Property("Name", dataFlow.Name ?? "")
 					.Property("Description", dataFlow.Description ?? "")
-					.Property("Lookup", dataFlow.Lookup ?? "");
+					.Property("Lookup", dataFlow.Lookup ?? "")
+					.Property("Output", dataFlow.Output ?? new DataFlowOutput()
+					{
+						Modules = new List<Module>(),
+						Streams = new List<ModuleStream>()
+					});
 
 				query.SideEffect(__.Properties<string>("ModulePacks").Drop());
 
@@ -303,12 +308,12 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
 			query.SideEffect(__.Properties<string>("IncomingConnectionTypes").Drop());
 
-			option.IncomingConnectionTypes.Each(ict => 
+			option.IncomingConnectionTypes.Each(ict =>
 				query = query.Property(Cardinality.List, "IncomingConnectionTypes", ict));
 
 			query.SideEffect(__.Properties<string>("OutgoingConnectionTypes").Drop());
 
-			option.OutgoingConnectionTypes.Each(oct => 
+			option.OutgoingConnectionTypes.Each(oct =>
 				query = query.Property(Cardinality.List, "OutgoingConnectionTypes", oct));
 
 			var moResult = await SubmitFirst<ModuleOption>(query);

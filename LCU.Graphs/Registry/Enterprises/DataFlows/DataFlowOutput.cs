@@ -5,17 +5,13 @@ using System.Runtime.Serialization;
 
 namespace LCU.Graphs.Registry.Enterprises.DataFlows
 {
-	[Serializable]
 	[DataContract]
-	public class ModulePackSetup
+	public class DataFlowOutput : BusinessModel<Guid>
 	{
 		[DataMember]
-		public virtual List<ModuleDisplay> Displays { get; set; }
+		public virtual List<Module> Modules { get; set; }
 
 		[DataMember]
-		public virtual List<ModuleOption> Options { get; set; }
-
-		[DataMember]
-		public virtual ModulePack Pack { get; set; }
+		public virtual List<ModuleStream> Streams { get; set; }
 	}
 }

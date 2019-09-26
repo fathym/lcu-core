@@ -1,5 +1,4 @@
-﻿using Fathym;
-using Fathym.Business.Models;
+﻿using Fathym.Business.Models;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -8,16 +7,19 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 {
 	[Serializable]
 	[DataContract]
-	public class Module : BusinessModel<Guid>
+	public class ModuleAction
 	{
 		[DataMember]
-		public virtual bool Deleted { get; set; }
+		public virtual string Action { get; set; }
 
 		[DataMember]
-		public virtual ModuleDisplay Display { get; set; }
+		public virtual bool Disabled { get; set; }
 
 		[DataMember]
-		public virtual Status Status { get; set; }
+		public virtual LCUIcon Icon { get; set; }
+
+		[DataMember]
+		public virtual int Order { get; set; }
 
 		[DataMember]
 		public virtual string Text { get; set; }
