@@ -1,4 +1,6 @@
 ﻿using Fathym.Business.Models;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -13,6 +15,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		public virtual bool Active { get; set; }
 
 		[DataMember]
+		[JsonConverter(typeof(StringEnumConverter))]
 		public virtual ModuleControlType ControlType { get; set; }
 
 		[DataMember]
