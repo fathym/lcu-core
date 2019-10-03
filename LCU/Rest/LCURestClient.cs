@@ -27,7 +27,7 @@ namespace LCU.Rest
 
 			web = new HttpClient(handler);
 
-			SetTimeout(Timeout.InfiniteTimeSpan);
+			SetTimeout(TimeSpan.FromMinutes(10));
 
 			if (!bearerToken.IsNullOrEmpty())
 				web.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearerToken);
