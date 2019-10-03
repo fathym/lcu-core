@@ -7,9 +7,7 @@ namespace LCU.Rest
 	{
 		private static string TimeoutPropertyKey = "RequestTimeout";
 
-		public static void SetTimeout(
-			this HttpRequestMessage request,
-			TimeSpan? timeout)
+		public static void SetTimeout(this HttpRequestMessage request, TimeSpan? timeout)
 		{
 			if (request == null)
 				throw new ArgumentNullException(nameof(request));
@@ -22,11 +20,9 @@ namespace LCU.Rest
 			if (request == null)
 				throw new ArgumentNullException(nameof(request));
 
-			if (request.Properties.TryGetValue(
-					TimeoutPropertyKey,
-					out var value)
-				&& value is TimeSpan timeout)
+			if (request.Properties.TryGetValue(TimeoutPropertyKey, out var value) && value is TimeSpan timeout)
 				return timeout;
+
 			return null;
 		}
 	}
