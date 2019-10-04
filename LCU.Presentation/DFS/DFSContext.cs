@@ -14,7 +14,5 @@ namespace LCU.Presentation.DFS
 		public virtual string DefaultFile { get; set; }
 
 		public virtual string DFSRoot { get; set; }
-
-		public virtual string Redirect { get; set; }
 	}
 }
