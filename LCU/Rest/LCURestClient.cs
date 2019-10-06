@@ -32,7 +32,7 @@ namespace LCU.Rest
 			SetTimeout(TimeSpan.FromMinutes(10));
 
 			if (!bearerToken.IsNullOrEmpty())
-				web.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearerToken);
+				SetAuthorization(bearerToken, "Bearer");
 
 			web.BaseAddress = new Uri(apiRoot);
 		}
@@ -80,6 +80,11 @@ namespace LCU.Rest
 			var respStr = await response.Content.ReadAsStringAsync();
 
 			return respStr?.FromJSON<TResp>();
+		}
+
+		public virtual void SetAuthorization(string token, string key)
+		{
+			web.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(key, token);
 		}
 
 		public virtual void SetTimeout(TimeSpan timeout)
