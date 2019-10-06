@@ -16,10 +16,10 @@
 		<PackageReference Include="IdentityServer4" Version="2.5.3" />
 		<PackageReference Include="IdentityServer4.AspNetIdentity" Version="2.5.3" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
-		<PackageReference Include="Microsoft.Azure.SignalR" Version="1.0.14" />
+		<PackageReference Include="Microsoft.Azure.SignalR" Version="1.1.1" />
 		<PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="16.153.0" />
 		<PackageReference Include="Octokit" Version="0.34.0" />
-		<PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" />
+		<PackageReference Include="System.Configuration.ConfigurationManager" Version="4.6.0" />
 	</ItemGroup>
 
 	<ItemGroup>
