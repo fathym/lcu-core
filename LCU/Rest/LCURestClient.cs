@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace LCU.Rest
@@ -20,10 +19,13 @@ namespace LCU.Rest
 		{
 			this.logger = logger;
 
-			var handler = new TimeoutHandler
-			{
-				InnerHandler = new LoggingHandler(new HttpClientHandler(), this.logger)
-			};
+			//	TODO: Figure out how to get the TimeoutHandler to honor a SetTimeout from here?
+			//var handler = new TimeoutHandler
+			//{
+			//	InnerHandler = new LoggingHandler(new HttpClientHandler(), this.logger)
+			//};
+
+			var handler = new LoggingHandler(new HttpClientHandler(), this.logger);
 
 			web = new HttpClient(handler);
 

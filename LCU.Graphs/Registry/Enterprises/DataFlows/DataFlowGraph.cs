@@ -1,6 +1,7 @@
 ﻿using Fathym;
 using Gremlin.Net.Process.Traversal;
 using LCU.Graphs.Registry.Enterprises.Provisioning;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -69,9 +70,34 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
 					.Has("Lookup", dfLookup);
 
-				var result = await SubmitFirst<DataFlow>(query);
+				var result = await SubmitFirst<MetadataModel>(query);
 
-				return result;
+				return loadDataFlowFromMetadata(result);
+			});
+		}
+
+		public virtual async Task<List<DataFlow>> ListDataFlows(string apiKey, string envLookup)
+		{
+			return await withG(async (client, g) =>
+			{
+				var registry = $"{apiKey}|{envLookup}|DataFlow";
+
+				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
+					.Has(EntGraphConstants.RegistryName, apiKey)
+					.Has("PrimaryAPIKey", apiKey)
+					.Out(EntGraphConstants.ConsumesEdgeName)
+					.HasLabel(EntGraphConstants.EnvironmentVertexName)
+					.Has(EntGraphConstants.RegistryName, apiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has("Lookup", envLookup)
+					.Out(EntGraphConstants.ConsumesEdgeName)
+					.HasLabel(EntGraphConstants.DataFlowVertexName)
+					.Has(EntGraphConstants.RegistryName, registry)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey);
+
+				var results = await Submit<MetadataModel>(query);
+
+				return results.Select(r => loadDataFlowFromMetadata(r)).ToList();
 			});
 		}
 
@@ -131,31 +157,6 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 			});
 		}
 
-		public virtual async Task<List<DataFlow>> ListDataFlows(string apiKey, string envLookup)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = $"{apiKey}|{envLookup}|DataFlow";
-
-				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
-					.Has("Lookup", envLookup)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.DataFlowVertexName)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey);
-
-				var results = await Submit<DataFlow>(query);
-
-				return results.ToList();
-			});
-		}
-
 		public virtual async Task<DataFlow> SaveDataFlow(string apiKey, string envLookup, DataFlow dataFlow)
 		{
 			return await withG(async (client, g) =>
@@ -180,7 +181,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 					.Has(EntGraphConstants.RegistryName, registry)
 					.Has("Lookup", dataFlow.Lookup);
 
-				var existingResult = await SubmitFirst<DataFlow>(existingQuery);
+				var existingResult = loadDataFlowFromMetadata(await SubmitFirst<MetadataModel>(existingQuery));
 
 				var query = existingResult == null ?
 					g.AddV(EntGraphConstants.DataFlowVertexName)
@@ -201,7 +202,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
 				dataFlow.ModulePacks.Each(mp => query = query.Property(Cardinality.List, "ModulePacks", mp));
 
-				var dfResult = await SubmitFirst<DataFlow>(query);
+				var dfResult = loadDataFlowFromMetadata(await SubmitFirst<MetadataModel>(query));
 
 				await ensureEdgeRelationships(g, envResult.ID, dfResult.ID);
 
@@ -279,6 +280,17 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		#endregion
 
 		#region Helpers
+		protected virtual DataFlow loadDataFlowFromMetadata(MetadataModel model)
+		{
+			if (model == null)
+				return null;
+
+			if (model.Metadata.ContainsKey("Output"))
+				model.Metadata["Output"] = model.Metadata["Output"].ToString()?.FromJSON<DataFlowOutput>()?.JSONConvert<JToken>();
+
+			return model.JSONConvert<DataFlow>();
+		}
+
 		protected virtual async Task<ModuleOption> unpackModuleOption(GraphTraversalSource g, string registry,
 			string apiKey, Guid dataFlowId, ModulePack modulePack, ModuleOption option)
 		{
