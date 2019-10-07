@@ -76,6 +76,40 @@ namespace LCU.Graphs.Registry.Enterprises
 			});
 		}
 
+		public virtual async Task<Status> DeleteEnterprise(string entApiKey, string password)
+		{
+			return await withG(async (client, g) =>
+			{
+				var ent = await LoadByPrimaryAPIKey(entApiKey);
+
+				if (ent != null)
+				{
+					var entPassword = ent.Metadata.ContainsKey("DeletePassword") ? ent.Metadata["DeletePassword"].ToString() : null;
+
+					if (!entPassword.IsNullOrEmpty() && entPassword == password)
+					{
+						var dataQuery = g.V()
+							.Has("EnterpriseAPIKey", entApiKey)
+							.Drop();
+
+						await Submit(dataQuery);
+
+						var entQuery = g.V()
+							.Has("PrimaryAPIKey", entApiKey)
+							.Drop();
+
+						await Submit(entQuery);
+					}
+
+					return Status.Success;
+				}
+				else
+				{
+					return Status.GeneralError.Clone("Unable to located enterprise by that api key");
+				}
+			});
+		}
+
 		public virtual async Task<bool> DoesHostExist(string host)
 		{
 			return await withG(async (client, g) =>
@@ -177,7 +211,7 @@ namespace LCU.Graphs.Registry.Enterprises
 
 				var entResult = await SubmitFirst<Enterprise>(entQuery);
 
-				await ensureEdgeRelationships(g, entResult.ID, tpdResult.ID, 
+				await ensureEdgeRelationships(g, entResult.ID, tpdResult.ID,
 					edgeToCheckBuy: EntGraphConstants.OwnsEdgeName, edgesToCreate: new List<string>()
 					{
 						EntGraphConstants.OwnsEdgeName
