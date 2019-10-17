@@ -196,7 +196,8 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 					{
 						Modules = new List<Module>(),
 						Streams = new List<ModuleStream>()
-					});
+					})
+					.Property("ModuleSettings", dataFlow.ModuleSettings ?? new Dictionary<Guid, MetadataModel>());
 
 				query.SideEffect(__.Properties<string>("ModulePacks").Drop());
 
@@ -287,6 +288,9 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
 			if (model.Metadata.ContainsKey("Output"))
 				model.Metadata["Output"] = model.Metadata["Output"].ToString()?.FromJSON<DataFlowOutput>()?.JSONConvert<JToken>();
+
+			if (model.Metadata.ContainsKey("ModuleSettings"))
+				model.Metadata["ModuleSettings"] = model.Metadata["ModuleSettings"].ToString()?.FromJSON<Dictionary<Guid, MetadataModel>>()?.JSONConvert<JToken>();
 
 			return model.JSONConvert<DataFlow>();
 		}

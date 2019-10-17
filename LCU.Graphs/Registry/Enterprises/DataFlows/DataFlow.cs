@@ -1,4 +1,5 @@
-﻿using Fathym.Business.Models;
+﻿using Fathym;
+using Fathym.Business.Models;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -17,6 +18,9 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
 		[DataMember]
 		public virtual List<string> ModulePacks { get; set; }
+
+		[DataMember]
+		public virtual Dictionary<Guid, MetadataModel> ModuleSettings { get; set; }
 
 		[DataMember]
 		public virtual string Name { get; set; }
