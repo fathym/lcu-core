@@ -2,6 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
+    <Copyright>2019</Copyright>
+    <Company>Fathym, Inc</Company>
+    <Product>LCU Core</Product>
+    <Authors />
   </PropertyGroup>
 
   <ItemGroup>
