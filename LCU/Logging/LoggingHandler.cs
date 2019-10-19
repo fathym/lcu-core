@@ -26,14 +26,14 @@ namespace LCU.Logging
 			logger.LogInformation($"Request: {request.ToString()}");
 
 			if (request.Content != null)
-				logger.LogInformation(await request.Content.ReadAsStringAsync());
+				logger.LogTrace(await request.Content.ReadAsStringAsync());
 
 			var response = await base.SendAsync(request, cancellationToken);
 
 			logger.LogInformation($"Response: {response.ToString()}");
 
 			if (response.Content != null)
-				logger.LogInformation(await response.Content.ReadAsStringAsync());
+				logger.LogTrace(await response.Content.ReadAsStringAsync());
 
 			return response;
 		} 
