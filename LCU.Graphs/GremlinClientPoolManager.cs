@@ -30,8 +30,6 @@ namespace LCU.Graphs
 
 			this.config = config;
 
-			lastClientIndex = -1;
-
 			setupGremlinClients(clientCount);
 		}
 		#endregion
@@ -52,7 +50,7 @@ namespace LCU.Graphs
 			var client = clients[lastClientIndex++];
 
 			if (lastClientIndex >= ClientCount)
-				lastClientIndex = -1;
+				lastClientIndex = 0;
 
 			return client;
 		}
