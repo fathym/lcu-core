@@ -3,7 +3,11 @@
 	<PropertyGroup>
 		<TargetFramework>netcoreapp2.2</TargetFramework>
 		<AssetTargetFallback>$(AssetTargetFallback);portable-net451+win8</AssetTargetFallback>
-	</PropertyGroup>
+    <Copyright>2019</Copyright>
+    <Company>Fathym, Inc</Company>
+    <Product>LCU Core</Product>
+    <Authors />
+  </PropertyGroup>
 
 	<ItemGroup>
 	  <Compile Remove="Identity\Core\**" />
