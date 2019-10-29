@@ -15,8 +15,8 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 		#endregion
 
 		#region Constructors
-		public ApplicationGraph(LCUGraphConfig config)
-			: base(config)
+		public ApplicationGraph(GremlinClientPoolManager clientPool)
+			: base(clientPool)
 		{
 			ListProperties.Add("Hosts");
 		}

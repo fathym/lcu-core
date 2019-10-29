@@ -16,12 +16,10 @@ using System.Threading.Tasks;
 
 namespace LCU.Graphs
 {
-	public abstract class LCUGraph : ILCUGraph
+	public class LCUGraph : ILCUGraph
 	{
 		#region Fields
-		protected LCUGraphConfig config;
-
-		protected GremlinServer server;
+		protected readonly GremlinClientPoolManager clientPool;
 		#endregion
 
 		#region Properties
@@ -29,15 +27,11 @@ namespace LCU.Graphs
 		#endregion
 
 		#region Constructors
-		public LCUGraph(LCUGraphConfig config)
+		public LCUGraph(GremlinClientPoolManager clientPool)
 		{
-			this.config = config;
-
 			ListProperties = new List<string>();
 
-			var username = $"/dbs/{config.Database}/colls/{config.Graph}";
-
-			server = createServer(config, username);
+			this.clientPool = clientPool;
 		}
 		#endregion
 
@@ -163,15 +157,10 @@ namespace LCU.Graphs
 
 		protected virtual async Task<T> withClient<T>(Func<GremlinClient, Task<T>> action)
 		{
-			using (var client = new GremlinClient(server, new GraphSON2Reader(), new GraphSON2Writer(),
-				GremlinClient.GraphSON2MimeType))
+			using (var client = clientPool.LoadClient())
 			{
 				return await action(client);
 			}
-			//using (var client = new GraphClient(config.Host, config.Database, config.Graph, config.APIKey))
-			//{
-			//	return await action(client);
-			//}
 		}
 
 		protected virtual async Task withG(Func<GremlinClient, Gremlin.Net.Process.Traversal.GraphTraversalSource, Task> action)

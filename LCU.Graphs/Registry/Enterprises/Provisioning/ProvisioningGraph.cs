@@ -14,8 +14,8 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 		#endregion
 
 		#region Constructors
-		public ProvisioningGraph(LCUGraphConfig config)
-			: base(config)
+		public ProvisioningGraph(GremlinClientPoolManager clientPool)
+			: base(clientPool)
 		{
 			ListProperties.Add("Hosts");
 		}

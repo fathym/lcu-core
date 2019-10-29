@@ -17,8 +17,8 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 		#endregion
 
 		#region Constructors
-		public IdentityGraph(LCUGraphConfig config)
-			: base(config)
+		public IdentityGraph(GremlinClientPoolManager clientPool)
+			: base(clientPool)
 		{ }
 
 		public object JwtClaimTypes { get; private set; }

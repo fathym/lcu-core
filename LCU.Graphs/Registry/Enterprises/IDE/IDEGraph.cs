@@ -20,8 +20,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 		#endregion
 
 		#region Constructors
-		public IDEGraph(LCUGraphConfig config, ILogger<IDEGraph> logger)
-			: base(config)
+		public IDEGraph(GremlinClientPoolManager clientPool, ILogger<IDEGraph> logger)
+			: base(clientPool)
 		{
 			ListProperties.Add("Hosts");
 

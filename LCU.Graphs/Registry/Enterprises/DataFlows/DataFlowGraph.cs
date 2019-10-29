@@ -15,8 +15,8 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		#endregion
 
 		#region Constructors
-		public DataFlowGraph(LCUGraphConfig config)
-			: base(config)
+		public DataFlowGraph(GremlinClientPoolManager clientPool)
+			: base(clientPool)
 		{
 			ListProperties.Add("Hosts");
 		}
