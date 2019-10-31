@@ -155,32 +155,32 @@ namespace LCU.Graphs
 			});
 		}
 
-		protected virtual async Task<T> withClient<T>(Func<GremlinClient, Task<T>> action)
+		protected virtual async Task<T> withClient<T>(Func<GremlinClient, Task<T>> action, string clientId = null)
 		{
-			using (var client = clientPool.LoadClient())
+			using (var client = clientPool.LoadClient(clientId))
 			{
 				return await action(client);
 			}
 		}
 
-		protected virtual async Task withG(Func<GremlinClient, Gremlin.Net.Process.Traversal.GraphTraversalSource, Task> action)
+		protected virtual async Task withG(Func<GremlinClient, Gremlin.Net.Process.Traversal.GraphTraversalSource, Task> action, string clientId = null)
 		{
 			await withG<object>(async (client, g) =>
 			{
 				await action(client, g);
 
 				return null;
-			});
+			}, clientId);
 		}
 
-		protected virtual async Task<T> withG<T>(Func<GremlinClient, Gremlin.Net.Process.Traversal.GraphTraversalSource, Task<T>> action)
+		protected virtual async Task<T> withG<T>(Func<GremlinClient, Gremlin.Net.Process.Traversal.GraphTraversalSource, Task<T>> action, string clientId = null)
 		{
 			return await withClient<T>(async (client) =>
 			{
 				var g = new Gremlin.Net.CosmosDb.GraphTraversalSource(new DriverRemoteConnection(client));
 
 				return await action(client, g.G());
-			});
+			}, clientId);
 		}
 		#endregion
 

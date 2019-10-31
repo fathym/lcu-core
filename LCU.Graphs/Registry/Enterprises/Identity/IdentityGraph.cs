@@ -39,7 +39,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				await Submit(dropQuery);
 
 				return Status.Success;
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<Status> Exists(string email, string entApiKey = null)
@@ -68,7 +68,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					status = Status.NotLocated;
 
 				return status;
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<Account> Get(string email)
@@ -117,7 +117,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				var acResult = await SubmitFirst<AccessCard>(existingQuery);
 
 				return acResult;
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<RelyingParty> GetRelyingParty(string entApiKey)
@@ -140,7 +140,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				var relyingParty = rpResult.JSONConvert<RelyingParty>();
 
 				return relyingParty;
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<List<AccessCard>> ListAccessCards(string entApiKey, string username)
@@ -155,7 +155,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				var acResults = await Submit<AccessCard>(existingQuery);
 
 				return acResults?.ToList();
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<Status> Register(string entApiKey, string email, string password)
@@ -215,7 +215,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					return Status.GeneralError.Clone("There was an issue registering the current account.");
 
 				return status;
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<string> RetrieveThirdPartyAccessToken(string entApiKey, string email, string key)
@@ -240,7 +240,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				var tptResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
 
 				return tptResult?.Metadata["Token"].ToString();
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<Status> SetThirdPartyAccessToken(string entApiKey, string email, string key, string token)
@@ -291,7 +291,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					});
 
 				return Status.Success;
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<AccessCard> SaveAccessCard(AccessCard accessCard, string entApiKey, string username)
@@ -370,7 +370,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				}
 
 				return accessCard;
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<RelyingParty> SaveRelyingParty(RelyingParty relyingParty, string entApiKey)
@@ -421,7 +421,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				}
 
 				return relyingParty;
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<Status> Validate(string entApiKey, string email, string password)
@@ -450,7 +450,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					status = Status.Unauthorized;
 
 				return status;
-			});
+			}, entApiKey);
 		}
 		#endregion
 

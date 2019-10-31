@@ -1,17 +1,23 @@
 ﻿using Gremlin.Net.Driver;
 using Gremlin.Net.Structure.IO.GraphSON;
+using System;
 using System.Collections.Generic;
+using System.Net.WebSockets;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace LCU.Graphs
 {
 	public class GremlinClientPoolManager
 	{
-		#region Fields
-		protected readonly List<GremlinClient> clients;
+        #region Fields
+        protected ApplicationProfileManager appProfileMgr;
+
+		protected readonly IDictionary<string, Tuple<GremlinClient, DateTime>> clients;
 
 		protected LCUGraphConfig config;
 
-		protected int lastClientIndex;
+        protected static string defaultClientId;
 
 		protected GremlinServer server;
 		#endregion
@@ -24,20 +30,37 @@ namespace LCU.Graphs
 		#endregion
 
 		#region Constructors
-		public GremlinClientPoolManager(LCUGraphConfig config, int clientCount)
+		public GremlinClientPoolManager(LCUGraphConfig config, ApplicationProfileManager appProfileMgr)
 		{
-			clients = new List<GremlinClient>();
+            defaultClientId = "DefaultClient";
+
+            clients = new Dictionary<string, Tuple<GremlinClient, DateTime>>();
 
 			this.config = config;
 
-			setupGremlinClients(clientCount);
+            this.appProfileMgr = appProfileMgr;
+
+            var username = $"/dbs/{config.Database}/colls/{config.Graph}";
+
+            server = CreateServer(config, username);
+
+            Task.Run(() => cleanupClients());
 		}
 		#endregion
 
 		#region API Methods
-		public virtual GremlinClient CreateClient(GremlinServer server)
+		public virtual GremlinClient CreateClient(GremlinServer server, int poolSize, int maxInProcessPerConnection)
 		{
-			return new GremlinClient(server, new GraphSON2Reader(), new GraphSON2Writer(), GremlinClient.GraphSON2MimeType);
+            ConnectionPoolSettings poolSettings = new ConnectionPoolSettings();
+
+            poolSettings.PoolSize = poolSize;
+
+            poolSettings.MaxInProcessPerConnection = maxInProcessPerConnection;
+
+            var client = new GremlinClient(server, new GraphSON2Reader(), new GraphSON2Writer(), 
+                GremlinClient.GraphSON2MimeType, poolSettings);
+
+            return client;
 		}
 
 		public virtual GremlinServer CreateServer(LCUGraphConfig config, string username)
@@ -45,27 +68,69 @@ namespace LCU.Graphs
 			return new GremlinServer(config.Host, config.Port, config.EnableSSL, username, config.APIKey);
 		}
 
-		public virtual GremlinClient LoadClient()
+		public virtual GremlinClient LoadClient(string clientId = "")
 		{
-			var client = clients[lastClientIndex++];
+            if (clientId.IsNullOrEmpty())
+                clientId = defaultClientId;
 
-			if (lastClientIndex >= ClientCount)
-				lastClientIndex = 0;
+            GremlinClient client = null;
+
+            var appProfile = appProfileMgr.LoadApplicationProfile(clientId);
+
+            if (clients.ContainsKey(clientId))
+            {
+                client = clients[clientId].Item1;
+
+                var expireTime = clients[clientId].Item2;
+
+                if (DateTime.Now > expireTime)
+                {
+                    client.Dispose();
+
+                    client = null;
+
+                    clients.Remove(clientId);
+                }
+            }
+
+            if (client == null)
+            {
+                client = CreateClient(server, appProfile.DatabaseClientPoolSize, appProfile.DatabaseClientMaxPoolConnections);
+
+                clients.Add(clientId, new Tuple<GremlinClient, DateTime>(client, DateTime.Now.AddMinutes(appProfile.DatabaseClientTTLMinutes)));
+            }
 
 			return client;
 		}
 		#endregion
 
 		#region Helpers
-		protected virtual void setupGremlinClients(int clientCount)
-		{
-			var username = $"/dbs/{config.Database}/colls/{config.Graph}";
+		protected void cleanupClients()
+        {
+            while (1 == 1)
+            {
+                var toRemove = new List<string>();
 
-			server = CreateServer(config, username);
+                clients.Keys.Each(
+                    (key) =>
+                    {
+                        if (DateTime.Now > clients[key].Item2)
+                            toRemove.Add(key);
+                    });
 
-			for (var i = 0; i < clientCount; i++)
-				clients.Add(CreateClient(server));
-		}
+                toRemove.ForEach(
+                    (remove) =>
+                    {
+                        clients[remove].Item1.Dispose();
+
+                        clients[remove] = null;
+
+                        clients.Remove(remove);
+                    });
+
+                Thread.Sleep(1000);
+            }
+        }
 		#endregion
 	}
 }

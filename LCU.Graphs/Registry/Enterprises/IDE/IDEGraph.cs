@@ -49,7 +49,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				await Submit(query);
 
 				return Status.Success;
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<Status> DeleteActivity(string activityLookup, string entApiKey, string container)
@@ -71,7 +71,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				await Submit(dropActivityQuery);
 
 				return Status.Success;
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<Status> DeleteLCU(string lcuLookup, string entApiKey, string container)
@@ -93,7 +93,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				await Submit(dropActivityQuery);
 
 				return Status.Success;
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<Status> DeleteSectionAction(string activityLookup, string section, string action, string group, string entApiKey, string container)
@@ -121,7 +121,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				await Submit(dropActivityQuery);
 
 				return Status.Success;
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<Status> DeleteSideBarSection(string activityLookup, string section, string entApiKey, string container)
@@ -145,7 +145,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				await Submit(query);
 
 				return Status.Success;
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<IDEContainerSettings> EnsureIDESettings(IDEContainerSettings settings)
@@ -191,7 +191,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var result = await SubmitFirst<IDEActivity>(query);
 
 				return result;
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<LowCodeUnitSetupConfig> GetLCU(string lcuLookup, string entApiKey, string container)
@@ -212,7 +212,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var lcu = await SubmitFirst<LowCodeUnitSetupConfig>(dropActivityQuery);
 
 				return lcu;
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<ModulePackSetup> GetModulePackSetup(string lcuLookup, string entApiKey, string container)
@@ -234,7 +234,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var results = await Submit<string>(query);
 
 				return results?.FirstOrDefault()?.FromJSON<ModulePackSetup>();
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<IdeSettingsConfigSolution> GetLCUSolution(string lcuLookup, string solution, string entApiKey, string container)
@@ -258,7 +258,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var slnCfgs = results?.FirstOrDefault()?.FromJSON<List<IdeSettingsConfigSolution>>();
 
 				return slnCfgs.FirstOrDefault(sc => sc.Name == solution);
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<IDESideBarAction> GetSectionAction(string activityLookup, string section, string action, string group, string entApiKey, string container)
@@ -285,7 +285,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var result = await SubmitFirst<IDESideBarAction>(query);
 
 				return result;
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<List<IDEActivity>> ListActivities(string entApiKey, string container)
@@ -304,7 +304,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var results = await Submit<IDEActivity>(query);
 
 				return results?.ToList();
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<List<string>> ListLCUFiles(string lcuLookup, string host)
@@ -367,7 +367,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var results = await Submit<string>(query);
 
 				return results?.Select(r => r.FromJSON<ModulePackSetup>()).ToList();
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<List<IdeSettingsConfigSolution>> ListLCUSolutions(string lcuLookup, string entApiKey, string container)
@@ -389,7 +389,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var results = await Submit<string>(query);
 
 				return results?.FirstOrDefault()?.FromJSON<List<IdeSettingsConfigSolution>>();
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<List<LowCodeUnitSetupConfig>> ListLCUs(string entApiKey, string container)
@@ -408,7 +408,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var results = await Submit<LowCodeUnitSetupConfig>(query);
 
 				return results?.ToList();
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<List<IDESideBarAction>> ListSectionActions(string activityLookup, string section, string entApiKey, string container)
@@ -433,7 +433,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var results = await Submit<IDESideBarAction>(query);
 
 				return results?.ToList();
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<List<string>> ListSideBarSections(string activityLookup, string entApiKey, string container)
@@ -464,7 +464,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				// var sections = result?.Metadata?["Section"];
 
 				// return sections is JArray ? sections.ToObject<List<string>>() : sections != null ? new List<string>() { sections.ToObject<string>() } : null;
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<IDEActivity> SaveActivity(IDEActivity activity, string entApiKey, string container)
@@ -504,7 +504,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				await ensureEdgeRelationships(g, ideResult.ID, activityResult.ID);
 
 				return activityResult.JSONConvert<IDEActivity>();
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<LowCodeUnitSetupConfig> SaveLCU(LowCodeUnitSetupConfig lcu, string entApiKey, string container)
@@ -544,7 +544,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				await ensureEdgeRelationships(g, ideResult.ID, lcuResult.ID);
 
 				return lcuResult.JSONConvert<LowCodeUnitSetupConfig>();
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<Status> SaveLCUCapabilities(string lcuLookup, List<string> files, 
@@ -569,7 +569,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var lcuResult = await SubmitFirst<BusinessModel<Guid>>(saveQuery);
 
 				return Status.Success;
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<IDESideBarAction> SaveSectionAction(string activityLookup, IDESideBarAction action, string entApiKey, string container)
@@ -615,7 +615,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				await ensureEdgeRelationships(g, activityResult.ID, secActResult.ID);
 
 				return secActResult.JSONConvert<IDESideBarAction>();
-			}));
+			}), entApiKey);
 		}
 		#endregion
 

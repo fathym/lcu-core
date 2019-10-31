@@ -46,7 +46,7 @@ namespace LCU.Graphs.Registry.Enterprises
 					else
 						return existingEnt;
 				}
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<Enterprise> Create(string name, string description, string host)
@@ -107,7 +107,7 @@ namespace LCU.Graphs.Registry.Enterprises
 				{
 					return Status.GeneralError.Clone("Unable to located enterprise by that api key");
 				}
-			});
+			}, entApiKey);
 		}
 
 		public virtual async Task<bool> DoesHostExist(string host)
@@ -133,7 +133,7 @@ namespace LCU.Graphs.Registry.Enterprises
 				var results = await Submit<string>(query);
 
 				return results.ToList();
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<Enterprise> LoadByHost(string host)
@@ -155,7 +155,7 @@ namespace LCU.Graphs.Registry.Enterprises
 					.Has("PrimaryAPIKey", apiKey);
 
 				return await SubmitFirst<Enterprise>(query);
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<string> RetrieveThirdPartyData(string apiKey, string key)
@@ -176,7 +176,7 @@ namespace LCU.Graphs.Registry.Enterprises
 				var tpdResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
 
 				return tpdResult?.Metadata["Value"].ToString();
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<Status> SetThirdPartyData(string apiKey, string key, string value)
@@ -218,7 +218,7 @@ namespace LCU.Graphs.Registry.Enterprises
 					});
 
 				return Status.Success;
-			});
+			}, apiKey);
 		}
 		#endregion
 

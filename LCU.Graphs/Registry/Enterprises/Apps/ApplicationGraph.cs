@@ -43,7 +43,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 					});
 
 				return Status.Success;
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<Status> CreateDefaultApps(string apiKey)
@@ -72,7 +72,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				await ensureEdgeRelationships(g, entResult.ID, dafAppsResult.ID);
 
 				return Status.Success;
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<List<DAFApplicationConfiguration>> GetDAFApplications(string apiKey, Guid appId)
@@ -89,7 +89,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				var appAppResults = await Submit<DAFApplicationConfiguration>(query);
 
 				return appAppResults.ToList();
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<Status> HasDefaultApps(string apiKey)
@@ -106,7 +106,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				var defAppsResult = await SubmitFirst<BusinessModel<Guid>>(defAppsQuery);
 
 				return defAppsResult != null ? Status.Success : Status.NotLocated;
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<Status> IsDefaultApp(string apiKey, Guid appId)
@@ -126,7 +126,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				var appsResult = await SubmitFirst<Application>(defAppsQuery);
 
 				return appsResult != null ? Status.Success : Status.NotLocated;
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<List<Application>> ListApplications(string apiKey)
@@ -144,7 +144,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				var results = await Submit<Application>(query);
 
 				return results.ToList();
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<List<Application>> LoadByEnterprise(string apiKey, string host, string container)
@@ -163,7 +163,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				var results = await Submit<Application>(query);
 
 				return results.ToList();
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<List<Application>> LoadDefaultApplications(string apiKey)
@@ -184,7 +184,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				var results = await Submit<Application>(query);
 
 				return results.ToList();
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<Status> RemoveDAFApplication(string apiKey, DAFApplicationConfiguration config)
@@ -200,7 +200,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				var existingResult = await SubmitFirst<DAFApplicationConfiguration>(existingQuery);
 
 				return Status.Success;
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<Status> RemoveDefaultApp(string apiKey, Guid appId)
@@ -219,7 +219,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				await Submit(dropQuery);
 
 				return Status.Success;
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<Application> Save(Application application)
@@ -268,7 +268,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				await ensureEdgeRelationships(g, entResult.ID, appResult.ID);
 
 				return appResult;
-			});
+			}, application.ID.ToString());
 		}
 
 		public virtual async Task<DAFApplicationConfiguration> SaveDAFApplication(string apiKey, DAFApplicationConfiguration config)
@@ -323,7 +323,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 					});
 
 				return appAppResult;
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<Status> SeedDefault(string sourceApiKey, string targetApiKey)
@@ -350,7 +350,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 					});
 
 				return Status.Success;
-			});
+			}, targetApiKey);
 		}
 		#endregion
 

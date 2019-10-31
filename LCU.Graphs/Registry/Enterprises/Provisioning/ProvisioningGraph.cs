@@ -36,7 +36,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 				var result = await SubmitFirst<LCUEnvironment>(query);
 
 				return result;
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<MetadataModel> GetEnvironmentSettings(string apiKey, string envLookup)
@@ -64,7 +64,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 					result.Metadata.Remove("id");
 
 				return result;
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<SourceControl> GetSourceControl(string apiKey, string envLookup)
@@ -89,7 +89,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 				var result = await SubmitFirst<SourceControl>(query);
 
 				return result;
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<List<LCUEnvironment>> ListEnvironments(string apiKey)
@@ -106,7 +106,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 				var results = await Submit<LCUEnvironment>(query);
 
 				return results.ToList();
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<LCUEnvironment> SaveEnvironment(LCUEnvironment env)
@@ -180,7 +180,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 				await ensureEdgeRelationships(g, envResult.ID, envSetResult.ID);
 
 				return envSetResult;
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<SourceControl> SaveSourceControl(string apiKey, string envLookup, SourceControl sc)
@@ -230,7 +230,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 				await ensureEdgeRelationships(g, envResult.ID, scResult.ID);
 
 				return scResult;
-			});
+			}, apiKey);
 		}
 		#endregion
 

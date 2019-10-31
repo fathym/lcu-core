@@ -16,7 +16,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		public virtual bool Disabled { get; set; }
 
 		[DataMember]
-		public virtual LCUIcon Icon { get; set; }
+		public virtual ApplicationProfile Icon { get; set; }
 
 		[DataMember]
 		public virtual int Order { get; set; }

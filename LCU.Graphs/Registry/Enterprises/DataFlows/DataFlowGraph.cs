@@ -47,7 +47,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 				await Submit(query);
 
 				return Status.Success;
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<DataFlow> GetDataFlow(string apiKey, string envLookup, string dfLookup)
@@ -73,7 +73,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 				var result = await SubmitFirst<MetadataModel>(query);
 
 				return loadDataFlowFromMetadata(result);
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<List<DataFlow>> ListDataFlows(string apiKey, string envLookup)
@@ -98,7 +98,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 				var results = await Submit<MetadataModel>(query);
 
 				return results.Select(r => loadDataFlowFromMetadata(r)).ToList();
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<ModulePackSetup> LoadModulePackSetup(string apiKey, string envLookup,
@@ -154,7 +154,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 				return new ModulePackSetup()
 				{
 				};
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<DataFlow> SaveDataFlow(string apiKey, string envLookup, DataFlow dataFlow)
@@ -208,7 +208,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 				await ensureEdgeRelationships(g, envResult.ID, dfResult.ID);
 
 				return dfResult;
-			});
+			}, apiKey);
 		}
 
 		public virtual async Task<ModulePack> UnpackModulePack(string apiKey, string envLookup, string dfLookup,
@@ -276,7 +276,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 				});
 
 				return mpResult;
-			});
+			}, apiKey);
 		}
 		#endregion
 
