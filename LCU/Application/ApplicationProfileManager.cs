@@ -39,9 +39,9 @@ namespace LCU
 			return appProfile;
 		}
 
-        public virtual void SaveApplicationProfile(string appId, ApplicationProfile appProfile)
+        public virtual void SaveApplicationProfile(string clientId, ApplicationProfile appProfile)
         {
-            appProfiles[appId] = appProfile;
+            appProfiles[clientId] = appProfile;
         }
         #endregion
 
