@@ -13,7 +13,7 @@ namespace LCU.Graphs
         #region Fields
         protected ApplicationProfileManager appProfileMgr;
 
-		protected readonly IDictionary<string, Tuple<GremlinClient, DateTime>> clients;
+		protected IDictionary<string, Tuple<GremlinClient, DateTime>> clients;
 
 		protected LCUGraphConfig config;
 
@@ -30,7 +30,7 @@ namespace LCU.Graphs
 		#endregion
 
 		#region Constructors
-		public GremlinClientPoolManager(LCUGraphConfig config, ApplicationProfileManager appProfileMgr)
+		public GremlinClientPoolManager(ApplicationProfileManager appProfileMgr, LCUGraphConfig config)
 		{
             defaultClientId = "DefaultClient";
 
@@ -128,7 +128,7 @@ namespace LCU.Graphs
                         clients.Remove(remove);
                     });
 
-                Thread.Sleep(1000);
+                Thread.Sleep(60000);
             }
         }
 		#endregion

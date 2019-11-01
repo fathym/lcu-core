@@ -7,7 +7,7 @@ namespace LCU
 	public class ApplicationProfileManager
 	{
 		#region Fields
-		protected readonly IDictionary<string, ApplicationProfile> appProfiles;
+		protected IDictionary<string, ApplicationProfile> appProfiles;
 
         protected static string defaultApplicationProfileId;
         #endregion
@@ -20,6 +20,8 @@ namespace LCU
         public ApplicationProfileManager()
 		{
             appProfiles = new Dictionary<string, ApplicationProfile>();
+
+            defaultApplicationProfileId = "DefaultApplicationProfile";
 
             addDefaultApplicationProfile();
 		}
