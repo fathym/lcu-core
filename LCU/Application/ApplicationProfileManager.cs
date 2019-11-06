@@ -12,7 +12,7 @@ namespace LCU
 
         protected IConfiguration config;
 
-        protected static string defaultApplicationProfileId;
+        protected readonly string defaultApplicationProfileId;
         #endregion
 
         #region Properties
