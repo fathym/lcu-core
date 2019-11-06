@@ -12,7 +12,7 @@ namespace LCU
 
         protected IConfiguration config;
 
-        protected static string defaultApplicationProfileId;
+        protected readonly string defaultApplicationProfileId;
         #endregion
 
         #region Properties
@@ -61,12 +61,12 @@ namespace LCU
         #region Helpers
         protected virtual void addDefaultApplicationProfile()
         {
-            appProfiles.Add(defaultApplicationProfileId, new ApplicationProfile()
+            appProfiles[defaultApplicationProfileId] = new ApplicationProfile()
             {
                 DatabaseClientPoolSize = config["LCU-DATABASE-CLIENT-POOL-SIZE"].As<int>(4),
                 DatabaseClientMaxPoolConnections = config["LCU-DATABASE-CLIENT-MAX-POOL-CONNS"].As<int>(32),
                 DatabaseClientTTLMinutes = config["LCU-DATABASE-CLIENT-TTL"].As<int>(60)
-            });
+            };
         }
 		#endregion
 	}
