@@ -60,7 +60,7 @@ namespace LCU
                 DatabaseClientPoolSize = config["LCU-DATABASE-CLIENT-POOL-SIZE"].As<int>(4),
                 DatabaseClientMaxPoolConnections = config["LCU-DATABASE-CLIENT-MAX-POOL-CONNS"].As<int>(32),
                 DatabaseClientTTLMinutes = config["LCU-DATABASE-CLIENT-TTL"].As<int>(60)
-            });
+            };
         }
 		#endregion
 	}
