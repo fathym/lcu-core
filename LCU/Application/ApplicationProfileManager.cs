@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 
@@ -9,7 +10,9 @@ namespace LCU
 		#region Fields
 		protected IDictionary<string, ApplicationProfile> appProfiles;
 
-        protected readonly string defaultApplicationProfileId;
+        protected IConfiguration config;
+
+        protected static string defaultApplicationProfileId;
         #endregion
 
         #region Properties
@@ -17,9 +20,11 @@ namespace LCU
         #endregion
 
         #region Constructors
-        public ApplicationProfileManager()
+        public ApplicationProfileManager(IConfiguration config)
 		{
             appProfiles = new Dictionary<string, ApplicationProfile>();
+
+            this.config = config;
 
             defaultApplicationProfileId = "DefaultApplicationProfile";
 
@@ -52,10 +57,10 @@ namespace LCU
         {
             appProfiles[defaultApplicationProfileId] = new ApplicationProfile()
             {
-                DatabaseClientPoolSize = 4,
-                DatabaseClientMaxPoolConnections = 32,
-                DatabaseClientTTLMinutes = 60
-            };
+                DatabaseClientPoolSize = config["LCU-DATABASE-CLIENT-POOL-SIZE"].As<int>(4),
+                DatabaseClientMaxPoolConnections = config["LCU-DATABASE-CLIENT-MAX-POOL-CONNS"].As<int>(32),
+                DatabaseClientTTLMinutes = config["LCU-DATABASE-CLIENT-TTL"].As<int>(60)
+            });
         }
 		#endregion
 	}
