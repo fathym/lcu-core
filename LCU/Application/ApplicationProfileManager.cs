@@ -9,7 +9,7 @@ namespace LCU
 		#region Fields
 		protected IDictionary<string, ApplicationProfile> appProfiles;
 
-        protected static string defaultApplicationProfileId;
+        protected readonly string defaultApplicationProfileId;
         #endregion
 
         #region Properties
@@ -50,12 +50,12 @@ namespace LCU
         #region Helpers
         protected virtual void addDefaultApplicationProfile()
         {
-            appProfiles.Add(defaultApplicationProfileId, new ApplicationProfile()
+            appProfiles[defaultApplicationProfileId] = new ApplicationProfile()
             {
                 DatabaseClientPoolSize = 4,
                 DatabaseClientMaxPoolConnections = 32,
                 DatabaseClientTTLMinutes = 60
-            });
+            };
         }
 		#endregion
 	}

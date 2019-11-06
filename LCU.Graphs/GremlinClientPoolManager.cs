@@ -97,7 +97,7 @@ namespace LCU.Graphs
             {
                 client = CreateClient(server, appProfile.DatabaseClientPoolSize, appProfile.DatabaseClientMaxPoolConnections);
 
-                clients.Add(clientId, new Tuple<GremlinClient, DateTime>(client, DateTime.Now.AddMinutes(appProfile.DatabaseClientTTLMinutes)));
+                clients[clientId] = new Tuple<GremlinClient, DateTime>(client, DateTime.Now.AddMinutes(appProfile.DatabaseClientTTLMinutes));
             }
 
 			return client;
