@@ -15,7 +15,7 @@ namespace LCU.Presentation.Net
 		{
 			base.EvaluateRequest(context, policy, result);
 
-			if (result.AllowedOrigin == "*")
+			//if (result.AllowedOrigin == "*")
 				result.AllowedOrigin = context.Request.Headers["Origin"].ToString().TrimEnd('/');
 		}
 
@@ -23,7 +23,7 @@ namespace LCU.Presentation.Net
 		{
 			base.EvaluatePreflightRequest(context, policy, result);
 
-			if (result.AllowedOrigin == "*")
+			//if (result.AllowedOrigin == "*")
 				result.AllowedOrigin = context.Request.Headers["Origin"].ToString().TrimEnd('/');
 		}
 	}
