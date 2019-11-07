@@ -38,17 +38,23 @@ namespace LCU
 		{
             ApplicationProfile appProfile = null;
 
-            if (appProfiles.ContainsKey(clientId))
-                appProfile = appProfiles[clientId];
-            else
-                appProfile = appProfiles[defaultApplicationProfileId];
+            lock (appProfiles)
+            {
+                if (appProfiles.ContainsKey(clientId))
+                    appProfile = appProfiles[clientId];
+                else
+                    appProfile = appProfiles[defaultApplicationProfileId];
+            }
 
 			return appProfile;
 		}
 
         public virtual void SaveApplicationProfile(string clientId, ApplicationProfile appProfile)
         {
-            appProfiles[clientId] = appProfile;
+            lock (appProfiles)
+            {
+                appProfiles[clientId] = appProfile;
+            }
         }
         #endregion
 

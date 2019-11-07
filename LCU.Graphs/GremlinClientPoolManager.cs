@@ -77,27 +77,30 @@ namespace LCU.Graphs
 
             var appProfile = appProfileMgr.LoadApplicationProfile(clientId);
 
-            if (clients.ContainsKey(clientId))
+            lock (clients)
             {
-                client = clients[clientId].Item1;
-
-                var expireTime = clients[clientId].Item2;
-
-                if (DateTime.Now > expireTime)
+                if (clients.ContainsKey(clientId))
                 {
-                    client.Dispose();
+                    client = clients[clientId].Item1;
 
-                    client = null;
+                    var expireTime = clients[clientId].Item2;
 
-                    clients.Remove(clientId);
+                    if (DateTime.Now > expireTime)
+                    {
+                        client.Dispose();
+
+                        client = null;
+
+                        clients.Remove(clientId);
+                    }
                 }
-            }
 
-            if (client == null)
-            {
-                client = CreateClient(server, appProfile.DatabaseClientPoolSize, appProfile.DatabaseClientMaxPoolConnections);
+                if (client == null)
+                {
+                    client = CreateClient(server, appProfile.DatabaseClientPoolSize, appProfile.DatabaseClientMaxPoolConnections);
 
-                clients[clientId] = new Tuple<GremlinClient, DateTime>(client, DateTime.Now.AddMinutes(appProfile.DatabaseClientTTLMinutes));
+                    clients[clientId] = new Tuple<GremlinClient, DateTime>(client, DateTime.Now.AddMinutes(appProfile.DatabaseClientTTLMinutes));
+                }
             }
 
 			return client;
@@ -111,22 +114,25 @@ namespace LCU.Graphs
             {
                 var toRemove = new List<string>();
 
-                clients.Keys.Each(
-                    (key) =>
-                    {
-                        if (DateTime.Now > clients[key].Item2)
-                            toRemove.Add(key);
-                    });
+                lock (clients)
+                {
+                    clients.Keys.Each(
+                        (key) =>
+                        {
+                            if (DateTime.Now > clients[key].Item2)
+                                toRemove.Add(key);
+                        });
 
-                toRemove.ForEach(
-                    (remove) =>
-                    {
-                        clients[remove].Item1.Dispose();
+                    toRemove.ForEach(
+                        (remove) =>
+                        {
+                            clients[remove].Item1.Dispose();
 
-                        clients[remove] = null;
+                            clients[remove] = null;
 
-                        clients.Remove(remove);
-                    });
+                            clients.Remove(remove);
+                        });
+                }
 
                 Thread.Sleep(60000);
             }
