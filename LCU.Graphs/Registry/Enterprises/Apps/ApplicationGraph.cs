@@ -307,6 +307,10 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 						.Property("Methods", config.Metadata["Methods"])
 						.Property("Security", config.Metadata["Security"]);
 				}
+				else if (config.Metadata.ContainsKey("Redirect"))
+				{
+					query.Property("Redirect", config.Metadata["Redirect"]);
+				}
 
 				var appAppResult = await SubmitFirst<DAFApplicationConfiguration>(query);
 
