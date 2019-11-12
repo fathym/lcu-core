@@ -10,7 +10,11 @@ namespace LCU
 		#region Fields
 		protected IDictionary<string, ApplicationProfile> appProfiles;
 
-        protected IConfiguration config;
+        protected readonly int databaseClientMaxPoolConnections;
+
+        protected readonly int databaseClientPoolSize;
+
+        protected readonly int databaseClientTTLMinutes;
 
         protected readonly string defaultApplicationProfileId;
         #endregion
@@ -21,15 +25,26 @@ namespace LCU
 
         #region Constructors
         public ApplicationProfileManager(IConfiguration config)
+            : this(config["LCU-DATABASE-CLIENT-MAX-POOL-CONNS"].As<int>(32), config["LCU-DATABASE-CLIENT-POOL-SIZE"].As<int>(4),
+                config["LCU-DATABASE-CLIENT-TTL"].As<int>(60))
 		{
-            appProfiles = new Dictionary<string, ApplicationProfile>();
+            
+		}
 
-            this.config = config;
+        public ApplicationProfileManager(int DatabaseClientMaxPoolConnections, int DatabaseClientPoolSize, int DatabaseClientTTLMinutes)
+        {
+            this.databaseClientMaxPoolConnections = DatabaseClientMaxPoolConnections;
+
+            this.databaseClientPoolSize = DatabaseClientPoolSize;
+
+            this.databaseClientTTLMinutes = DatabaseClientTTLMinutes;
+
+            appProfiles = new Dictionary<string, ApplicationProfile>();
 
             defaultApplicationProfileId = "DefaultApplicationProfile";
 
             addDefaultApplicationProfile();
-		}
+        }
 		#endregion
 
 		#region API Methods
@@ -63,9 +78,9 @@ namespace LCU
         {
             appProfiles[defaultApplicationProfileId] = new ApplicationProfile()
             {
-                DatabaseClientPoolSize = config["LCU-DATABASE-CLIENT-POOL-SIZE"].As<int>(4),
-                DatabaseClientMaxPoolConnections = config["LCU-DATABASE-CLIENT-MAX-POOL-CONNS"].As<int>(32),
-                DatabaseClientTTLMinutes = config["LCU-DATABASE-CLIENT-TTL"].As<int>(60)
+                DatabaseClientPoolSize = databaseClientPoolSize,
+                DatabaseClientMaxPoolConnections = databaseClientMaxPoolConnections,
+                DatabaseClientTTLMinutes = databaseClientTTLMinutes
             };
         }
 		#endregion
