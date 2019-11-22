@@ -17,5 +17,8 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
 		[DataMember]
 		public virtual string Name { get; set; }
+
+		[DataMember]
+		public virtual string Toolkit { get; set; }
 	}
 }

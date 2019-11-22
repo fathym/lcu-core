@@ -233,7 +233,9 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 				var results = await Submit<string>(query);
 
-				return results?.FirstOrDefault()?.FromJSON<ModulePackSetup>();
+				var mps = results?.FirstOrDefault()?.FromJSON<ModulePackSetup>();
+
+				return mps?.Pack != null ? mps : null;
 			}, entApiKey);
 		}
 
@@ -366,7 +368,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 				var results = await Submit<string>(query);
 
-				return results?.Select(r => r.FromJSON<ModulePackSetup>()).ToList();
+				return results?.Select(r => r.FromJSON<ModulePackSetup>()).Where(mps => mps.Pack != null).ToList();
 			}, entApiKey);
 		}
 
