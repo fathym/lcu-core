@@ -196,8 +196,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 					{
 						Modules = new List<Module>(),
 						Streams = new List<ModuleStream>()
-					})
-					.Property("ModuleSettings", dataFlow.ModuleSettings ?? new Dictionary<Guid, MetadataModel>());
+					});
 
 				query.SideEffect(__.Properties<string>("ModulePacks").Drop());
 

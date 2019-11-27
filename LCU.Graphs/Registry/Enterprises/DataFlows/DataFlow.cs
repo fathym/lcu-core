@@ -20,9 +20,6 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		public virtual List<string> ModulePacks { get; set; }
 
 		[DataMember]
-		public virtual Dictionary<Guid, MetadataModel> ModuleSettings { get; set; }
-
-		[DataMember]
 		public virtual string Name { get; set; }
 
 		[DataMember]
