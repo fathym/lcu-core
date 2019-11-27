@@ -1,4 +1,5 @@
-﻿using Fathym.Business.Models;
+﻿using Fathym;
+using Fathym.Business.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
@@ -38,6 +39,9 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
 		[DataMember]
 		public virtual IEnumerable<string> OutgoingConnectionTypes { get; set; }
+
+		[DataMember]
+		public virtual MetadataModel Settings { get; set; }
 
 		[DataMember]
 		public virtual string Toolkit { get; set; }
