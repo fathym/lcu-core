@@ -40,6 +40,9 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		public virtual IEnumerable<string> OutgoingConnectionTypes { get; set; }
 
 		[DataMember]
+		public virtual string Toolkit { get; set; }
+
+		[DataMember]
 		public virtual bool Visible { get; set; }
 	}
 }
