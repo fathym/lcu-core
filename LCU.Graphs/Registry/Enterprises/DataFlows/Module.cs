@@ -24,8 +24,5 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
 		[DataMember]
 		public virtual string Text { get; set; }
-
-		[DataMember]
-		public virtual string Toolkit { get; set; }
 	}
 }

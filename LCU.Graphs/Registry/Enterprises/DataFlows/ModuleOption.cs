@@ -44,9 +44,6 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		public virtual MetadataModel Settings { get; set; }
 
 		[DataMember]
-		public virtual string Toolkit { get; set; }
-
-		[DataMember]
 		public virtual bool Visible { get; set; }
 	}
 }

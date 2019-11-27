@@ -36,6 +36,9 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		public virtual ModuleShapeTypes Shape { get; set; }
 
 		[DataMember]
+		public virtual string Toolkit { get; set; }
+
+		[DataMember]
 		public virtual double Top { get; set; }
 
 		[DataMember]
