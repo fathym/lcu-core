@@ -23,7 +23,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		public virtual double Height { get; set; }
 
 		[DataMember]
-		public virtual ApplicationProfile Icon { get; set; }
+		public virtual LCUIcon Icon { get; set; }
 
 		[DataMember]
 		public virtual double Left { get; set; }
