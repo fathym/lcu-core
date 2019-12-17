@@ -32,7 +32,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
 				var results = await Submit<MetadataModel>(query);
 
-                return results.Select(r => loadSchemaPathFromSchemaMap(r)).ToList()
+                return results.Select(r => loadSchemaPathFromSchemaMap(r)).ToList();
 
             }, apiKey);
 		}
