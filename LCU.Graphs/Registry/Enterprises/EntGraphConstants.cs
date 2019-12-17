@@ -32,7 +32,9 @@
 
 		public const string IssuesEdgeName = "Issues";
 
-		public const string LCUConfigVertexName = "LCUConfig";
+        public const string JSONSchemaMapVertexName = "JSONSchemaMap";
+
+        public const string LCUConfigVertexName = "LCUConfig";
 
 		public const string ManagesEdgeName = "Manages";
 
@@ -58,10 +60,14 @@
 
 		public const string SectionActionVertexName = "SectionAction";
 
-		public const string SourceControlVertexName = "SourceControl";
+        public const string SemanticProfileVertexName = "SemanticProfile";
+
+        public const string SourceControlVertexName = "SourceControl";
 
 		public const string ThirdPartyDataVertexName = "ThirdPartyIdentifier";
 
 		public const string ThirdPartyTokenVertexName = "ThirdPartyToken";
-	}
+
+        public const string UsesEdgeName = "Uses";
+    }
 }

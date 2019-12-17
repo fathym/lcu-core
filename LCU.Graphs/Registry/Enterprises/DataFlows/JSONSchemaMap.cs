@@ -17,6 +17,9 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
         public virtual string Description { get; set; }
 
         [DataMember]
+        public virtual string EnterpriseAPIKey { get; set; }
+
+        [DataMember]
         public virtual string Lookup { get; set; }
 
         [DataMember]
