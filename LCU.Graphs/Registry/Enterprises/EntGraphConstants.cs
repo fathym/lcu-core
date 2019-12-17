@@ -68,6 +68,8 @@
 
 		public const string ThirdPartyTokenVertexName = "ThirdPartyToken";
 
+        public const string TypeDefinitionVertexName = "TypeDefinition";
+
         public const string UsesEdgeName = "Uses";
     }
 }
