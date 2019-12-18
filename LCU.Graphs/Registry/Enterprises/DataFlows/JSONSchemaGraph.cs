@@ -38,6 +38,32 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
             }, apiKey);
 		}
 
+        public virtual async Task<List<BusinessModel<Guid>>> ListJSONSchemas(string apiKey, string envLookup)
+        {
+            return await withG(async (client, g) =>
+            {
+                var registry = $"{apiKey}|{envLookup}|JSONSchemaMap";
+
+                var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
+                    .Has(EntGraphConstants.RegistryName, apiKey)
+                    .Has("PrimaryAPIKey", apiKey)
+                    .Out(EntGraphConstants.ConsumesEdgeName)
+                    .HasLabel(EntGraphConstants.EnvironmentVertexName)
+                    .Has(EntGraphConstants.RegistryName, apiKey)
+                    .Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+                    .Has("Lookup", envLookup)
+                    .Out(EntGraphConstants.UsesEdgeName)
+                    .HasLabel(EntGraphConstants.SemanticProfileVertexName)
+                    .Out(EntGraphConstants.UsesEdgeName)
+                    .HasLabel(EntGraphConstants.JSONSchemaMapVertexName)
+                    .Has(EntGraphConstants.RegistryName, registry);
+
+                var results = await Submit<BusinessModel<Guid>>(query);
+
+                return results.ToList();
+            }, apiKey);
+        }
+
         public virtual async Task<Status> SaveJSONSchema(string apiKey, string envLookup, string lookup, 
             string name, string description, string schemaPath)
         {
@@ -94,14 +120,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
         #region Helpers
 
-        protected virtual string loadSchemaPathFromSchemaMap(MetadataModel schemaMap)
-        {
-            if (schemaMap == null)
-                return null;
-
-            return schemaMap.Metadata["SchemaPath"].ToString();
-        }
-
+      
         #endregion
     }
 }

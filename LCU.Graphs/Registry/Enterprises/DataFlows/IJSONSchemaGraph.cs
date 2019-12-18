@@ -10,6 +10,8 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 	{
 		Task<List<BusinessModel<Guid>>> FetchJSONSchemas(string apiKey, IEnumerable<string> schemaIds);
 
+        Task<List<BusinessModel<Guid>>> ListJSONSchemas(string apiKey, string envLookup);
+
         Task<Status> SaveJSONSchema(string apiKey, string envLookup, string lookup,
             string name, string description, string schemaPath);
 
