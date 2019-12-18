@@ -1,4 +1,5 @@
 ﻿using Fathym;
+using Fathym.Business.Models;
 using Gremlin.Net.Process.Traversal;
 using LCU.Graphs.Registry.Enterprises.Provisioning;
 using Newtonsoft.Json.Linq;
@@ -24,15 +25,15 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
 		#region API Methods
 
-		public virtual async Task<List<string>> FetchJSONSchemas(string apiKey, IEnumerable<string> schemaIds)
+		public virtual async Task<List<BusinessModel<Guid>>> FetchJSONSchemas(string apiKey, IEnumerable<string> schemaIds)
 		{
 			return await withG(async (client, g) =>
 			{
                 var query = g.V(schemaIds);
 
-				var results = await Submit<MetadataModel>(query);
+				var results = await Submit<BusinessModel<Guid>>(query);
 
-                return results.Select(r => loadSchemaPathFromSchemaMap(r)).ToList();
+                return results.ToList();
 
             }, apiKey);
 		}
