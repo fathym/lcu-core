@@ -58,7 +58,9 @@
 
 		public const string RelyingPartyVertexName = "RelyingParty";
 
-		public const string SectionActionVertexName = "SectionAction";
+        public const string SchemaFunctionDefinitionVertexName = "SchemaFunction";
+
+        public const string SectionActionVertexName = "SectionAction";
 
         public const string SemanticProfileVertexName = "SemanticProfile";
 
