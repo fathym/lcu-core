@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Fathym.Business.Models;
 
@@ -11,7 +12,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
         public virtual bool Active { get; set; }
 
         [DataMember]
-        public virtual string[] AllowedIncommingTypes { get; set; }
+        public virtual IEnumerable<string> AllowedIncommingTypes { get; set; }
 
         [DataMember]
         public virtual bool AllowDifferentIncommingTypes { get; set; }

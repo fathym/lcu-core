@@ -8,5 +8,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 	public interface ISchemaFunctionDefinitionGraph
 	{
         Task<List<SchemaFunctionDefinition>> ListSchemaFunctionDefinitions(string apiKey);
+
+        Task<SchemaFunctionDefinition> SaveSchemaFunctionDefinitionDefinition(string apiKey, SchemaFunctionDefinition schemaFunctionDefinition);
     }
 }
