@@ -112,7 +112,11 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
                 await ensureEdgeRelationships(g, semResult.ID, new Guid(result.Metadata["id"].ToString()), EntGraphConstants.UsesEdgeName, new List<string>() { EntGraphConstants.UsesEdgeName });
 
-                return Status.Success;
+                var status = Status.Success;
+
+                status.Metadata.Add("ID", result.Metadata["id"].ToString());
+
+                return status;
             }, apiKey);
         }
 
