@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netcoreapp2.2</TargetFramework>
+		<TargetFramework>netcoreapp3.1</TargetFramework>
 		<AssetTargetFallback>$(AssetTargetFallback);portable-net451+win8</AssetTargetFallback>
     <Copyright>2019</Copyright>
     <Company>Fathym, Inc</Company>

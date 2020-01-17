@@ -20,6 +20,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LCU.Presentation.OpenID
@@ -666,7 +667,7 @@ namespace LCU.Presentation.OpenID
 					var identity = (ClaimsIdentity)user.Identity;
 					foreach (var action in Options.ClaimActions)
 					{
-						action.Run(null, identity, ClaimsIssuer);
+						action.Run(new JsonElement(), identity, ClaimsIssuer);
 					}
 				}
 
@@ -831,7 +832,7 @@ namespace LCU.Presentation.OpenID
 
 			foreach (var action in Options.ClaimActions)
 			{
-				action.Run(user, identity, ClaimsIssuer);
+				action.Run(JsonDocument.Parse(user.ToString()).RootElement, identity, ClaimsIssuer);
 			}
 
 			return HandleRequestResult.Success(new AuthenticationTicket(principal, properties, Scheme.Name));
