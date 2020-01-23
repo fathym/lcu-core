@@ -797,16 +797,16 @@ namespace LCU.Presentation.OpenID
 			responseMessage.EnsureSuccessStatusCode();
 			var userInfoResponse = await responseMessage.Content.ReadAsStringAsync();
 
-			JObject user;
+			JsonDocument user;
 			var contentType = responseMessage.Content.Headers.ContentType;
 			if (contentType.MediaType.Equals("application/json", StringComparison.OrdinalIgnoreCase))
 			{
-				user = JObject.Parse(userInfoResponse);
+				user = JsonDocument.Parse(userInfoResponse);
 			}
 			else if (contentType.MediaType.Equals("application/jwt", StringComparison.OrdinalIgnoreCase))
 			{
 				var userInfoEndpointJwt = new JwtSecurityToken(userInfoResponse);
-				user = JObject.FromObject(userInfoEndpointJwt.Payload);
+				user = JsonDocument.Parse(userInfoEndpointJwt.Payload.ToJSON());
 			}
 			else
 			{
@@ -1087,7 +1087,7 @@ namespace LCU.Presentation.OpenID
 			return context;
 		}
 
-		private async Task<UserInformationReceivedContext> RunUserInformationReceivedEventAsync(ClaimsPrincipal principal, AuthenticationProperties properties, OpenIdConnectMessage message, JObject user)
+		private async Task<UserInformationReceivedContext> RunUserInformationReceivedEventAsync(ClaimsPrincipal principal, AuthenticationProperties properties, OpenIdConnectMessage message, JsonDocument user)
 		{
 			var context = new UserInformationReceivedContext(Context, Scheme, Options, principal, properties)
 			{
