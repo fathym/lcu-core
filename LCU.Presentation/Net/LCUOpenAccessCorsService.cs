@@ -9,7 +9,7 @@ namespace LCU.Presentation.Net
 	{
 		public LCUOpenAccessCorsService(IOptions<CorsOptions> options, ILoggerFactory loggerFactory)
 			: base(options, loggerFactory)
-		{ } 
+		{ }
 
 		public override void EvaluateRequest(HttpContext context, CorsPolicy policy, CorsResult result)
 		{
