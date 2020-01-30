@@ -16,7 +16,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Fathym.Presentation" Version="1.17.20016.2" />
+		<PackageReference Include="Fathym.Presentation" Version="1.21.20030.4" />
 		<PackageReference Include="IdentityServer4" Version="2.5.3" />
 		<PackageReference Include="IdentityServer4.AspNetIdentity" Version="2.5.3" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
