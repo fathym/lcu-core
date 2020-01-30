@@ -224,22 +224,40 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 			{
 				var registry = email.Split('@')[1];
 
-				var existingQuery = g.V()
-					.HasLabel(EntGraphConstants.AccountVertexName)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Has("Email", email)
-					.Out(EntGraphConstants.CarriesEdgeName)
-					.HasLabel(EntGraphConstants.PassportVertexName)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
-					.Out(EntGraphConstants.OwnsEdgeName)
-					.HasLabel(EntGraphConstants.ThirdPartyTokenVertexName)
-					.Has(EntGraphConstants.RegistryName, email)
-					.Has("Key", key);
+				if (!entApiKey.IsNullOrEmpty())
+				{
+					var existingEntQuery = g.V()
+						.HasLabel(EntGraphConstants.AccountVertexName)
+						.Has(EntGraphConstants.RegistryName, registry)
+						.Has("Email", email)
+						.Out(EntGraphConstants.CarriesEdgeName)
+						.HasLabel(EntGraphConstants.PassportVertexName)
+						.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+						.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
+						.Out(EntGraphConstants.OwnsEdgeName)
+						.HasLabel(EntGraphConstants.ThirdPartyTokenVertexName)
+						.Has(EntGraphConstants.RegistryName, email)
+						.Has("Key", key);
 
-				var tptResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
+					var entTptResult = await SubmitFirst<BusinessModel<Guid>>(existingEntQuery);
 
-				return tptResult?.Metadata["Token"].ToString();
+					return entTptResult?.Metadata["Token"].ToString();
+				}
+				else
+				{
+					var existingAccQuery = g.V()
+						.HasLabel(EntGraphConstants.AccountVertexName)
+						.Has(EntGraphConstants.RegistryName, registry)
+						.Has("Email", email)
+						.Out(EntGraphConstants.OwnsEdgeName)
+						.HasLabel(EntGraphConstants.ThirdPartyTokenVertexName)
+						.Has(EntGraphConstants.RegistryName, email)
+						.Has("Key", key);
+
+					var accTptResult = await SubmitFirst<BusinessModel<Guid>>(existingAccQuery);
+
+					return accTptResult?.Metadata["Token"].ToString();
+				}
 			}, entApiKey);
 		}
 
@@ -274,21 +292,38 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
 				tptResult = await SubmitFirst<BusinessModel<Guid>>(setQuery);
 
-				var passQuery = g.V().HasLabel(EntGraphConstants.AccountVertexName)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Has("Email", email)
-					.Out(EntGraphConstants.CarriesEdgeName)
-					.HasLabel(EntGraphConstants.PassportVertexName)
-					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+				if (!entApiKey.IsNullOrEmpty())
+				{
+					var passQuery = g.V().HasLabel(EntGraphConstants.AccountVertexName)
+						.Has(EntGraphConstants.RegistryName, registry)
+						.Has("Email", email)
+						.Out(EntGraphConstants.CarriesEdgeName)
+						.HasLabel(EntGraphConstants.PassportVertexName)
+						.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
+						.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
-				var passResult = await SubmitFirst<Passport>(passQuery);
+					var passResult = await SubmitFirst<Passport>(passQuery);
 
-				await ensureEdgeRelationships(g, passResult.ID, tptResult.ID,
-					edgeToCheckBuy: EntGraphConstants.OwnsEdgeName, edgesToCreate: new List<string>()
-					{
+					await ensureEdgeRelationships(g, passResult.ID, tptResult.ID,
+						edgeToCheckBuy: EntGraphConstants.OwnsEdgeName, edgesToCreate: new List<string>()
+						{
 								EntGraphConstants.OwnsEdgeName
-					});
+						});
+				}
+				else
+				{
+					var accQuery = g.V().HasLabel(EntGraphConstants.AccountVertexName)
+						.Has(EntGraphConstants.RegistryName, registry)
+						.Has("Email", email);
+
+					var accResult = await SubmitFirst<Passport>(accQuery);
+
+					await ensureEdgeRelationships(g, accResult.ID, tptResult.ID,
+						edgeToCheckBuy: EntGraphConstants.OwnsEdgeName, edgesToCreate: new List<string>()
+						{
+								EntGraphConstants.OwnsEdgeName
+						});
+				}
 
 				return Status.Success;
 			}, entApiKey);
