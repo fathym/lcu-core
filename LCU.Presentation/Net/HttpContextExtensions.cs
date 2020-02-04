@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Http
 		{
 			if (dafApiCtxt != null)
 			{
-				var apiPath = path.ToString().Replace(dafApiCtxt.InboundPath, String.Empty).TrimStart('/');
+				var apiPath = path.ToString().Replace(dafApiCtxt.InboundPath, String.Empty);
 
 				var proxyPath = loadProxyAPIUri(apiPath, dafApiCtxt.APIRoot, context.Request.QueryString.ToString());
 
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Http
 		#region Helpers
 		private static string loadProxyAPIUri(string apiPath, string apiRoot, string query)
 		{
-			var apiUri = new UriBuilder($"{apiRoot}/{apiPath}");
+			var apiUri = new UriBuilder($"{apiRoot.TrimEnd('/')}/{apiPath.TrimStart('/')}");
 
 			apiUri.Query = query;
 
