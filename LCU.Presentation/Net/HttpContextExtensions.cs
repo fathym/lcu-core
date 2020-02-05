@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Http
 			return context.User?.Claims?.FirstOrDefault(c => c.Type == "emails")?.Value.Split(",").First();
 		}
 
-		public static async Task<HttpResponseMessage> SendProxyHttpRequest(this HttpContext context, string proxiedAddress, TimeSpan timeout = null)
+		public static async Task<HttpResponseMessage> SendProxyHttpRequest(this HttpContext context, string proxiedAddress, TimeSpan? timeout = null)
 		{
 			var proxiedRequest = context.CreateProxyHttpRequest(proxiedAddress);
 
