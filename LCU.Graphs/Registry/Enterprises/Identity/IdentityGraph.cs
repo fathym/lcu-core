@@ -166,8 +166,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
                 var query = g.V().HasLabel(EntGraphConstants.AccessCardVertexName)
                                 .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-                                .Has("AccessConfigurationType", "LCU")
-                                .Has("IsAdmin", "true");
+                                .Has("AccessConfigurationType", "LCU");
 
                 var results = await Submit<AccessCard>(query);
 
