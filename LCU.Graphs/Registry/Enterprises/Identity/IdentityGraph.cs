@@ -158,7 +158,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             }, entApiKey);
         }
 
-        public virtual async Task<List<string>> ListAdmins(string entApiKey)
+        public virtual async Task<List<string>> ListMembersWithAccessConfigType(string entApiKey,  string accessConfigType)
         {
             return await withG(async (client, g) =>
             {
@@ -166,7 +166,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
                 var query = g.V().HasLabel(EntGraphConstants.AccessCardVertexName)
                                 .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-                                .Has("AccessConfigurationType", "LCU");
+                                .Has(EntGraphConstants.AccessConfigurationTypeName, accessConfigType);
 
                 var results = await Submit<AccessCard>(query);
 
@@ -175,6 +175,11 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
                 return admins;
             });
+        }
+
+        public virtual async Task<List<string>> ListAdmins(string entApiKey)
+        {
+            return await ListMembersWithAccessConfigType(entApiKey, "LCU");
         }
 
         public virtual async Task<Status> Register(string entApiKey, string email, string password)
