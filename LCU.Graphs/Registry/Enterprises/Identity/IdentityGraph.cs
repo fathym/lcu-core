@@ -171,8 +171,8 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                 var results = await Submit<AccessCard>(query);
 
                 foreach (var result in results)
-                    admins.Add(result.AccessConfigurationType.Split('|')[1]);
-
+                    if (result.Registry.Split('|').Count() > 1)
+                        admins.Add(result.Registry.Split('|')[1]);
                 return admins;
             });
         }
