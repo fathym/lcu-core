@@ -27,6 +27,9 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 		[DataMember]
 		public virtual Guid ProviderID { get; set; }
 
+        [DataMember]
+        public virtual string Registry { get; set; }
+
 		[DataMember]
 		public virtual DateTime ValidEndDate { get; set; }
 

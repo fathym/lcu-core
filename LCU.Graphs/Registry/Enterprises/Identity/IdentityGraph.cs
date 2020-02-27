@@ -158,6 +158,32 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             }, entApiKey);
         }
 
+        public virtual async Task<List<string>> ListMembersWithAccessConfigType(string entApiKey,  string accessConfigType)
+        {
+            return await withG(async (client, g) =>
+            {
+                var admins = new List<string>();
+
+                var query = g.V().HasLabel(EntGraphConstants.AccessCardVertexName)
+                                .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+                                .Has(EntGraphConstants.AccessConfigurationTypeName, accessConfigType);
+
+                var results = await Submit<AccessCard>(query);
+
+                foreach (var result in results)
+                    admins.Add(result.Registry);
+                //if (result.Registry.Split('|').Count() > 1)
+                //admins.Add(result.Registry);
+
+                return admins;
+            });
+        }
+
+        public virtual async Task<List<string>> ListAdmins(string entApiKey)
+        {
+            return await ListMembersWithAccessConfigType(entApiKey, "LCU");
+        }
+
         public virtual async Task<Status> Register(string entApiKey, string email, string password)
         {
             return await withG(async (client, g) =>
