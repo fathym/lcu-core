@@ -1,9 +1,6 @@
-﻿using Fathym.Design.Factory;
-using LCU.Presentation.API;
-using Microsoft.Extensions.Logging;
+﻿using LCU.Presentation.API;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -48,10 +45,9 @@ namespace Microsoft.AspNetCore.Http
 			}
 
 			// Copy the request headers.
-			if (requestMessage.Content != null)
-				foreach (var header in request.Headers)
-					if (!requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()))
-						requestMessage.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
+			foreach (var header in request.Headers)
+				if (!requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()) && requestMessage.Content != null)
+					requestMessage.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
 
 			requestMessage.Headers.Host = uri.Authority;
 			requestMessage.RequestUri = uri;
