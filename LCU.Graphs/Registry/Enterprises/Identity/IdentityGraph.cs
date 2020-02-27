@@ -171,9 +171,8 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                 var results = await Submit<AccessCard>(query);
 
                 foreach (var result in results)
-                    admins.Add(result.Registry);
-                //if (result.Registry.Split('|').Count() > 1)
-                //admins.Add(result.Registry);
+                    if (result.Registry?.Split('|').Count() > 1)
+                        admins.Add(result.Registry.Split('|')[1]);
 
                 return admins;
             });
@@ -181,7 +180,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
         public virtual async Task<List<string>> ListAdmins(string entApiKey)
         {
-            return await ListMembersWithAccessConfigType(entApiKey, "LCU");
+            return await ListMembersWithAccessConfigType(entApiKey, EntGraphConstants.AccessConfigurationRoleAdmin);
         }
 
         public virtual async Task<Status> Register(string entApiKey, string email, string password)

@@ -8,6 +8,8 @@
 
         public const string AccessConfigurationTypeName = "AccessConfigurationType";
 
+        public const string AccessConfigurationRoleAdmin = "LCU";
+
         public const string ActivityVertexName = "Activity";
 
 		public const string AppVertexName = "Application";
