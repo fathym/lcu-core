@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Http
 		{
 			if (dafApiCtxt != null)
 			{
-				var apiPath = path.ToString().Replace(dafApiCtxt.InboundPath, String.Empty);
+				var apiPath = path.Replace(dafApiCtxt.InboundPath, String.Empty);
 
 				var proxyPath = loadProxyAPIUri(apiPath, dafApiCtxt.APIRoot, context.Request.QueryString.ToString());
 
@@ -78,11 +78,14 @@ namespace Microsoft.AspNetCore.Http
 			return context.User?.Claims?.FirstOrDefault(c => c.Type == "emails")?.Value.Split(",").First();
 		}
 
-		public static async Task<HttpResponseMessage> SendProxyHttpRequest(this HttpContext context, string proxiedAddress)
+		public static async Task<HttpResponseMessage> SendProxyHttpRequest(this HttpContext context, string proxiedAddress, TimeSpan? timeout = null)
 		{
 			var proxiedRequest = context.CreateProxyHttpRequest(proxiedAddress);
 
-			return await new HttpClient().SendAsync(proxiedRequest, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted);
+			return await new HttpClient()
+			{
+				Timeout = timeout ?? TimeSpan.FromMinutes(10)
+			}.SendAsync(proxiedRequest, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted);
 		}
 
 		public static async Task SetJSONResponse(this HttpContext context, JToken body)
