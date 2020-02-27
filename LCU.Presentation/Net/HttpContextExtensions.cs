@@ -10,6 +10,12 @@ namespace Microsoft.AspNetCore.Http
 {
 	public static class HttpContextExtensions
 	{
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="context"></param>
+		/// <param name="responseMessage"></param>
+		/// <returns></returns>
 		public static async Task CopyProxyHttpResponse(this HttpContext context, HttpResponseMessage responseMessage)
 		{
 			var response = context.Response;
