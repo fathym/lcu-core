@@ -409,7 +409,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
                     var rpResult = await SubmitFirst<BusinessModel<Guid>>(rpQuery);
 
-                    if (rpResult == null)
+                    if (rpResult != null)
                     {
                         var registry = username.Split('@')[1];
 
