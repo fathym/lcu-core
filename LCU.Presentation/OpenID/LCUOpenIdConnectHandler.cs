@@ -667,7 +667,7 @@ namespace LCU.Presentation.OpenID
 					var identity = (ClaimsIdentity)user.Identity;
 					foreach (var action in Options.ClaimActions)
 					{
-						action.Run(new JsonElement(), identity, ClaimsIssuer);
+						action.Run(new JsonElement(), identity, ClaimsIssuer); 
 					}
 				}
 
