@@ -17,6 +17,9 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		public virtual ModuleDisplay Display { get; set; }
 
 		[DataMember]
+		public virtual ModuleControlType ControlType { get; set; }
+
+		[DataMember]
 		public virtual MetadataModel Settings { get; set; }
 
 		[DataMember]
