@@ -664,12 +664,12 @@ namespace LCU.Presentation.OpenID
 				}
 				else
 				{
-					var identity = (ClaimsIdentity)user.Identity;
+					//var identity = (ClaimsIdentity)user.Identity;
 					
-					foreach (var action in Options.ClaimActions)
-					{	
-						action.Run(Nullable<JsonElement>, identity, ClaimsIssuer); 
-					}
+					//foreach (var action in Options.ClaimActions)
+					//{	
+					//	action.Run(Nullable<JsonElement>, identity, ClaimsIssuer); 
+					//}
 				}
 
 				return HandleRequestResult.Success(new AuthenticationTicket(user, properties, Scheme.Name));
