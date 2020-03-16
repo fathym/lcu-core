@@ -194,8 +194,12 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				var existingQuery = g.V().HasLabel(EntGraphConstants.DAFAppVertexName)
 						.HasId(config.ID)
 						.Has("ApplicationID", config.ApplicationID)
-						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}")
-						.Drop();
+						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}");
+
+				if (!config.Lookup.IsNullOrEmpty())
+					existingQuery = existingQuery.Has("Lookup", config.Lookup);
+
+				existingQuery = existingQuery.Drop();
 
 				var existingResult = await SubmitFirst<DAFApplicationConfiguration>(existingQuery);
 
@@ -293,6 +297,8 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}");
 
 				query = query.Property("Priority", config.Priority);
+
+				query = query.Property("Lookup", config.Metadata.ContainsKey("Lookup") ? config.Metadata["Lookup"] : "");
 
 				if (config.Metadata.ContainsKey("BaseHref"))
 				{
