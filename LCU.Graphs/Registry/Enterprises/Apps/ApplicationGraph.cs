@@ -304,7 +304,8 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				{
 					query.Property("BaseHref", config.Metadata["BaseHref"])
 						.Property("NPMPackage", config.Metadata["NPMPackage"])
-						.Property("PackageVersion", config.Metadata["PackageVersion"]);
+						.Property("PackageVersion", config.Metadata["PackageVersion"])
+						.Property("StateConfig", config.Metadata.ContainsKey("StateConfig") ? config.Metadata["StateConfig"] : "");
 				}
 				else if (config.Metadata.ContainsKey("APIRoot"))
 				{
