@@ -296,7 +296,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 						.Has("ApplicationID", config.ApplicationID)
 						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}");
 
-				query = query.Property("Lookup", config.Metadata.ContainsKey("Lookup") ? config.Metadata["Lookup"] : "");
+				query = query.Property("Lookup", config.Lookup ?? "");
 
 				query = query.Property("Priority", config.Priority);
 
