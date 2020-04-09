@@ -248,6 +248,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 
 				query = query
 					.Property("Container", application.Container ?? "")
+					.Property("Description", application.Description ?? "")
 					.Property("IsPrivate", application.IsPrivate)
 					.Property("IsReadOnly", application.IsReadOnly)
 					.Property("Name", application.Name ?? "")
