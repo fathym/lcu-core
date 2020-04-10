@@ -122,6 +122,20 @@ namespace LCU.Graphs.Registry.Enterprises
 			});
 		}
 
+		public virtual async Task<List<string>> FindRegistratedHosts(string apiKey, string hostRoot)
+		{
+			return await withG(async (client, g) =>
+			{
+				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
+					.Has("Hosts", TextP.EndingWith(hostRoot))
+					.Values<string>("Hosts");
+
+				var results = await Submit<string>(query);
+
+				return results.Distinct().ToList();
+			}, apiKey);
+		}
+
 		public virtual async Task<List<string>> ListRegistrationHosts(string apiKey)
 		{
 			return await withG(async (client, g) =>
