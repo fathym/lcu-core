@@ -122,7 +122,7 @@ namespace LCU.Graphs.Registry.Enterprises
 			});
 		}
 
-		public virtual async Task<List<string>> FindRegistratedHosts(string apiKey, string hostRoot)
+		public virtual async Task<List<string>> FindRegisteredHosts(string apiKey, string hostRoot)
 		{
 			return await withG(async (client, g) =>
 			{
