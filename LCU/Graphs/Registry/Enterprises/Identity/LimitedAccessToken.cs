@@ -7,7 +7,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 {
     [Serializable]
     [DataContract]
-    public class LimitedAccessToken : BusinessModel<Guid>
+    public class LicenseAccessToken : BusinessModel<Guid>
     {
         [DataMember]
         public DateTime AccessStartDate { get; set; }
