@@ -247,6 +247,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 						.Has(EntGraphConstants.RegistryName, application.EnterpriseAPIKey);
 
 				query = query
+					.Property("AccessRights", application.AccessRights ?? new List<string>())
 					.Property("Container", application.Container ?? "")
 					.Property("Description", application.Description ?? "")
 					.Property("IsPrivate", application.IsPrivate)
