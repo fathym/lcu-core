@@ -247,7 +247,6 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 						.Has(EntGraphConstants.RegistryName, application.EnterpriseAPIKey);
 
 				query = query
-					.Property("AccessRights", application.AccessRights ?? new List<string>())
 					.Property("Container", application.Container ?? "")
 					.Property("Description", application.Description ?? "")
 					.Property("IsPrivate", application.IsPrivate)
@@ -257,6 +256,11 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 					.Property("QueryRegex", application.QueryRegex ?? "")
 					.Property("UserAgentRegex", application.UserAgentRegex ?? "")
 					.Property("Priority", application.Priority);
+
+				application.AccessRights.Each(accessRight =>
+				{
+					query = query.Property(Cardinality.List, "AccessRights", accessRight, new object[] { });
+				});
 
 				application.Hosts.Each(host =>
 				{
