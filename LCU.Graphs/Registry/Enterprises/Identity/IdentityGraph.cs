@@ -147,26 +147,28 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             }, entApiKey);
         }
 
-        public async Task<LimitedAccessToken> GetLimitedAccessToken(string entApiKey, string username)
+        public async Task<LicenseAccessToken> GetLicenseAccessToken(string entApiKey, string username)
         {
             return await withG(async (client, g) =>
             {
 
                 // Check for existing token
                 var existingQuery = g.V()
-                 .HasLabel(EntGraphConstants.LimitedAccessTokenVertexName)
+                 .HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
                  .Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
                  .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
-                var tokResult = await SubmitFirst<LimitedAccessToken>(existingQuery);
+                var tokResult = await SubmitFirst<LicenseAccessToken>(existingQuery);
 
                 return tokResult;
 
             }, entApiKey);
         }
 
-        public async Task<LimitedAccessToken> IssueLimitedAccessToken(string entApiKey, string username, bool isLocked, int trialLength)
+        public async Task<LicenseAccessToken> IssueLicenseAccessToken(string entApiKey, string username, bool isLocked, int trialLength)
         {
+            //TODO: add metadata properties
+
             return await withG(async (client, g) =>
             {
                 // Verify user account exists
@@ -180,25 +182,27 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
                 // Check for existing token
                 var existingQuery = g.V()
-                    .HasLabel(EntGraphConstants.LimitedAccessTokenVertexName)
+                    .HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
                     .Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
                     .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
-                var tokResult = await SubmitFirst<LimitedAccessToken>(existingQuery);
+                var tokResult = await SubmitFirst<LicenseAccessToken>(existingQuery);
 
                 // If token already exists, return it 
                 if (tokResult != null) return tokResult;
 
                 // If not, issue the limited access token 
                 var setQuery =
-                    g.AddV(EntGraphConstants.LimitedAccessTokenVertexName)
+                    g.AddV(EntGraphConstants.LicenseAccessTokenVertexName)
                         .Property(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
                         .Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
                         .Property("AccessStartDate", System.DateTime.Now)
                         .Property("ExpirationDate", System.DateTime.Now.AddDays(trialLength))
                         .Property("IsLocked", "false");
 
-                tokResult = await SubmitFirst<LimitedAccessToken>(setQuery);
+                // TODO:  store metadata properties as independent property values - will need to iterate through the metadata collection
+
+                tokResult = await SubmitFirst<LicenseAccessToken>(setQuery);
 
                 return tokResult;
             }, entApiKey);
@@ -593,19 +597,19 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             }, entApiKey);
         }
 
-        public async Task<LimitedAccessToken> UpdateLimitedAccessToken(string entApiKey, string username, bool isLocked, int trialLength, bool isReset)
+        public virtual async Task<LicenseAccessToken> UpdateLicenseAccessToken(string entApiKey, string username, bool isLocked, int trialLength, bool isReset)
         {
             return await withG(async (client, g) =>
             {
-                var tokenUpdateResult = new LimitedAccessToken();
+                var tokenUpdateResult = new LicenseAccessToken();
 
                 // Check for existing token
                 var existingQuery = g.V()
-                 .HasLabel(EntGraphConstants.LimitedAccessTokenVertexName)
+                 .HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
                  .Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
                  .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
-                var tokResult = await SubmitFirst<LimitedAccessToken>(existingQuery);
+                var tokResult = await SubmitFirst<LicenseAccessToken>(existingQuery);
 
                 // If token already exists, return it 
                 if (tokResult != null)
@@ -621,7 +625,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                         expDate = System.DateTime.Now.AddDays(trialLength);
                     }
 
-                    var setQuery = g.V().HasLabel(EntGraphConstants.LimitedAccessTokenVertexName)
+                    var setQuery = g.V().HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
                         .Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
                         .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
                         .Property("AccessStartDate", accDate)
@@ -632,7 +636,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
                     var updateResult = await SubmitFirst<BusinessModel<Guid>>(setQuery);
 
-                    tokenUpdateResult = updateResult.JSONConvert<LimitedAccessToken>();
+                    tokenUpdateResult = updateResult.JSONConvert<LicenseAccessToken>();
 
                 }
 
