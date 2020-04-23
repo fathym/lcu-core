@@ -165,46 +165,6 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
             }, entApiKey);
         }
-     
-        public virtual async Task<List<AccessCard>> ListAccessCards(string entApiKey, string username)
-        {
-            return await withG(async (client, g) =>
-            {
-                var existingQuery = g.V()
-                    .HasLabel(EntGraphConstants.AccessCardVertexName)
-                    .Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-                    .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
-
-                var acResults = await Submit<AccessCard>(existingQuery);
-
-                return acResults?.ToList();
-            }, entApiKey);
-        }
-
-        public virtual async Task<List<string>> ListMembersWithAccessConfigType(string entApiKey, string accessConfigType)
-        {
-            return await withG(async (client, g) =>
-            {
-                var members = new List<string>();
-
-                var query = g.V().HasLabel(EntGraphConstants.AccessCardVertexName)
-                                .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-                                .Has(EntGraphConstants.AccessConfigurationTypeName, accessConfigType);
-
-                var results = await Submit<AccessCard>(query);
-
-                foreach (var result in results)
-                    if (result.Registry?.Split('|').Count() > 1)
-                        members.Add(result.Registry.Split('|')[1]);
-
-                return members;
-            });
-        }
-
-        public virtual async Task<List<string>> ListAdmins(string entApiKey)
-        {
-            return await ListMembersWithAccessConfigType(entApiKey, EntGraphConstants.AccessConfigurationRoleAdmin);
-        }
 
         public virtual async Task<List<string>> ListAccountsByOrg(string entApiKey)
         {
@@ -223,6 +183,63 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
                 foreach (var result in results)
                     members.Add(result.Email);
+
+                return members;
+            });
+        }
+
+        public virtual async Task<List<AccessCard>> ListAccessCards(string entApiKey, string username)
+        {
+            return await withG(async (client, g) =>
+            {
+                var existingQuery = g.V()
+                    .HasLabel(EntGraphConstants.AccessCardVertexName)
+                    .Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
+                    .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+
+                var acResults = await Submit<AccessCard>(existingQuery);
+
+                return acResults?.ToList();
+            }, entApiKey);
+        }
+
+        public virtual async Task<List<string>> ListAdmins(string entApiKey)
+        {
+            return await ListMembersWithAccessConfigType(entApiKey, EntGraphConstants.AccessConfigurationRoleAdmin);
+        }
+
+        
+        public virtual async Task<List<LicenseAccessToken>> ListLicenseAccessTokens(string entApiKey)
+        {
+            return await withG(async (client, g) =>
+            {
+
+                var tokenQuery = g.V()
+                 .HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
+                 .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+
+                var tokResult = await Submit<LicenseAccessToken>(tokenQuery);
+
+                return tokResult?.ToList<LicenseAccessToken>();
+
+            }, entApiKey);
+        }
+
+        public virtual async Task<List<string>> ListMembersWithAccessConfigType(string entApiKey, string accessConfigType)
+        {
+            return await withG(async (client, g) =>
+            {
+                var members = new List<string>();
+
+                var query = g.V().HasLabel(EntGraphConstants.AccessCardVertexName)
+                                .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+                                .Has(EntGraphConstants.AccessConfigurationTypeName, accessConfigType);
+
+                var results = await Submit<AccessCard>(query);
+
+                foreach (var result in results)
+                    if (result.Registry?.Split('|').Count() > 1)
+                        members.Add(result.Registry.Split('|')[1]);
 
                 return members;
             });
