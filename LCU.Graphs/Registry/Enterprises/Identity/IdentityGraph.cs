@@ -9,7 +9,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using LCU.Security;
 using LCU.Graphs;
-using LCU.Graphs.Extensions;
 using Microsoft.Extensions.Configuration;
 
 namespace LCU.Graphs.Registry.Enterprises.Identity
