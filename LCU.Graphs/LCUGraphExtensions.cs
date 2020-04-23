@@ -23,16 +23,11 @@ namespace LCU.Graphs
 
 		public static GraphTraversal<Vertex, Vertex> AttachList<T>(this GraphTraversal<Vertex, Vertex> query, string propertyName, List<T> entities)
 		{
-			var isFirst = true;
+			query = query.Properties<Vertex>(propertyName).Drop();
 
 			entities.Each(entity =>
 			{
-				if (isFirst)
-					query = query.Property(propertyName, entity, new object[] { });
-				else
-					query = query.Property(Cardinality.List, propertyName, entity, new object[] { });
-
-				isFirst = false;
+				query = query.Property(Cardinality.List, propertyName, entity, new object[] { });
 			});
 
 			return query;
