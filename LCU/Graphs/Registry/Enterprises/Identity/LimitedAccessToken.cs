@@ -22,7 +22,13 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
         public bool IsLocked { get; set; }
 
         [DataMember]
+        public bool IsReset { get; set; }
+
+        [DataMember]
         public string Registry { get; set; }
+
+        [DataMember]
+        public string UserName { get; set; }
 
     }
 }
