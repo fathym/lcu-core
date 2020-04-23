@@ -1,5 +1,6 @@
 ﻿using Fathym;
 using Fathym.Business.Models;
+using Gremlin.Net.Structure;
 using Gremlin.Net.Process.Traversal;
 using Newtonsoft.Json.Linq;
 using System;
@@ -8,7 +9,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using LCU.Security;
-using LCU.Graphs;
 using Microsoft.Extensions.Configuration;
 
 namespace LCU.Graphs.Registry.Enterprises.Identity
