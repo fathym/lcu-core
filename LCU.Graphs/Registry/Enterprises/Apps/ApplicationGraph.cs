@@ -257,17 +257,9 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 					.Property("PathRegex", application.PathRegex ?? "")
 					.Property("QueryRegex", application.QueryRegex ?? "")
 					.Property("UserAgentRegex", application.UserAgentRegex ?? "")
-					.Property("Priority", application.Priority);
-
-				application.AccessRights.Each(accessRight =>
-				{
-					query = query.Property(Cardinality.List, "AccessRights", accessRight, new object[] { });
-				});
-
-				application.Hosts.Each(host =>
-				{
-					query = query.Property(Cardinality.List, "Hosts", host, new object[] { });
-				});
+					.Property("Priority", application.Priority)
+					.AttachList("AccessRights", application.AccessRights)
+					.AttachList("Hosts", application.Hosts);
 
 				var appResult = await SubmitFirst<Application>(query);
 
