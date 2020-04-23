@@ -208,7 +208,6 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             return await ListMembersWithAccessConfigType(entApiKey, EntGraphConstants.AccessConfigurationRoleAdmin);
         }
 
-        
         public virtual async Task<List<LicenseAccessToken>> ListLicenseAccessTokens(string entApiKey)
         {
             return await withG(async (client, g) =>
@@ -220,8 +219,14 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
                 var tokResult = await Submit<LicenseAccessToken>(tokenQuery);
 
-                return tokResult?.ToList<LicenseAccessToken>();
+                var tokResultList = tokResult?.ToList<LicenseAccessToken>();
 
+                tokResultList.ForEach(p =>
+                             {
+                                 p.UserName = p.Registry.Split('|')[1]?.ToString();
+                             });
+
+                return tokResultList;
             }, entApiKey);
         }
 
