@@ -18,6 +18,8 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 		public ApplicationGraph(GremlinClientPoolManager clientPool)
 			: base(clientPool)
 		{
+			ListProperties.Add("AccessRights");
+
 			ListProperties.Add("Hosts");
 		}
 		#endregion
