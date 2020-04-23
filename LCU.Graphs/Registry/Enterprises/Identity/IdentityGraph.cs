@@ -1,5 +1,6 @@
 ﻿using Fathym;
 using Fathym.Business.Models;
+using Gremlin.Net.Structure;
 using Gremlin.Net.Process.Traversal;
 using Newtonsoft.Json.Linq;
 using System;
@@ -162,49 +163,6 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
                 return tokResult;
 
-            }, entApiKey);
-        }
-
-        public async Task<LicenseAccessToken> IssueLicenseAccessToken(string entApiKey, string username, bool isLocked, int trialLength)
-        {
-            //TODO: add metadata properties
-
-            return await withG(async (client, g) =>
-            {
-                // Verify user account exists
-                var existingAccountQuery = g.V()
-                            .HasLabel(EntGraphConstants.AccountVertexName)
-                            .Has("Email", username);
-                var accResult = await SubmitFirst<Account>(existingAccountQuery);
-
-                // If not, return status of failure
-                if (accResult == null) return null;
-
-                // Check for existing token
-                var existingQuery = g.V()
-                    .HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
-                    .Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-                    .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
-
-                var tokResult = await SubmitFirst<LicenseAccessToken>(existingQuery);
-
-                // If token already exists, return it 
-                if (tokResult != null) return tokResult;
-
-                // If not, issue the limited access token 
-                var setQuery =
-                    g.AddV(EntGraphConstants.LicenseAccessTokenVertexName)
-                        .Property(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-                        .Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-                        .Property("AccessStartDate", System.DateTime.Now)
-                        .Property("ExpirationDate", System.DateTime.Now.AddDays(trialLength))
-                        .Property("IsLocked", "false");
-
-                // TODO:  store metadata properties as independent property values - will need to iterate through the metadata collection
-
-                tokResult = await SubmitFirst<LicenseAccessToken>(setQuery);
-
-                return tokResult;
             }, entApiKey);
         }
      
@@ -597,51 +555,71 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             }, entApiKey);
         }
 
-        public virtual async Task<LicenseAccessToken> UpdateLicenseAccessToken(string entApiKey, string username, bool isLocked, int trialLength, bool isReset)
+        public virtual async Task<LicenseAccessToken> SetLicenseAccessToken(LicenseAccessToken token)
         {
             return await withG(async (client, g) =>
             {
-                var tokenUpdateResult = new LicenseAccessToken();
+                string username = token.UserName ?? token.Metadata["UserName"].ToString();
+
+                // Verify user account exists
+                var existingAccountQuery = g.V()
+                            .HasLabel(EntGraphConstants.AccountVertexName)
+                            .Has("Email", username);
+                var accResult = await SubmitFirst<Account>(existingAccountQuery);
+
+                // If not, return status of failure
+                if (accResult == null) return null;
 
                 // Check for existing token
                 var existingQuery = g.V()
-                 .HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
-                 .Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-                 .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+                    .HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
+                    .Has(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.UserName}")
+                    .Has(EntGraphConstants.EnterpriseAPIKeyName, token.EnterpriseAPIKey);
 
                 var tokResult = await SubmitFirst<LicenseAccessToken>(existingQuery);
 
-                // If token already exists, return it 
+                // If token already exists, apply updates to license properties 
                 if (tokResult != null)
                 {
                     var accDate = tokResult.AccessStartDate;
                     var expDate = tokResult.ExpirationDate;
 
-                    if (isLocked) expDate = System.DateTime.Now;
+                    if (token.IsLocked) expDate = System.DateTime.Now;
 
-                    if (isReset)
+                    if (token.IsReset)
                     {
                         accDate = System.DateTime.Now;
-                        expDate = System.DateTime.Now.AddDays(trialLength);
+                        expDate = System.DateTime.Now.AddDays(Convert.ToInt16(token.Metadata["TrialPeriodDays"]));
                     }
 
-                    var setQuery = g.V().HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
-                        .Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-                        .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+                    var setQuery =
+                        g.V().HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
+                        .Has(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.UserName}")
+                        .Has(EntGraphConstants.EnterpriseAPIKeyName, token.EnterpriseAPIKey)
                         .Property("AccessStartDate", accDate)
                         .Property("ExpirationDate", expDate)
-                        .Property("TrialLength", trialLength)
-                        .Property("IsLocked", isLocked);
-
+                        .AttachMetadataProperties<LicenseAccessToken>(token);
 
                     var updateResult = await SubmitFirst<BusinessModel<Guid>>(setQuery);
 
-                    tokenUpdateResult = updateResult.JSONConvert<LicenseAccessToken>();
+                    tokResult = updateResult.JSONConvert<LicenseAccessToken>();
+                }
+                else
+                {
+                    // If not, create the license access token 
+                    var setQuery =
+                        g.AddV(EntGraphConstants.LicenseAccessTokenVertexName)
+                            .Property(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.UserName}")
+                            .Property(EntGraphConstants.EnterpriseAPIKeyName, token.EnterpriseAPIKey)
+                            .Property("AccessStartDate", System.DateTime.Now)
+                            .Property("ExpirationDate", System.DateTime.Now.AddDays(Convert.ToInt16(token.Metadata["TrialPeriodDays"].ToString())))
+                            .AttachMetadataProperties<LicenseAccessToken>(token);
+
+                    tokResult = await SubmitFirst<LicenseAccessToken>(setQuery);
 
                 }
-
-                return tokenUpdateResult;
-            }, entApiKey);
+                return tokResult;
+            }, token.EnterpriseAPIKey);
         }
 
         public virtual async Task<Status> Validate(string entApiKey, string email, string password)
