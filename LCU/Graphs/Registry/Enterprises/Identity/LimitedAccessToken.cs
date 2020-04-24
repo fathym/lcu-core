@@ -19,6 +19,9 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
         public string EnterpriseAPIKey { get; set; }
 
         [DataMember]
+        public Fathym.Status EnterpriseOverride { get; set; }
+
+        [DataMember]
         public bool IsLocked { get; set; }
 
         [DataMember]
