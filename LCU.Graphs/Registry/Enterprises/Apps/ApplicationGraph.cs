@@ -239,6 +239,23 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 
 				var existingAppResult = await SubmitFirst<Application>(existingQuery);
 
+				if (existingAppResult != null)
+				{
+					var dropAccessRightsQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
+						.HasId(existingAppResult.ID)
+						.Has(EntGraphConstants.EnterpriseAPIKeyName, application.EnterpriseAPIKey)
+						.Has(EntGraphConstants.RegistryName, application.EnterpriseAPIKey).Properties<Vertex>("AccessRights").Drop();
+
+					await Submit(dropAccessRightsQuery);
+
+					var dropHostsQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
+						.HasId(existingAppResult.ID)
+						.Has(EntGraphConstants.EnterpriseAPIKeyName, application.EnterpriseAPIKey)
+						.Has(EntGraphConstants.RegistryName, application.EnterpriseAPIKey).Properties<Vertex>("Hosts").Drop();
+
+					await Submit(dropHostsQuery);
+				}
+
 				var query = existingAppResult == null ?
 					g.AddV(EntGraphConstants.AppVertexName)
 						.Property(EntGraphConstants.RegistryName, application.EnterpriseAPIKey)

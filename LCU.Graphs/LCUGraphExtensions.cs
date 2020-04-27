@@ -4,6 +4,7 @@ using Gremlin.Net.Process.Traversal;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace LCU.Graphs
 {
@@ -21,17 +22,24 @@ namespace LCU.Graphs
 			return query;
 		}
 
-		public static GraphTraversal<Vertex, Vertex> AttachList<T>(this GraphTraversal<Vertex, Vertex> query, string propertyName, List<T> entities)
+		public static GraphTraversal<Vertex, Vertex> AttachList<T>(this GraphTraversal<Vertex, Vertex> query, string propertyName, List<T> entities, bool distinct = true)
 		{
-			query = query.Properties<Vertex>(propertyName).Drop();
+			var isFirst = true;
 
-			entities.Each(entity =>
+			if (distinct)
+				entities = entities?.Distinct().ToList();
+
+			entities?.Each(entity =>
 			{
-				query = query.Property(Cardinality.List, propertyName, entity, new object[] { });
+				if (isFirst)
+					query = query.Property(propertyName, entity);
+				else
+					query = query.Property(Cardinality.List, propertyName, entity);
+
+				isFirst = false;
 			});
 
 			return query;
 		}
-
 	}
 }
