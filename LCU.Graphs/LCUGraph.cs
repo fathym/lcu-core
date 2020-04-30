@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 
 namespace LCU.Graphs
 {
+	//	TODO:  Investigate shift to https://github.com/ExRam/ExRam.Gremlinq or another
 	public class LCUGraph : ILCUGraph
 	{
 		#region Fields

@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Http
 
 			return await new HttpClient()
 			{
-				Timeout = timeout ?? TimeSpan.FromMinutes(10)
+				Timeout = timeout ?? TimeSpan.FromMinutes(60)
 			}.SendAsync(proxiedRequest, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted);
 		}
 

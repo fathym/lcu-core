@@ -29,7 +29,7 @@ namespace LCU.Rest
 
 			web = new HttpClient(handler);
 
-			SetTimeout(TimeSpan.FromMinutes(10));
+			SetTimeout(TimeSpan.FromMinutes(60));
 
 			if (!bearerToken.IsNullOrEmpty())
 				SetAuthorization(bearerToken, "Bearer");

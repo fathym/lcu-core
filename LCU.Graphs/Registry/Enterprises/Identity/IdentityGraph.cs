@@ -1,5 +1,6 @@
 ﻿using Fathym;
 using Fathym.Business.Models;
+using Gremlin.Net.Structure;
 using Gremlin.Net.Process.Traversal;
 using Newtonsoft.Json.Linq;
 using System;
@@ -147,6 +148,46 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             }, entApiKey);
         }
 
+        public async Task<LicenseAccessToken> GetLicenseAccessToken(string entApiKey, string username)
+        {
+            return await withG(async (client, g) =>
+            {
+
+                // Check for existing token
+                var existingQuery = g.V()
+                 .HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
+                 .Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
+                 .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+
+                var tokResult = await SubmitFirst<LicenseAccessToken>(existingQuery);
+
+                return tokResult;
+
+            }, entApiKey);
+        }
+
+        public virtual async Task<List<string>> ListAccountsByOrg(string entApiKey)
+        {
+            return await withG(async (client, g) =>
+            {
+
+                var query = g.V().HasLabel(EntGraphConstants.PassportVertexName)
+                                .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+                                .InE(EntGraphConstants.CarriesEdgeName)
+                                .OutV()
+                                .HasLabel(EntGraphConstants.AccountVertexName);
+
+                var results = await Submit<Account>(query);
+
+                var members = new List<string>();
+
+                foreach (var result in results)
+                    members.Add(result.Email);
+
+                return members;
+            });
+        }
+
         public virtual async Task<List<AccessCard>> ListAccessCards(string entApiKey, string username)
         {
             return await withG(async (client, g) =>
@@ -162,11 +203,38 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             }, entApiKey);
         }
 
-        public virtual async Task<List<string>> ListMembersWithAccessConfigType(string entApiKey,  string accessConfigType)
+        public virtual async Task<List<string>> ListAdmins(string entApiKey)
+        {
+            return await ListMembersWithAccessConfigType(entApiKey, EntGraphConstants.AccessConfigurationRoleAdmin);
+        }
+
+        public virtual async Task<List<LicenseAccessToken>> ListLicenseAccessTokens(string entApiKey)
         {
             return await withG(async (client, g) =>
             {
-                var admins = new List<string>();
+
+                var tokenQuery = g.V()
+                 .HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
+                 .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+
+                var tokResult = await Submit<LicenseAccessToken>(tokenQuery);
+
+                var tokResultList = tokResult?.ToList<LicenseAccessToken>();
+
+                tokResultList.ForEach(p =>
+                             {
+                                 p.UserName = p.Registry.Split('|')[1]?.ToString();
+                             });
+
+                return tokResultList;
+            }, entApiKey);
+        }
+
+        public virtual async Task<List<string>> ListMembersWithAccessConfigType(string entApiKey, string accessConfigType)
+        {
+            return await withG(async (client, g) =>
+            {
+                var members = new List<string>();
 
                 var query = g.V().HasLabel(EntGraphConstants.AccessCardVertexName)
                                 .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
@@ -176,15 +244,10 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
                 foreach (var result in results)
                     if (result.Registry?.Split('|').Count() > 1)
-                        admins.Add(result.Registry.Split('|')[1]);
+                        members.Add(result.Registry.Split('|')[1]);
 
-                return admins;
+                return members;
             });
-        }
-
-        public virtual async Task<List<string>> ListAdmins(string entApiKey)
-        {
-            return await ListMembersWithAccessConfigType(entApiKey, EntGraphConstants.AccessConfigurationRoleAdmin);
         }
 
         public virtual async Task<Status> Register(string entApiKey, string email, string password)
@@ -274,11 +337,12 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
                     //return entTptResult?.Metadata["Token"].ToString();
 
-                    isEncrypted = entTptResult?.Metadata["Encrypt"]?.ToString();
+                    if (entTptResult.Metadata.ContainsKey("Encrypt"))
+                        isEncrypted = entTptResult?.Metadata["Encrypt"]?.ToString();
 
                     tokenResult = (isEncrypted == "true") ?
-                                         Encryption.Decrypt(entTptResult?.Metadata["Token"].ToString(), config["TOKEN-ENCODING-KEY"]) :
-                                         entTptResult?.Metadata["Token"].ToString();
+                        Encryption.Decrypt(entTptResult?.Metadata["Token"].ToString(), config["TOKEN-ENCODING-KEY"]) :
+                        entTptResult?.Metadata["Token"].ToString();
 
                 }
                 else
@@ -294,11 +358,12 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
                     var accTptResult = await SubmitFirst<BusinessModel<Guid>>(existingAccQuery);
 
-                   isEncrypted = accTptResult?.Metadata["Encrypt"]?.ToString();
+                    if (accTptResult.Metadata.ContainsKey("Encrypt"))
+                        isEncrypted = accTptResult?.Metadata["Encrypt"]?.ToString();
 
-                   tokenResult = (isEncrypted == "true") ? 
-                                        Encryption.Decrypt(accTptResult?.Metadata["Token"].ToString(), config["TOKEN-ENCODING-KEY"]) :
-                                        accTptResult?.Metadata["Token"].ToString();
+                    tokenResult = (isEncrypted == "true") ?
+                        Encryption.Decrypt(accTptResult?.Metadata["Token"].ToString(), config["TOKEN-ENCODING-KEY"]) :
+                        accTptResult?.Metadata["Token"].ToString();
 
                 }
 
@@ -327,7 +392,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                 }
 
                 existingQuery = existingQuery
-					.Out(EntGraphConstants.OwnsEdgeName)
+                    .Out(EntGraphConstants.OwnsEdgeName)
                     .HasLabel(EntGraphConstants.ThirdPartyTokenVertexName)
                     .Has(EntGraphConstants.RegistryName, email)
                     .Has("Key", key);
@@ -341,7 +406,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                         .Property("Key", key);
 
                 setQuery = setQuery.Property("Token", token)
-                                   .Property("Encrypt", encrypt);
+                    .Property("Encrypt", encrypt);
 
                 tptResult = await SubmitFirst<BusinessModel<Guid>>(setQuery);
 
@@ -512,6 +577,73 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             }, entApiKey);
         }
 
+        public virtual async Task<LicenseAccessToken> SetLicenseAccessToken(LicenseAccessToken token)
+        {
+            return await withG(async (client, g) =>
+            {
+                string username = token.UserName ?? token.Metadata["UserName"].ToString();
+
+                // Verify user account exists
+                var existingAccountQuery = g.V()
+                            .HasLabel(EntGraphConstants.AccountVertexName)
+                            .Has("Email", username);
+                var accResult = await SubmitFirst<Account>(existingAccountQuery);
+
+                // If not, return status of failure
+                if (accResult == null) return null;
+
+                // Check for existing token
+                var existingQuery = g.V()
+                    .HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
+                    .Has(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.UserName}")
+                    .Has(EntGraphConstants.EnterpriseAPIKeyName, token.EnterpriseAPIKey);
+
+                var tokResult = await SubmitFirst<LicenseAccessToken>(existingQuery);
+
+                // If token already exists, apply updates to license properties 
+                if (tokResult != null)
+                {
+                    var accDate = tokResult.AccessStartDate;
+                    var expDate = tokResult.ExpirationDate;
+
+                    if (token.IsLocked) expDate = System.DateTime.Now;
+
+                    if (token.IsReset)
+                    {
+                        accDate = System.DateTime.Now;
+                        expDate = System.DateTime.Now.AddDays(Convert.ToInt16(token.Metadata["TrialPeriodDays"]));
+                    }
+
+                    var setQuery =
+                        g.V().HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
+                        .Has(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.UserName}")
+                        .Has(EntGraphConstants.EnterpriseAPIKeyName, token.EnterpriseAPIKey)
+                        .Property("AccessStartDate", accDate)
+                        .Property("ExpirationDate", expDate)
+                        .AttachMetadataProperties<LicenseAccessToken>(token);
+
+                    var updateResult = await SubmitFirst<BusinessModel<Guid>>(setQuery);
+
+                    tokResult = updateResult.JSONConvert<LicenseAccessToken>();
+                }
+                else
+                {
+                    // If not, create the license access token 
+                    var setQuery =
+                        g.AddV(EntGraphConstants.LicenseAccessTokenVertexName)
+                            .Property(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.UserName}")
+                            .Property(EntGraphConstants.EnterpriseAPIKeyName, token.EnterpriseAPIKey)
+                            .Property("AccessStartDate", System.DateTime.Now)
+                            .Property("ExpirationDate", System.DateTime.Now.AddDays(Convert.ToInt16(token.Metadata["TrialPeriodDays"].ToString())))
+                            .AttachMetadataProperties<LicenseAccessToken>(token);
+
+                    tokResult = await SubmitFirst<LicenseAccessToken>(setQuery);
+
+                }
+                return tokResult;
+            }, token.EnterpriseAPIKey);
+        }
+
         public virtual async Task<Status> Validate(string entApiKey, string email, string password)
         {
             return await withG(async (client, g) =>
@@ -540,6 +672,8 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                 return status;
             }, entApiKey);
         }
+
+
         #endregion
 
         #region Helpers
