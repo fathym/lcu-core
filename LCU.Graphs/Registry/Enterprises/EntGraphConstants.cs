@@ -40,6 +40,8 @@
 
         public const string LCUConfigVertexName = "LCUConfig";
 
+		public const string LicenseAccessTokenVertexName = "LicenseAccessToken";
+
 		public const string ManagesEdgeName = "Manages";
 
 		public const string ModuleVertexName = "Module";

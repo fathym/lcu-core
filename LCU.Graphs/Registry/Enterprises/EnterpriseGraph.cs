@@ -76,7 +76,7 @@ namespace LCU.Graphs.Registry.Enterprises
 			});
 		}
 
-		public virtual async Task<Status> DeleteEnterprise(string entApiKey, string password)
+		public virtual async Task<Status> DeleteEnterprise(string entApiKey)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -84,22 +84,17 @@ namespace LCU.Graphs.Registry.Enterprises
 
 				if (ent != null)
 				{
-					var entPassword = ent.Metadata.ContainsKey("DeletePassword") ? ent.Metadata["DeletePassword"].ToString() : null;
+					var dataQuery = g.V()
+						.Has("EnterpriseAPIKey", entApiKey)
+						.Drop();
 
-					if (!entPassword.IsNullOrEmpty() && entPassword == password)
-					{
-						var dataQuery = g.V()
-							.Has("EnterpriseAPIKey", entApiKey)
-							.Drop();
+					await Submit(dataQuery);
 
-						await Submit(dataQuery);
+					var entQuery = g.V()
+						.Has("PrimaryAPIKey", entApiKey)
+						.Drop();
 
-						var entQuery = g.V()
-							.Has("PrimaryAPIKey", entApiKey)
-							.Drop();
-
-						await Submit(entQuery);
-					}
+					await Submit(entQuery);
 
 					return Status.Success;
 				}
@@ -120,6 +115,38 @@ namespace LCU.Graphs.Registry.Enterprises
 
 				return entHost != null && entHost.Count > 0;
 			});
+		}
+
+		public virtual async Task<List<string>> FindRegisteredHosts(string apiKey, string hostRoot)
+		{
+			return await withG(async (client, g) =>
+			{
+				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
+					.Has("Hosts", TextP.EndingWith(hostRoot))
+					.Values<string>("Hosts");
+
+				var results = await Submit<string>(query);
+
+				return results.Distinct().ToList();
+			}, apiKey);
+		}
+
+		public virtual async Task<List<Enterprise>> ListChildEnterprises(string apiKey)
+		{
+			return await withG(async (client, g) =>
+			{
+				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
+					.Has(EntGraphConstants.RegistryName, apiKey)
+					.Has("PrimaryAPIKey", apiKey)
+					.Out(EntGraphConstants.OwnsEdgeName)
+					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
+					.In(EntGraphConstants.OffersEdgeName)
+					.HasLabel(EntGraphConstants.EnterpriseVertexName);
+
+				var results = await Submit<Enterprise>(query);
+
+				return results.ToList();
+			}, apiKey);
 		}
 
 		public virtual async Task<List<string>> ListRegistrationHosts(string apiKey)
