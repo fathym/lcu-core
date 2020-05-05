@@ -19,7 +19,9 @@ namespace LCU.Rest
 		#region Constructors
 		public LCURestClient(string apiRoot, ILogger logger, string bearerToken = null)
 			: this(apiRoot, logger, new StaticBearerTokenProvider(bearerToken))
-		{ }
+		{
+			bearerTokenProvider = null;
+		}
 
 		public LCURestClient(string apiRoot, ILogger logger, IBearerTokenProvider bearerTokenProvider)
 		{
