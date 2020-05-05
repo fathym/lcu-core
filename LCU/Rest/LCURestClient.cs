@@ -53,10 +53,10 @@ namespace LCU.Rest
 			web.DefaultRequestHeaders.Authorization = null;
 		}
 
-		public virtual async Task<T> Delete<T>(string requestUri)
+		public virtual async Task<T> Delete<T>(string requestUri, string bearerToken = null)
 			where T : class
 		{
-			await ensureBearerTokenFromProvider();
+			await ensureBearerTokenFromProvider(bearerToken);
 
 			var response = await web.DeleteAsync(requestUri);
 
@@ -70,20 +70,20 @@ namespace LCU.Rest
 			web.Dispose();
 		}
 
-		public virtual async Task<T> Get<T>(string requestUri)
+		public virtual async Task<T> Get<T>(string requestUri, string bearerToken = null)
 			where T : class
 		{
-			await ensureBearerTokenFromProvider();
+			await ensureBearerTokenFromProvider(bearerToken);
 
 			var respStr = await web.GetStringAsync(requestUri);
 
 			return respStr?.FromJSON<T>();
 		}
 
-		public virtual async Task<TResp> Patch<TReq, TResp>(string requestUri, TReq request)
+		public virtual async Task<TResp> Patch<TReq, TResp>(string requestUri, TReq request, string bearerToken = null)
 			where TResp : class
 		{
-			await ensureBearerTokenFromProvider();
+			await ensureBearerTokenFromProvider(bearerToken);
 
 			var response = await web.PatchAsJsonAsync(requestUri, request);
 
@@ -92,10 +92,10 @@ namespace LCU.Rest
 			return respStr?.FromJSON<TResp>();
 		}
 
-		public virtual async Task<TResp> Post<TReq, TResp>(string requestUri, TReq request)
+		public virtual async Task<TResp> Post<TReq, TResp>(string requestUri, TReq request, string bearerToken = null)
 			where TResp : class
 		{
-			await ensureBearerTokenFromProvider();
+			await ensureBearerTokenFromProvider(bearerToken);
 
 			var response = await web.PostAsJsonAsync(requestUri, request);
 
@@ -104,10 +104,10 @@ namespace LCU.Rest
 			return respStr?.FromJSON<TResp>();
 		}
 
-		public virtual async Task<TResp> Put<TReq, TResp>(string requestUri, TReq request)
+		public virtual async Task<TResp> Put<TReq, TResp>(string requestUri, TReq request, string bearerToken = null)
 			where TResp : class
 		{
-			await ensureBearerTokenFromProvider();
+			await ensureBearerTokenFromProvider(bearerToken);
 
 			var response = await web.PutAsJsonAsync(requestUri, request);
 
@@ -116,9 +116,9 @@ namespace LCU.Rest
 			return respStr?.FromJSON<TResp>();
 		}
 
-		public virtual async Task<HttpResponseMessage> Send(HttpRequestMessage request)
+		public virtual async Task<HttpResponseMessage> Send(HttpRequestMessage request, string bearerToken = null)
 		{
-			await ensureBearerTokenFromProvider();
+			await ensureBearerTokenFromProvider(bearerToken);
 
 			var response = await web.SendAsync(request);
 
@@ -135,27 +135,25 @@ namespace LCU.Rest
 			web.Timeout = timeout;
 		}
 
-		public virtual async Task<TResp> With<TResp>(Func<HttpClient, Task<TResp>> action)
+		public virtual async Task<TResp> With<TResp>(Func<HttpClient, Task<TResp>> action, string bearerToken = null)
 			where TResp : class
 		{
-			await ensureBearerTokenFromProvider();
+			await ensureBearerTokenFromProvider(bearerToken);
 
 			return await action(web);
 		}
 		#endregion
 
 		#region Helpers
-		protected virtual async Task ensureBearerTokenFromProvider()
+		protected virtual async Task ensureBearerTokenFromProvider(string bearerToken = null)
 		{
-			if (bearerTokenProvider != null)
-			{
-				var bearerToken = await bearerTokenProvider.Load();
+			if (bearerToken.IsNullOrEmpty() && bearerTokenProvider != null)
+				bearerToken = await bearerTokenProvider.Load();
 
-				if (!bearerToken.IsNullOrEmpty())
-					SetAuthorization(bearerToken, "Bearer");
-				else
-					ClearAuthorization();
-			}
+			if (!bearerToken.IsNullOrEmpty())
+				SetAuthorization(bearerToken, "Bearer");
+			else
+				ClearAuthorization();
 		}
 		#endregion
 	}
