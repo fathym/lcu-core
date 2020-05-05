@@ -148,7 +148,26 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             }, entApiKey);
         }
 
-        public async Task<LicenseAccessToken> GetLicenseAccessToken(string entApiKey, string username)
+        public async Task<LicenseAccessToken> GetLicenseAccessTokenByUserLookup(string entApiKey, string username, string lookup)
+        {
+            return await withG(async (client, g) =>
+            {
+
+                // Check for existing token
+                var existingQuery = g.V()
+                 .HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
+                 .Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
+                 .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+                 .Has("Lookup", lookup);
+
+                var tokResult = await SubmitFirst<LicenseAccessToken>(existingQuery);
+
+                return tokResult;
+
+            }, entApiKey);
+        }
+
+        public async Task<List<LicenseAccessToken>> GetLicenseAccessTokensByUser(string entApiKey, string username)
         {
             return await withG(async (client, g) =>
             {
@@ -159,9 +178,9 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                  .Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
                  .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
 
-                var tokResult = await SubmitFirst<LicenseAccessToken>(existingQuery);
+                var tokResult = await Submit<LicenseAccessToken>(existingQuery);
 
-                return tokResult;
+                return tokResult.ToList<LicenseAccessToken>();
 
             }, entApiKey);
         }
