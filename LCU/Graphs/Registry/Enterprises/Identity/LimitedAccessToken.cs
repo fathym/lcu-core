@@ -28,6 +28,9 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
         public bool IsReset { get; set; }
 
         [DataMember]
+        public string Lookup { get; set; }
+
+        [DataMember]
         public string Registry { get; set; }
 
         [DataMember]
