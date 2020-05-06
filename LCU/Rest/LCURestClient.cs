@@ -152,8 +152,6 @@ namespace LCU.Rest
 
 			if (!bearerToken.IsNullOrEmpty())
 				SetAuthorization(bearerToken, "Bearer");
-			else
-				ClearAuthorization();
 		}
 		#endregion
 	}
