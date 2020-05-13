@@ -309,48 +309,6 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 			}, entApiKey);
 		}
 
-		public virtual async Task<List<string>> ListLCUFiles(string lcuLookup, string host)
-		{
-			var client = new HttpClient(new LoggingHandler(new HttpClientHandler(), logger));
-
-			//	TODO: Support HTTPs only once supported
-			client.BaseAddress = new Uri($"https://{host}");
-
-			var lcuConfigResp = await client.GetAsync($"/_lcu/{lcuLookup}/lcu.json");
-
-			var lcuConfigStr = await lcuConfigResp.Content.ReadAsStringAsync();
-
-			if (lcuConfigResp.IsSuccessStatusCode && !lcuConfigStr.IsNullOrEmpty() && !lcuConfigStr.StartsWith("<"))
-			{
-				var lcuConfig = lcuConfigStr.FromJSON<dynamic>();
-
-				var slnsDict = ((JToken)lcuConfig.config.solutions).ToObject<Dictionary<string, dynamic>>();
-
-				return ((JToken)lcuConfig.config.wc).ToObject<List<string>>();
-			}
-
-			return new List<string>();
-
-			// return await withG(async (client, g) =>
-			// {
-			//     var registry = $"{entApiKey}|{container}";
-
-			//     var query = g.V().HasLabel(IDEGraphConstants.IDEContainerVertexName)
-			//         .Has("Container", container)
-			//         .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-			//         .Has(EntGraphConstants.RegistryName, entApiKey)
-			//         .Out(IDEGraphConstants.ConsumesEdgeName)
-			//         .HasLabel(IDEGraphConstants.LCUConfigVertexName)
-			//         .Has("Lookup", lcuLookup)
-			//         .Has(EntGraphConstants.RegistryName, registry)
-			//         .Values<string>("CapabilityFiles");
-
-			//     var results = await Submit<string>(query);
-
-			//     return results?.FirstOrDefault()?.FromJSON<List<string>>();
-			// });
-		}
-
 		public virtual async Task<List<ModulePackSetup>> ListModulePackSetups(string entApiKey, string container)
 		{
 			return await withG(async (client, g) =>
