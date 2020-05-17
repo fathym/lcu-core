@@ -31,6 +31,9 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 		public virtual bool IsReadOnly { get; set; }
 
 		[DataMember]
+		public virtual List<string> Licenses { get; set; }
+
+		[DataMember]
 		public virtual string Name { get; set; }
 
 		[DataMember]
