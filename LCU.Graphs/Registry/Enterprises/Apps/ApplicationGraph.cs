@@ -21,6 +21,8 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			ListProperties.Add("AccessRights");
 
 			ListProperties.Add("Hosts");
+
+			ListProperties.Add("Licenses");
 		}
 		#endregion
 
@@ -243,17 +245,21 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				{
 					var dropAccessRightsQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
 						.HasId(existingAppResult.ID)
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, application.EnterpriseAPIKey)
-						.Has(EntGraphConstants.RegistryName, application.EnterpriseAPIKey).Properties<Vertex>("AccessRights").Drop();
+						.Properties<Vertex>("AccessRights").Drop();
 
 					await Submit(dropAccessRightsQuery);
 
 					var dropHostsQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
 						.HasId(existingAppResult.ID)
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, application.EnterpriseAPIKey)
-						.Has(EntGraphConstants.RegistryName, application.EnterpriseAPIKey).Properties<Vertex>("Hosts").Drop();
+						.Properties<Vertex>("Hosts").Drop();
 
 					await Submit(dropHostsQuery);
+
+					var dropLicensesQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
+						.HasId(existingAppResult.ID)
+						.Properties<Vertex>("Licenses").Drop();
+
+					await Submit(dropLicensesQuery);
 				}
 
 				var query = existingAppResult == null ?
@@ -261,9 +267,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 						.Property(EntGraphConstants.RegistryName, application.EnterpriseAPIKey)
 						.Property(EntGraphConstants.EnterpriseAPIKeyName, application.EnterpriseAPIKey) :
 					g.V().HasLabel(EntGraphConstants.AppVertexName)
-						.HasId(existingAppResult.ID)
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, application.EnterpriseAPIKey)
-						.Has(EntGraphConstants.RegistryName, application.EnterpriseAPIKey);
+						.HasId(existingAppResult.ID);
 
 				query = query
 					.Property("Container", application.Container ?? "")
@@ -276,7 +280,8 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 					.Property("UserAgentRegex", application.UserAgentRegex ?? "")
 					.Property("Priority", application.Priority)
 					.AttachList("AccessRights", application.AccessRights)
-					.AttachList("Hosts", application.Hosts);
+					.AttachList("Hosts", application.Hosts)
+					.AttachList("Licenses", application.Licenses);
 
 				var appResult = await SubmitFirst<Application>(query);
 
