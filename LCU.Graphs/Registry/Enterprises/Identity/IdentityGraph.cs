@@ -612,17 +612,6 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 		{
 			return await withG(async (client, g) =>
 			{
-				string username = token.Username ?? token.Metadata["UserName"].ToString();
-
-				// Verify user account exists
-				var existingAccountQuery = g.V()
-							.HasLabel(EntGraphConstants.AccountVertexName)
-							.Has("Email", username);
-				var accResult = await SubmitFirst<Account>(existingAccountQuery);
-
-				// If not, return status of failure
-				if (accResult == null) return null;
-
 				// Check for existing token
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
