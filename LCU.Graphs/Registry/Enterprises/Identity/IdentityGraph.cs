@@ -648,7 +648,9 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					if (token.IsReset)
 					{
 						accDate = System.DateTime.Now;
-						expDate = System.DateTime.Now.AddDays(Convert.ToInt16(token.Metadata["TrialPeriodDays"]));
+
+						if (token.Metadata.ContainsKey("TrialPeriodDays"))
+							expDate = DateTime.Now.AddDays(token.Metadata["TrialPeriodDays"].ToObject<int>());
 					}
 
 					var setQuery =
@@ -665,13 +667,15 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				}
 				else
 				{
+					var expDays = token.Metadata.ContainsKey("TrialPeriodDays") ? token.Metadata["TrialPeriodDays"].ToObject<int>() : 30;  //  Exp Should not be set without trial period days? 
+
 					// If not, create the license access token 
 					var setQuery =
 						g.AddV(EntGraphConstants.LicenseAccessTokenVertexName)
 							.Property(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.UserName}")
 							.Property(EntGraphConstants.EnterpriseAPIKeyName, token.EnterpriseAPIKey)
-							.Property("AccessStartDate", System.DateTime.Now)
-							.Property("ExpirationDate", System.DateTime.Now.AddDays(Convert.ToInt16(token.Metadata["TrialPeriodDays"].ToString())))
+							.Property("AccessStartDate", DateTime.Now)
+							.Property("ExpirationDate", DateTime.Now.AddDays(expDays))
 							.AttachMetadataProperties<LicenseAccessToken>(token);
 
 					tokResult = await SubmitFirst<LicenseAccessToken>(setQuery);
