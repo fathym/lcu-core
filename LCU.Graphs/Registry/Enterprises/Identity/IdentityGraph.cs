@@ -213,7 +213,6 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 		{
 			return await withG(async (client, g) =>
 			{
-
 				var tokenQuery = g.V()
 				 .HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
 				 .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
@@ -221,11 +220,6 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				var tokResult = await Submit<LicenseAccessToken>(tokenQuery);
 
 				var tokResultList = tokResult?.ToList<LicenseAccessToken>();
-
-				tokResultList.ForEach(p =>
-							 {
-								 p.UserName = p.Registry.Split('|')[1]?.ToString();
-							 });
 
 				return tokResultList;
 			}, entApiKey);
@@ -618,7 +612,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 		{
 			return await withG(async (client, g) =>
 			{
-				string username = token.UserName ?? token.Metadata["UserName"].ToString();
+				string username = token.Username ?? token.Metadata["UserName"].ToString();
 
 				// Verify user account exists
 				var existingAccountQuery = g.V()
@@ -632,7 +626,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				// Check for existing token
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
-					.Has(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.UserName}")
+					.Has(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.Username}")
 					.Has(EntGraphConstants.EnterpriseAPIKeyName, token.EnterpriseAPIKey);
 
 				var tokResult = await SubmitFirst<LicenseAccessToken>(existingQuery);
@@ -655,10 +649,13 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
 					var setQuery =
 						g.V().HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
-						.Has(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.UserName}")
+						.Has(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.Username}")
 						.Has(EntGraphConstants.EnterpriseAPIKeyName, token.EnterpriseAPIKey)
 						.Property("AccessStartDate", accDate)
 						.Property("ExpirationDate", expDate)
+						.Property("Lookup", token.Lookup)
+						.Property("TrialPeriodDays", token.TrialPeriodDays)
+						.Property("Username", token.Username)
 						.AttachMetadataProperties<LicenseAccessToken>(token);
 
 					var updateResult = await SubmitFirst<BusinessModel<Guid>>(setQuery);
@@ -672,7 +669,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					// If not, create the license access token 
 					var setQuery =
 						g.AddV(EntGraphConstants.LicenseAccessTokenVertexName)
-							.Property(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.UserName}")
+							.Property(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.Username}")
 							.Property(EntGraphConstants.EnterpriseAPIKeyName, token.EnterpriseAPIKey)
 							.Property("AccessStartDate", DateTime.Now)
 							.Property("ExpirationDate", DateTime.Now.AddDays(expDays))

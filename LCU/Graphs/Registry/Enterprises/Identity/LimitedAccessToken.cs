@@ -31,13 +31,10 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
         public string Lookup { get; set; }
 
         [DataMember]
-        public string Registry { get; set; }
-
-        [DataMember]
         public int TrialPeriodDays { get; set; }
 
         [DataMember]
-        public string UserName { get; set; }
+        public string Username { get; set; }
 
     }
 }
