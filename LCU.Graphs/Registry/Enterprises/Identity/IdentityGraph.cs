@@ -649,8 +649,8 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					{
 						accDate = System.DateTime.Now;
 
-						if (token.Metadata.ContainsKey("TrialPeriodDays"))
-							expDate = DateTime.Now.AddDays(token.Metadata["TrialPeriodDays"].ToObject<int>());
+						if (token.TrialPeriodDays > 0)
+							expDate = DateTime.Now.AddDays(token.TrialPeriodDays);
 					}
 
 					var setQuery =
@@ -667,7 +667,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				}
 				else
 				{
-					var expDays = token.Metadata.ContainsKey("TrialPeriodDays") ? token.Metadata["TrialPeriodDays"].ToObject<int>() : 30;  //  Exp Should not be set without trial period days? 
+					var expDays = token.TrialPeriodDays > 0 ? token.TrialPeriodDays : 31;  //  Exp Should not be set without trial period days? 
 
 					// If not, create the license access token 
 					var setQuery =
