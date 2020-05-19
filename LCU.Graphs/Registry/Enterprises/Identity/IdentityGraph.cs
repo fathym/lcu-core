@@ -673,6 +673,9 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 							.Property(EntGraphConstants.EnterpriseAPIKeyName, token.EnterpriseAPIKey)
 							.Property("AccessStartDate", DateTime.Now)
 							.Property("ExpirationDate", DateTime.Now.AddDays(expDays))
+							.Property("Lookup", token.Lookup)
+							.Property("TrialPeriodDays", token.TrialPeriodDays)
+							.Property("Username", token.Username)
 							.AttachMetadataProperties<LicenseAccessToken>(token);
 
 					tokResult = await SubmitFirst<LicenseAccessToken>(setQuery);
