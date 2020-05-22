@@ -10,6 +10,7 @@
 
 	<ItemGroup>
 <<<<<<< HEAD
+<<<<<<< HEAD
 		<PackageReference Include="Fathym.API" Version="1.21.20064.6-prerelease" />
 		<PackageReference Include="IdentityServer4" Version="3.1.0" />
 		<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="3.1.1" />
@@ -17,6 +18,13 @@
 		<PackageReference Include="Fathym.API" Version="1.24.20090.6" />
 		<PackageReference Include="IdentityServer4" Version="2.5.3" />
 		<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="2.2.0" />
+>>>>>>> integration
+=======
+		<PackageReference Include="Fathym.API" Version="1.26.20126.4" />
+		<PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.2.0" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="2.2.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
 >>>>>>> integration
 		<PackageReference Include="System.Net.Http.Formatting.Extension" Version="5.2.3" />
 	</ItemGroup>
