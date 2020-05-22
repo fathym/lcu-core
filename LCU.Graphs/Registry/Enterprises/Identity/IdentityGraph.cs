@@ -13,18 +13,15 @@ using Microsoft.Extensions.Configuration;
 
 namespace LCU.Graphs.Registry.Enterprises.Identity
 {
-	public class IdentityGraph : LCUGraph, IIdentityGraph
+	public class IdentityGraph : LCUGraph
 	{
 		#region Properties
-		protected readonly IConfiguration config;
 		#endregion
 
 		#region Constructors
-		public IdentityGraph(IConfiguration config, GremlinClientPoolManager clientPool)
+		public IdentityGraph(GremlinClientPoolManager clientPool)
 			: base(clientPool)
-		{
-			this.config = config;
-		}
+		{ }
 
 		public object JwtClaimTypes { get; private set; }
 		#endregion
@@ -341,11 +338,13 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 			}, entApiKey);
 		}
 
-		public virtual async Task<string> RetrieveThirdPartyAccessToken(string entApiKey, string email, string key)
+		public virtual async Task<string> RetrieveThirdPartyAccessToken(string entApiKey, string email, string key, string tokenEncodingKey)
 		{
 			return await withG(async (client, g) =>
 			{
-				string isEncrypted = "false", tokenResult = String.Empty;
+				bool isEncrypted = false;
+
+				string tokenResult = String.Empty;
 
 				var registry = email.Split('@')[1];
 
@@ -369,10 +368,10 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					//return entTptResult?.Metadata["Token"].ToString();
 
 					if (entTptResult.Metadata.ContainsKey("Encrypt"))
-						isEncrypted = entTptResult?.Metadata["Encrypt"]?.ToString();
+						isEncrypted = entTptResult.Metadata["Encrypt"].ToObject<bool>();
 
-					tokenResult = (isEncrypted == "true") ?
-						Encryption.Decrypt(entTptResult?.Metadata["Token"].ToString(), config["TOKEN-ENCODING-KEY"]) :
+					tokenResult = isEncrypted ?
+						Encryption.Decrypt(entTptResult?.Metadata["Token"].ToString(), tokenEncodingKey) :
 						entTptResult?.Metadata["Token"].ToString();
 
 				}
@@ -390,10 +389,10 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					var accTptResult = await SubmitFirst<BusinessModel<Guid>>(existingAccQuery);
 
 					if (accTptResult.Metadata.ContainsKey("Encrypt"))
-						isEncrypted = accTptResult?.Metadata["Encrypt"]?.ToString();
+						isEncrypted = accTptResult.Metadata["Encrypt"].ToObject<bool>();
 
-					tokenResult = (isEncrypted == "true") ?
-						Encryption.Decrypt(accTptResult?.Metadata["Token"].ToString(), config["TOKEN-ENCODING-KEY"]) :
+					tokenResult = isEncrypted ?
+						Encryption.Decrypt(accTptResult?.Metadata["Token"].ToString(), tokenEncodingKey) :
 						accTptResult?.Metadata["Token"].ToString();
 
 				}
@@ -402,7 +401,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 			}, entApiKey);
 		}
 
-		public virtual async Task<Status> SetThirdPartyAccessToken(string entApiKey, string email, string key, string token, string encrypt = "false")
+		public virtual async Task<Status> SetThirdPartyAccessToken(string entApiKey, string email, string key, string token, bool encrypt = false)
 		{
 			return await withG(async (client, g) =>
 			{
