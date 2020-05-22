@@ -31,8 +31,6 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 		Task<List<IDEActivity>> ListActivities(string entApiKey, string container);
 
-		Task<List<string>> ListLCUFiles(string lcuLookup, string host);
-
 		Task<List<ModulePackSetup>> ListModulePackSetups(string entApiKey, string container);
 
 		Task<List<LowCodeUnitSetupConfig>> ListLCUs(string entApiKey, string container);

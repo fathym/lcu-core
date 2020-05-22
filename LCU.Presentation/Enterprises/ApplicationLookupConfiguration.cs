@@ -12,6 +12,8 @@ namespace LCU.Presentation.Enterprises
 
 		public virtual bool IsReadOnly { get; set; }
 
+		public virtual List<string> Licenses { get; set; }
+
 		public virtual string PathRegex { get; set; }
 
 		public virtual string QueryRegex { get; set; }

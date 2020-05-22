@@ -16,13 +16,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Fathym.Presentation" Version="1.24.20090.6" />
-		<PackageReference Include="IdentityServer4" Version="2.5.3" />
-		<PackageReference Include="IdentityServer4.AspNetIdentity" Version="2.5.3" />
+		<PackageReference Include="Fathym.Presentation" Version="1.26.20126.4" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
 		<PackageReference Include="Microsoft.Azure.SignalR" Version="1.2.3" />
 		<PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="16.153.0" />
-		<PackageReference Include="Octokit" Version="0.46.0" />
+		<PackageReference Include="Octokit" Version="0.47.0" />
 		<PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
 	</ItemGroup>
 
