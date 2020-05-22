@@ -367,7 +367,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
 					//return entTptResult?.Metadata["Token"].ToString();
 
-					if (entTptResult.Metadata.ContainsKey("Encrypt"))
+					if (entTptResult != null && entTptResult.Metadata.ContainsKey("Encrypt"))
 						isEncrypted = entTptResult.Metadata["Encrypt"].ToObject<bool>();
 
 					tokenResult = isEncrypted ?
@@ -388,7 +388,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
 					var accTptResult = await SubmitFirst<BusinessModel<Guid>>(existingAccQuery);
 
-					if (accTptResult.Metadata.ContainsKey("Encrypt"))
+					if (accTptResult != null && accTptResult.Metadata.ContainsKey("Encrypt"))
 						isEncrypted = accTptResult.Metadata["Encrypt"].ToObject<bool>();
 
 					tokenResult = isEncrypted ?
