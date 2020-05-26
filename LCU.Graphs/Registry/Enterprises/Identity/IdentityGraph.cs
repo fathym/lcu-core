@@ -44,6 +44,22 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 			}, entApiKey);
 		}
 
+		public virtual async Task<Status> DeleteRelyingParty(string entApiKey)
+		{
+			return await withG(async (client, g) =>
+			{
+				var dropQuery = g.V()
+					.HasLabel(EntGraphConstants.RelyingPartyVertexName)
+					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Drop();
+
+				await Submit(dropQuery);
+
+				return Status.Success;
+			}, entApiKey);
+		}
+
 		public virtual async Task<Status> Exists(string email, string entApiKey = null)
 		{
 			return await withG(async (client, g) =>
@@ -701,8 +717,6 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				return status;
 			}, entApiKey);
 		}
-
-
 		#endregion
 
 		#region Helpers
