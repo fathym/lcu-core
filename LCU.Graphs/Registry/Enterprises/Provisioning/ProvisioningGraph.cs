@@ -128,7 +128,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 			});
 		}
 
-		public virtual async Task<MetadataModel> RemoveEnvironmentSettings(string apiKey, string envLookup)
+		public virtual async Task<Status> RemoveEnvironmentSettings(string apiKey, string envLookup)
 		{
 			return await withG(async (client, g) =>
 			{
