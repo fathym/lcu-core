@@ -112,6 +112,42 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 			}, apiKey);
 		}
 
+		public virtual async Task<Status> RemoveEnvironment(string entApiKey, string envLookup)
+		{
+			return await withG(async (client, g) =>
+			{
+				var dropQuery = g.V().HasLabel(EntGraphConstants.EnvironmentVertexName)
+						.Has(EntGraphConstants.RegistryName, entApiKey)
+						.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+						.Has("Lookup", envLookup)
+						.Drop();
+
+				await Submit(dropQuery);
+
+				return Status.Success;
+			});
+		}
+
+		public virtual async Task<MetadataModel> RemoveEnvironmentSettings(string apiKey, string envLookup)
+		{
+			return await withG(async (client, g) =>
+			{
+				var dropQuery = g.V().HasLabel(EntGraphConstants.EnvironmentVertexName)
+					.Has(EntGraphConstants.RegistryName, apiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has("Lookup", envLookup)
+					.Out(EntGraphConstants.OwnsEdgeName)
+					.HasLabel(EntGraphConstants.EnvironmentVertexName + "Settings")
+					.Has(EntGraphConstants.RegistryName, apiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Drop();
+
+				await Submit(dropQuery);
+
+				return Status.Success;
+			}, apiKey);
+		}
+
 		public virtual async Task<LCUEnvironment> SaveEnvironment(LCUEnvironment env)
 		{
 			return await withG(async (client, g) =>
