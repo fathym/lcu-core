@@ -9,9 +9,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Fathym.API" Version="1.17.20023.1-prerelease" />
-		<PackageReference Include="IdentityServer4" Version="3.1.0" />
+		<PackageReference Include="Fathym.API" Version="1.27.20150.8-prerelease" />
 		<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="3.1.1" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.4" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.4" />
 		<PackageReference Include="System.Net.Http.Formatting.Extension" Version="5.2.3" />
 	</ItemGroup>
 

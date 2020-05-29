@@ -16,9 +16,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Fathym.Presentation" Version="1.17.20023.1-prerelease" />
-		<PackageReference Include="IdentityServer4" Version="3.1.0" />
-		<PackageReference Include="IdentityServer4.AspNetIdentity" Version="3.1.0" />
+		<PackageReference Include="Fathym.Presentation" Version="1.27.20150.8-prerelease" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.OAuth" Version="2.2.0" />
 		<PackageReference Include="Microsoft.Azure.SignalR" Version="1.2.3" />
