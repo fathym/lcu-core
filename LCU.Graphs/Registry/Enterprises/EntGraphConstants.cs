@@ -6,7 +6,11 @@
 
 		public const string AccountVertexName = "Account";
 
-		public const string ActivityVertexName = "Activity";
+        public const string AccessConfigurationTypeName = "AccessConfigurationType";
+
+        public const string AccessConfigurationRoleAdmin = "LCU";
+
+        public const string ActivityVertexName = "Activity";
 
 		public const string AppVertexName = "Application";
 
@@ -35,6 +39,8 @@
         public const string JSONSchemaMapVertexName = "JSONSchemaMap";
 
         public const string LCUConfigVertexName = "LCUConfig";
+
+		public const string LicenseAccessTokenVertexName = "LicenseAccessToken";
 
 		public const string ManagesEdgeName = "Manages";
 

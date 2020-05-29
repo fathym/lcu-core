@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.271
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29728.190
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{DB608D78-CCFC-4BCC-9E49-154EDABC476E}"
 	ProjectSection(SolutionItems) = preProject
@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LCU.Graphs", "LCU.Graphs\LC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LCU.Presentation", "LCU.Presentation\LCU.Presentation.csproj", "{5F5BBA43-752C-4870-9B41-DBBEDAAF4F6A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataImport", "DataImport\DataImport.csproj", "{F188AB65-8343-4C36-A9BD-588356A007BC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataImport", "DataImport\DataImport.csproj", "{F188AB65-8343-4C36-A9BD-588356A007BC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

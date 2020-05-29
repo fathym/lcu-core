@@ -54,14 +54,17 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 
 				var result = await SubmitFirst<MetadataModel>(query);
 
-				if (result.Metadata.ContainsKey("Registry"))
-					result.Metadata.Remove("Registry");
+				if (result != null)
+				{
+					if (result.Metadata.ContainsKey("Registry"))
+						result.Metadata.Remove("Registry");
 
-				if (result.Metadata.ContainsKey("EnterpriseAPIKey"))
-					result.Metadata.Remove("EnterpriseAPIKey");
+					if (result.Metadata.ContainsKey("EnterpriseAPIKey"))
+						result.Metadata.Remove("EnterpriseAPIKey");
 
-				if (result.Metadata.ContainsKey("id"))
-					result.Metadata.Remove("id");
+					if (result.Metadata.ContainsKey("id"))
+						result.Metadata.Remove("id");
+				}
 
 				return result;
 			}, apiKey);

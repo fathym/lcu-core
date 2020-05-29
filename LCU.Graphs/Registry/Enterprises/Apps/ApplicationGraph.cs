@@ -18,7 +18,11 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 		public ApplicationGraph(GremlinClientPoolManager clientPool)
 			: base(clientPool)
 		{
+			ListProperties.Add("AccessRights");
+
 			ListProperties.Add("Hosts");
+
+			ListProperties.Add("Licenses");
 		}
 		#endregion
 
@@ -194,8 +198,12 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				var existingQuery = g.V().HasLabel(EntGraphConstants.DAFAppVertexName)
 						.HasId(config.ID)
 						.Has("ApplicationID", config.ApplicationID)
-						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}")
-						.Drop();
+						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}");
+
+				if (!config.Lookup.IsNullOrEmpty())
+					existingQuery = existingQuery.Has("Lookup", config.Lookup);
+
+				existingQuery = existingQuery.Drop();
 
 				var existingResult = await SubmitFirst<DAFApplicationConfiguration>(existingQuery);
 
@@ -233,29 +241,47 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 
 				var existingAppResult = await SubmitFirst<Application>(existingQuery);
 
+				if (existingAppResult != null)
+				{
+					var dropAccessRightsQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
+						.HasId(existingAppResult.ID)
+						.Properties<Vertex>("AccessRights").Drop();
+
+					await Submit(dropAccessRightsQuery);
+
+					var dropHostsQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
+						.HasId(existingAppResult.ID)
+						.Properties<Vertex>("Hosts").Drop();
+
+					await Submit(dropHostsQuery);
+
+					var dropLicensesQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
+						.HasId(existingAppResult.ID)
+						.Properties<Vertex>("Licenses").Drop();
+
+					await Submit(dropLicensesQuery);
+				}
+
 				var query = existingAppResult == null ?
 					g.AddV(EntGraphConstants.AppVertexName)
 						.Property(EntGraphConstants.RegistryName, application.EnterpriseAPIKey)
 						.Property(EntGraphConstants.EnterpriseAPIKeyName, application.EnterpriseAPIKey) :
 					g.V().HasLabel(EntGraphConstants.AppVertexName)
-						.HasId(existingAppResult.ID)
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, application.EnterpriseAPIKey)
-						.Has(EntGraphConstants.RegistryName, application.EnterpriseAPIKey);
+						.HasId(existingAppResult.ID);
 
 				query = query
 					.Property("Container", application.Container ?? "")
+					.Property("Description", application.Description ?? "")
 					.Property("IsPrivate", application.IsPrivate)
 					.Property("IsReadOnly", application.IsReadOnly)
 					.Property("Name", application.Name ?? "")
 					.Property("PathRegex", application.PathRegex ?? "")
 					.Property("QueryRegex", application.QueryRegex ?? "")
 					.Property("UserAgentRegex", application.UserAgentRegex ?? "")
-					.Property("Priority", application.Priority);
-
-				application.Hosts.Each(host =>
-				{
-					query = query.Property(Cardinality.List, "Hosts", host, new object[] { });
-				});
+					.Property("Priority", application.Priority)
+					.AttachList("AccessRights", application.AccessRights)
+					.AttachList("Hosts", application.Hosts)
+					.AttachList("Licenses", application.Licenses);
 
 				var appResult = await SubmitFirst<Application>(query);
 
@@ -292,13 +318,16 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 						.Has("ApplicationID", config.ApplicationID)
 						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}");
 
+				query = query.Property("Lookup", config.Lookup ?? "");
+
 				query = query.Property("Priority", config.Priority);
 
 				if (config.Metadata.ContainsKey("BaseHref"))
 				{
 					query.Property("BaseHref", config.Metadata["BaseHref"])
 						.Property("NPMPackage", config.Metadata["NPMPackage"])
-						.Property("PackageVersion", config.Metadata["PackageVersion"]);
+						.Property("PackageVersion", config.Metadata["PackageVersion"])
+						.Property("StateConfig", config.Metadata.ContainsKey("StateConfig") ? config.Metadata["StateConfig"] : "");
 				}
 				else if (config.Metadata.ContainsKey("APIRoot"))
 				{

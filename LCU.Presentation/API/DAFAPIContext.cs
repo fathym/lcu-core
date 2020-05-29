@@ -12,7 +12,7 @@ namespace LCU.Presentation.API
 
 		public virtual string InboundPath { get; set; }
 
-		public virtual List<string> Methods { get; set; }
+		public virtual string Methods { get; set; }
 
 		public virtual string Security { get; set; }
 	}

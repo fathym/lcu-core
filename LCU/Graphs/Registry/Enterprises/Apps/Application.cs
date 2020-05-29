@@ -10,7 +10,13 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 	public class Application : BusinessModel<Guid>
 	{
 		[DataMember]
+		public virtual List<string> AccessRights { get; set; }
+
+		[DataMember]
 		public virtual string Container { get; set; }
+
+		[DataMember]
+		public virtual string Description { get; set; }
 
 		[DataMember]
 		public virtual string EnterpriseAPIKey { get; set; }
@@ -23,6 +29,9 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 
 		[DataMember]
 		public virtual bool IsReadOnly { get; set; }
+
+		[DataMember]
+		public virtual List<string> Licenses { get; set; }
 
 		[DataMember]
 		public virtual string Name { get; set; }
