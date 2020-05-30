@@ -12,7 +12,7 @@ namespace DataImport
     public class ImportDataFlowRecords
     {
         #region Fields
-        protected readonly string apiKey;
+        protected readonly string entLookup;
 
         protected readonly ApplicationProfileManager appProfileMgr;
 
@@ -29,7 +29,7 @@ namespace DataImport
         #region Constructors
         public ImportDataFlowRecords()
         {
-            this.apiKey = "3ebd1c0d-22d0-489e-a46f-3260103c8cd7";
+            this.entLookup = "3ebd1c0d-22d0-489e-a46f-3260103c8cd7";
 
             this.appProfileMgr = new ApplicationProfileManager(32, 4, 60);
 
@@ -68,7 +68,7 @@ namespace DataImport
             items.ForEach(
                 (item) =>
                 {
-                    var sfDef = schemaFunctionDefGraph.SaveSchemaFunctionDefinitionDefinition(apiKey, item).GetAwaiter().GetResult();
+                    var sfDef = schemaFunctionDefGraph.SaveSchemaFunctionDefinitionDefinition(entLookup, item).GetAwaiter().GetResult();
                 });
         }
 
@@ -80,7 +80,7 @@ namespace DataImport
             items.ForEach(
                 (item) =>
                 {
-                    var typeDef = typeDefGraph.SaveTypeDefinition(apiKey, item).GetAwaiter().GetResult();
+                    var typeDef = typeDefGraph.SaveTypeDefinition(entLookup, item).GetAwaiter().GetResult();
                 });
         }
         #endregion

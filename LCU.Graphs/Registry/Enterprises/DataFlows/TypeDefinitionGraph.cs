@@ -24,7 +24,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
 		#region API Methods
 
-		public virtual async Task<List<TypeDefinition>> ListTypeDefinitions(string apiKey)
+		public virtual async Task<List<TypeDefinition>> ListTypeDefinitions(string entLookup)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -35,18 +35,18 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
                 return results.ToList();
 
-            }, apiKey);
+            }, entLookup);
 		}
 
-        public virtual async Task<TypeDefinition> SaveTypeDefinition(string apiKey, TypeDefinition typeDefinition)
+        public virtual async Task<TypeDefinition> SaveTypeDefinition(string entLookup, TypeDefinition typeDefinition)
         {
             return await withG(async (client, g) =>
             {
-                var registry = $"{apiKey}|TypeDefinition";
+                var registry = $"{entLookup}|TypeDefinition";
 
                 var existingQuery = g.V()
                     .HasLabel(EntGraphConstants.TypeDefinitionVertexName)
-                    .Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+                    .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
                     .Has(EntGraphConstants.RegistryName, registry)
                     .Has("Lookup", typeDefinition.Lookup);
 
@@ -55,7 +55,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
                 var query = existingResult == null ?
                     g.AddV(EntGraphConstants.TypeDefinitionVertexName)
                     .Property(EntGraphConstants.RegistryName, registry)
-                    .Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey) : existingQuery;
+                    .Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup) : existingQuery;
 
                 query = query
                     .Property("Active", typeDefinition.Active)
@@ -76,7 +76,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
                 var tdResult = await SubmitFirst<TypeDefinition>(query);
 
                 return tdResult;
-            }, apiKey);
+            }, entLookup);
         }
 
         #endregion

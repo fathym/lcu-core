@@ -60,8 +60,6 @@
 
 		public const string ProvidesEdgeName = "Provides";
 
-		public const string RegistryName = "Registry";
-
 		public const string RelyingPartyVertexName = "RelyingParty";
 
         public const string SchemaFunctionDefinitionVertexName = "SchemaFunctionDefinition";

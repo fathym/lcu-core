@@ -7,27 +7,27 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 {
 	public interface IApplicationGraph
 	{
-		Task<Status> AddDefaultApp(string apiKey, Guid appId);
+		Task<Status> AddDefaultApp(string entLookup, Guid appId);
 
-		Task<Status> CreateDefaultApps(string apiKey);
+		Task<Status> CreateDefaultApps(string entLookup);
 
-		Task<List<DAFApplicationConfiguration>> GetDAFApplications(string apiKey, Guid appId);
+		Task<List<DAFApplicationConfiguration>> GetDAFApplications(string entLookup, Guid appId);
 
-		Task<Status> HasDefaultApps(string apiKey);
+		Task<Status> HasDefaultApps(string entLookup);
 
-		Task<List<Application>> ListApplications(string apiKey);
+		Task<List<Application>> ListApplications(string entLookup);
 
-		Task<List<Application>> LoadByEnterprise(string apiKey, string host, string container);
+		Task<List<Application>> LoadByEnterprise(string entLookup, string host, string container);
 
-		Task<List<Application>> LoadDefaultApplications(string apiKey);
+		Task<List<Application>> LoadDefaultApplications(string entLookup);
 
-		Task<Status> RemoveDAFApplication(string apiKey, DAFApplicationConfiguration config);
+		Task<Status> RemoveDAFApplication(string entLookup, DAFApplicationConfiguration config);
 
-		Task<Status> RemoveDefaultApp(string apiKey, Guid appId);
+		Task<Status> RemoveDefaultApp(string entLookup, Guid appId);
 
 		Task<Application> Save(Application application);
 
-		Task<DAFApplicationConfiguration> SaveDAFApplication(string apiKey, DAFApplicationConfiguration config);
+		Task<DAFApplicationConfiguration> SaveDAFApplication(string entLookup, DAFApplicationConfiguration config);
 
 		Task<Status> SeedDefault(string sourceApiKey, string targetApiKey);
 	}

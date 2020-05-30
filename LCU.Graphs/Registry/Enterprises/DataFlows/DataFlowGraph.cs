@@ -23,108 +23,108 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		#endregion
 
 		#region API Methods
-		public virtual async Task<Status> DeleteDataFlow(string apiKey, string envLookup, string dfLookup)
+		public virtual async Task<Status> DeleteDataFlow(string entLookup, string envLookup, string dfLookup)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{apiKey}|{envLookup}|DataFlow";
+				var registry = $"{entLookup}|{envLookup}|DataFlow";
 
 				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has("PrimaryAPIKey", entLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Has("Lookup", envLookup)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.DataFlowVertexName)
 					.Has(EntGraphConstants.RegistryName, registry)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Has("Lookup", dfLookup)
 					.Drop();
 
 				await Submit(query);
 
 				return Status.Success;
-			}, apiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<DataFlow> GetDataFlow(string apiKey, string envLookup, string dfLookup)
+		public virtual async Task<DataFlow> GetDataFlow(string entLookup, string envLookup, string dfLookup)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{apiKey}|{envLookup}|DataFlow";
+				var registry = $"{entLookup}|{envLookup}|DataFlow";
 
 				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has("PrimaryAPIKey", entLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Has("Lookup", envLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.DataFlowVertexName)
 					.Has(EntGraphConstants.RegistryName, registry)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Has("Lookup", dfLookup);
 
 				var result = await SubmitFirst<MetadataModel>(query);
 
 				return loadDataFlowFromMetadata(result);
-			}, apiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<List<DataFlow>> ListDataFlows(string apiKey, string envLookup)
+		public virtual async Task<List<DataFlow>> ListDataFlows(string entLookup, string envLookup)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{apiKey}|{envLookup}|DataFlow";
+				var registry = $"{entLookup}|{envLookup}|DataFlow";
 
 				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has("PrimaryAPIKey", entLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Has("Lookup", envLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.DataFlowVertexName)
 					.Has(EntGraphConstants.RegistryName, registry)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey);
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
 
 				var results = await Submit<MetadataModel>(query);
 
 				return results.Select(r => loadDataFlowFromMetadata(r)).ToList();
-			}, apiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<ModulePackSetup> LoadModulePackSetup(string apiKey, string envLookup,
+		public virtual async Task<ModulePackSetup> LoadModulePackSetup(string entLookup, string envLookup,
 			string dfLookup, string mdlPckLookup)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{apiKey}|{envLookup}|DataFlow";
+				var registry = $"{entLookup}|{envLookup}|DataFlow";
 
 				var mpQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has("PrimaryAPIKey", entLookup)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Has("Lookup", envLookup)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.DataFlowVertexName)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Has(EntGraphConstants.RegistryName, registry)
 					.Has("Lookup", dfLookup)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.ModulePackVertexName)
 					.Has(EntGraphConstants.RegistryName, registry)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Has("Lookup", mdlPckLookup);
 
 				var setup = new ModulePackSetup();
@@ -135,7 +135,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.ModuleDisplayVertexName)
 					.Has(EntGraphConstants.RegistryName, registry)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey);
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
 
 				var msResults = await Submit<ModuleDisplay>(mdQuery);
 
@@ -145,7 +145,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.ModuleOptionVertexName)
 					.Has(EntGraphConstants.RegistryName, registry)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey);
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
 
 				var moResults = await Submit<ModuleOption>(moQuery);
 
@@ -154,22 +154,22 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 				return new ModulePackSetup()
 				{
 				};
-			}, apiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<DataFlow> SaveDataFlow(string apiKey, string envLookup, DataFlow dataFlow)
+		public virtual async Task<DataFlow> SaveDataFlow(string entLookup, string envLookup, DataFlow dataFlow)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{apiKey}|{envLookup}|DataFlow";
+				var registry = $"{entLookup}|{envLookup}|DataFlow";
 
 				var envQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has("PrimaryAPIKey", entLookup)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Has("Lookup", envLookup);
 
 				var envResult = await SubmitFirst<LCUEnvironment>(envQuery);
@@ -177,7 +177,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 				var existingQuery = envQuery
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.DataFlowVertexName)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Has(EntGraphConstants.RegistryName, registry)
 					.Has("Lookup", dataFlow.Lookup);
 
@@ -186,7 +186,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 				var query = existingResult == null ?
 					g.AddV(EntGraphConstants.DataFlowVertexName)
 					.Property(EntGraphConstants.RegistryName, registry)
-					.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey) : existingQuery;
+					.Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup) : existingQuery;
 
 				query = query
 					.Property("Name", dataFlow.Name ?? "")
@@ -207,27 +207,27 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 				await ensureEdgeRelationships(g, envResult.ID, dfResult.ID);
 
 				return dfResult;
-			}, apiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<ModulePack> UnpackModulePack(string apiKey, string envLookup, string dfLookup,
+		public virtual async Task<ModulePack> UnpackModulePack(string entLookup, string envLookup, string dfLookup,
 			ModulePackSetup module)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{apiKey}|{envLookup}|DataFlow";
+				var registry = $"{entLookup}|{envLookup}|DataFlow";
 
 				var dfQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has("PrimaryAPIKey", entLookup)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Has("Lookup", envLookup)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.DataFlowVertexName)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Has(EntGraphConstants.RegistryName, registry)
 					.Has("Lookup", dfLookup);
 
@@ -237,7 +237,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.ModulePackVertexName)
 					.Has(EntGraphConstants.RegistryName, registry)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Has("Lookup", module.Pack.Lookup);
 
 				var existingResult = await SubmitFirst<ModulePack>(existingQuery);
@@ -245,7 +245,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 				var query = existingResult == null ?
 					g.AddV(EntGraphConstants.ModulePackVertexName)
 					.Property(EntGraphConstants.RegistryName, registry)
-					.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey) : existingQuery;
+					.Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup) : existingQuery;
 
 				query = query
 					.Property("Name", module.Pack.Name ?? "")
@@ -261,21 +261,21 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.ModuleOptionVertexName)
 					.Has(EntGraphConstants.RegistryName, registry)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Drop();
 
 				await module.Options.Each(async option =>
 				{
-					await unpackModuleOption(g, registry, apiKey, dfResult.ID, mpResult, option);
+					await unpackModuleOption(g, registry, entLookup, dfResult.ID, mpResult, option);
 				});
 
 				await module.Displays.Each(async display =>
 				{
-					await unpackModuleDisplay(g, registry, apiKey, dfResult.ID, mpResult, display);
+					await unpackModuleDisplay(g, registry, entLookup, dfResult.ID, mpResult, display);
 				});
 
 				return mpResult;
-			}, apiKey);
+			}, entLookup);
 		}
 		#endregion
 
@@ -295,13 +295,13 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		}
 
 		protected virtual async Task<ModuleOption> unpackModuleOption(GraphTraversalSource g, string registry,
-			string apiKey, Guid dataFlowId, ModulePack modulePack, ModuleOption option)
+			string entLookup, Guid dataFlowId, ModulePack modulePack, ModuleOption option)
 		{
 			var existingQuery = g.V(modulePack.ID)
 				.Out(EntGraphConstants.OwnsEdgeName)
 				.HasLabel(EntGraphConstants.ModuleOptionVertexName)
 				.Has(EntGraphConstants.RegistryName, registry)
-				.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+				.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 				.Has("ModuleType", option.ModuleType);
 
 			var existingResult = await SubmitFirst<ModuleOption>(existingQuery);
@@ -309,7 +309,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 			var query = existingResult == null ?
 				g.AddV(EntGraphConstants.ModuleOptionVertexName)
 				.Property(EntGraphConstants.RegistryName, registry)
-				.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+				.Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 				.Property("Active", true)
 				.Property("Visible", true) : existingQuery;
 
@@ -339,13 +339,13 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		}
 
 		protected virtual async Task<ModuleDisplay> unpackModuleDisplay(GraphTraversalSource g, string registry,
-			string apiKey, Guid dataFlowId, ModulePack modulePack, ModuleDisplay display)
+			string entLookup, Guid dataFlowId, ModulePack modulePack, ModuleDisplay display)
 		{
 			var existingQuery = g.V(modulePack.ID)
 				.Out(EntGraphConstants.OwnsEdgeName)
 				.HasLabel(EntGraphConstants.ModuleDisplayVertexName)
 				.Has(EntGraphConstants.RegistryName, registry)
-				.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+				.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 				.Has("ModuleType", display.ModuleType);
 
 			var existingResult = await SubmitFirst<ModuleDisplay>(existingQuery);
@@ -355,7 +355,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 			{
 				var query = g.AddV(EntGraphConstants.ModuleDisplayVertexName)
 					.Property(EntGraphConstants.RegistryName, registry)
-					.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+					.Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Property("Category", display.Category)
 					.Property("Element", display.Element)
 					.Property("Height", display.Height)

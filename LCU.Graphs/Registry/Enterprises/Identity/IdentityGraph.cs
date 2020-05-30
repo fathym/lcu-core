@@ -27,40 +27,40 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 		#endregion
 
 		#region API Methods
-		public virtual async Task<Status> DeleteAccessCard(string entApiKey, string username, string accessConfigType)
+		public virtual async Task<Status> DeleteAccessCard(string entLookup, string username, string accessConfigType)
 		{
 			return await withG(async (client, g) =>
 			{
 				var dropQuery = g.V()
 					.HasLabel(EntGraphConstants.AccessCardVertexName)
-					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, $"{entLookup}|{username}")
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Has("AccessConfigurationType", accessConfigType)
 					.Drop();
 
 				await Submit(dropQuery);
 
 				return Status.Success;
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<Status> DeleteRelyingParty(string entApiKey)
+		public virtual async Task<Status> DeleteRelyingParty(string entLookup)
 		{
 			return await withG(async (client, g) =>
 			{
 				var dropQuery = g.V()
 					.HasLabel(EntGraphConstants.RelyingPartyVertexName)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Drop();
 
 				await Submit(dropQuery);
 
 				return Status.Success;
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<Status> Exists(string email, string entApiKey = null)
+		public virtual async Task<Status> Exists(string email, string entLookup = null)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -75,8 +75,8 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					.HasLabel(EntGraphConstants.PassportVertexName)
 					.Has("IsActive", true);
 
-				if (!entApiKey.IsNullOrEmpty())
-					existingQuery = existingQuery.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+				if (!entLookup.IsNullOrEmpty())
+					existingQuery = existingQuery.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
 
 				var accResult = await SubmitFirst<dynamic>(existingQuery);
 
@@ -86,7 +86,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					status = Status.NotLocated;
 
 				return status;
-			}, entApiKey);
+			}, entLookup);
 		}
 
 		public virtual async Task<Account> Get(string email)
@@ -122,30 +122,30 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 			//new Claim(JwtClaimTypes.Role, user.Role)
 		}
 
-		public virtual async Task<AccessCard> GetAccessCard(string entApiKey, string username, string accessConfigType)
+		public virtual async Task<AccessCard> GetAccessCard(string entLookup, string username, string accessConfigType)
 		{
 			return await withG(async (client, g) =>
 			{
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.AccessCardVertexName)
-					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, $"{entLookup}|{username}")
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Has("AccessConfigurationType", accessConfigType);
 
 				var acResult = await SubmitFirst<AccessCard>(existingQuery);
 
 				return acResult;
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<RelyingParty> GetRelyingParty(string entApiKey)
+		public virtual async Task<RelyingParty> GetRelyingParty(string entLookup)
 		{
 			return await withG(async (client, g) =>
 			{
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.RelyingPartyVertexName)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
 
 				var rpResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
 
@@ -158,10 +158,10 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				var relyingParty = rpResult.JSONConvert<RelyingParty>();
 
 				return relyingParty;
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<LicenseAccessToken> GetLicenseAccessToken(string entApiKey, string username, string lookup)
+		public virtual async Task<LicenseAccessToken> GetLicenseAccessToken(string entLookup, string username, string lookup)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -169,24 +169,24 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				// Check for existing token
 				var existingQuery = g.V()
 				 .HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
-				 .Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-				 .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+				 .Has(EntGraphConstants.RegistryName, $"{entLookup}|{username}")
+				 .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 				 .Has("Lookup", lookup);
 
 				var tokResult = await SubmitFirst<LicenseAccessToken>(existingQuery);
 
 				return tokResult;
 
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<List<string>> ListAccountsByOrg(string entApiKey)
+		public virtual async Task<List<string>> ListAccountsByOrg(string entLookup)
 		{
 			return await withG(async (client, g) =>
 			{
 
 				var query = g.V().HasLabel(EntGraphConstants.PassportVertexName)
-								.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+								.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 								.InE(EntGraphConstants.CarriesEdgeName)
 								.OutV()
 								.HasLabel(EntGraphConstants.AccountVertexName);
@@ -202,43 +202,43 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 			});
 		}
 
-		public virtual async Task<List<AccessCard>> ListAccessCards(string entApiKey, string username)
+		public virtual async Task<List<AccessCard>> ListAccessCards(string entLookup, string username)
 		{
 			return await withG(async (client, g) =>
 			{
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.AccessCardVertexName)
-					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+					.Has(EntGraphConstants.RegistryName, $"{entLookup}|{username}")
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
 
 				var acResults = await Submit<AccessCard>(existingQuery);
 
 				return acResults?.ToList();
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<List<string>> ListAdmins(string entApiKey)
+		public virtual async Task<List<string>> ListAdmins(string entLookup)
 		{
-			return await ListMembersWithAccessConfigType(entApiKey, EntGraphConstants.AccessConfigurationRoleAdmin);
+			return await ListMembersWithAccessConfigType(entLookup, EntGraphConstants.AccessConfigurationRoleAdmin);
 		}
 
-		public virtual async Task<List<LicenseAccessToken>> ListLicenseAccessTokens(string entApiKey)
+		public virtual async Task<List<LicenseAccessToken>> ListLicenseAccessTokens(string entLookup)
 		{
 			return await withG(async (client, g) =>
 			{
 				var tokenQuery = g.V()
 				 .HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
-				 .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+				 .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
 
 				var tokResult = await Submit<LicenseAccessToken>(tokenQuery);
 
 				var tokResultList = tokResult?.ToList<LicenseAccessToken>();
 
 				return tokResultList;
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<List<LicenseAccessToken>> ListLicenseAccessTokensByUser(string entApiKey, string username)
+		public virtual async Task<List<LicenseAccessToken>> ListLicenseAccessTokensByUser(string entLookup, string username)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -246,24 +246,24 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				// Check for existing token
 				var existingQuery = g.V()
 				 .HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
-				 .Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-				 .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+				 .Has(EntGraphConstants.RegistryName, $"{entLookup}|{username}")
+				 .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
 
 				var tokResult = await Submit<LicenseAccessToken>(existingQuery);
 
 				return tokResult.ToList<LicenseAccessToken>();
 
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<List<string>> ListMembersWithAccessConfigType(string entApiKey, string accessConfigType)
+		public virtual async Task<List<string>> ListMembersWithAccessConfigType(string entLookup, string accessConfigType)
 		{
 			return await withG(async (client, g) =>
 			{
 				var members = new List<string>();
 
 				var query = g.V().HasLabel(EntGraphConstants.AccessCardVertexName)
-								.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+								.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 								.Has(EntGraphConstants.AccessConfigurationTypeName, accessConfigType);
 
 				var results = await Submit<AccessCard>(query);
@@ -276,7 +276,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 			});
 		}
 
-		public virtual async Task<Status> Register(string entApiKey, string email, string password)
+		public virtual async Task<Status> Register(string entLookup, string email, string password)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -303,16 +303,16 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				var existingPassportQuery = g.V(existingAccResult.ID)
 						.Out(EntGraphConstants.CarriesEdgeName)
 						.HasLabel(EntGraphConstants.PassportVertexName)
-						.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+						.Has(EntGraphConstants.RegistryName, $"{entLookup}|{registry}")
+						.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
 
 				var existingPassportResult = await SubmitFirst<Passport>(existingPassportQuery);
 
 				if (existingPassportResult == null)
 				{
 					var passportQuery = g.AddV(EntGraphConstants.PassportVertexName)
-					.Property(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
-					.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Property(EntGraphConstants.RegistryName, $"{entLookup}|{registry}")
+					.Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Property("PasswordHash", password.ToMD5Hash())
 					.Property("IsActive", true);
 
@@ -333,17 +333,17 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					return Status.GeneralError.Clone("There was an issue registering the current account.");
 
 				return status;
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<Status> RemoveLicenseAccessToken(string entApiKey, string username, string lookup)
+		public virtual async Task<Status> RemoveLicenseAccessToken(string entLookup, string username, string lookup)
 		{
 			return await withG(async (client, g) =>
 			{
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
-					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, $"{entLookup}|{username}")
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Has("Lookup", lookup)
 					.Drop();
 
@@ -351,10 +351,10 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
 				return Status.Success;
 
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<string> RetrieveThirdPartyAccessToken(string entApiKey, string email, string key, string tokenEncodingKey)
+		public virtual async Task<string> RetrieveThirdPartyAccessToken(string entLookup, string email, string key, string tokenEncodingKey)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -364,7 +364,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
 				var registry = email.Split('@')[1];
 
-				if (!entApiKey.IsNullOrEmpty())
+				if (!entLookup.IsNullOrEmpty())
 				{
 					var existingEntQuery = g.V()
 						.HasLabel(EntGraphConstants.AccountVertexName)
@@ -372,8 +372,8 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 						.Has("Email", email)
 						.Out(EntGraphConstants.CarriesEdgeName)
 						.HasLabel(EntGraphConstants.PassportVertexName)
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-						.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
+						.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+						.Has(EntGraphConstants.RegistryName, $"{entLookup}|{registry}")
 						.Out(EntGraphConstants.OwnsEdgeName)
 						.HasLabel(EntGraphConstants.ThirdPartyTokenVertexName)
 						.Has(EntGraphConstants.RegistryName, email)
@@ -414,10 +414,10 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				}
 
 				return tokenResult;
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<Status> SetThirdPartyAccessToken(string entApiKey, string email, string key, string token, bool encrypt = false)
+		public virtual async Task<Status> SetThirdPartyAccessToken(string entLookup, string email, string key, string token, bool encrypt = false)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -428,13 +428,13 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					.Has(EntGraphConstants.RegistryName, registry)
 					.Has("Email", email);
 
-				if (!entApiKey.IsNullOrEmpty())
+				if (!entLookup.IsNullOrEmpty())
 				{
 					existingQuery = existingQuery
 					.Out(EntGraphConstants.CarriesEdgeName)
 					.HasLabel(EntGraphConstants.PassportVertexName)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}");
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, $"{entLookup}|{registry}");
 				}
 
 				existingQuery = existingQuery
@@ -448,7 +448,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				var setQuery = tptResult != null ? existingQuery :
 					g.AddV(EntGraphConstants.ThirdPartyTokenVertexName)
 						.Property(EntGraphConstants.RegistryName, email)
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 						.Property("Key", key);
 
 				setQuery = setQuery.Property("Token", token)
@@ -456,15 +456,15 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
 				tptResult = await SubmitFirst<BusinessModel<Guid>>(setQuery);
 
-				if (!entApiKey.IsNullOrEmpty())
+				if (!entLookup.IsNullOrEmpty())
 				{
 					var passQuery = g.V().HasLabel(EntGraphConstants.AccountVertexName)
 						.Has(EntGraphConstants.RegistryName, registry)
 						.Has("Email", email)
 						.Out(EntGraphConstants.CarriesEdgeName)
 						.HasLabel(EntGraphConstants.PassportVertexName)
-						.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+						.Has(EntGraphConstants.RegistryName, $"{entLookup}|{registry}")
+						.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
 
 					var passResult = await SubmitFirst<Passport>(passQuery);
 
@@ -490,25 +490,25 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				}
 
 				return Status.Success;
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<AccessCard> SaveAccessCard(AccessCard accessCard, string entApiKey, string username)
+		public virtual async Task<AccessCard> SaveAccessCard(AccessCard accessCard, string entLookup, string username)
 		{
 			return await withG(async (client, g) =>
 			{
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.AccessCardVertexName)
-					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Has(EntGraphConstants.RegistryName, $"{entLookup}|{username}")
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Has("AccessConfigurationType", accessCard.AccessConfigurationType);
 
 				var acResult = await SubmitFirst<AccessCard>(existingQuery);
 
 				var setQuery = acResult != null ? existingQuery :
 					g.AddV(EntGraphConstants.AccessCardVertexName)
-						.Property(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+						.Property(EntGraphConstants.RegistryName, $"{entLookup}|{username}")
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 						.Property("AccessConfigurationType", accessCard.AccessConfigurationType);
 
 				setQuery = setQuery
@@ -536,8 +536,8 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				{
 					var rpQuery = g.V()
 						.HasLabel(EntGraphConstants.RelyingPartyVertexName)
-						.Has(EntGraphConstants.RegistryName, entApiKey)
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+						.Has(EntGraphConstants.RegistryName, entLookup)
+						.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
 
 					var rpResult = await SubmitFirst<BusinessModel<Guid>>(rpQuery);
 
@@ -569,24 +569,24 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				}
 
 				return accessCard;
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<RelyingParty> SaveRelyingParty(RelyingParty relyingParty, string entApiKey)
+		public virtual async Task<RelyingParty> SaveRelyingParty(RelyingParty relyingParty, string entLookup)
 		{
 			return await withG(async (client, g) =>
 			{
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.RelyingPartyVertexName)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
 
 				var rpResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
 
 				var setQuery = rpResult != null ? existingQuery :
 					g.AddV(EntGraphConstants.RelyingPartyVertexName)
-						.Property(EntGraphConstants.RegistryName, entApiKey)
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+						.Property(EntGraphConstants.RegistryName, entLookup)
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
 
 				setQuery = setQuery
 					.Property("AccessConfigurations", relyingParty.AccessConfigurations.ToJSON())
@@ -599,8 +599,8 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				if (rpResult != null)
 				{
 					var entQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-						.Has(EntGraphConstants.RegistryName, entApiKey)
-						.Has("PrimaryAPIKey", entApiKey);
+						.Has(EntGraphConstants.RegistryName, entLookup)
+						.Has("PrimaryAPIKey", entLookup);
 
 					var entResult = await SubmitFirst<BusinessModel<Guid>>(entQuery);
 
@@ -620,7 +620,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				}
 
 				return relyingParty;
-			}, entApiKey);
+			}, entLookup);
 		}
 
 		public virtual async Task<LicenseAccessToken> SetLicenseAccessToken(LicenseAccessToken token)
@@ -690,7 +690,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 			}, token.EnterpriseAPIKey);
 		}
 
-		public virtual async Task<Status> Validate(string entApiKey, string email, string password)
+		public virtual async Task<Status> Validate(string entLookup, string email, string password)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -706,7 +706,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					.HasLabel(EntGraphConstants.PassportVertexName)
 					.Has("IsActive", true)
 					.Has("PasswordHash", password.ToMD5Hash())
-					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}");
+					.Has(EntGraphConstants.RegistryName, $"{entLookup}|{registry}");
 
 				var accResult = await SubmitFirst<Passport>(existingQuery);
 
@@ -716,7 +716,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					status = Status.Unauthorized;
 
 				return status;
-			}, entApiKey);
+			}, entLookup);
 		}
 		#endregion
 

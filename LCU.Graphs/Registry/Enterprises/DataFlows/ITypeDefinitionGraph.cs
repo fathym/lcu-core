@@ -7,8 +7,8 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 {
 	public interface ITypeDefinitionGraph
 	{
-        Task<List<TypeDefinition>> ListTypeDefinitions(string apiKey);
+        Task<List<TypeDefinition>> ListTypeDefinitions(string entLookup);
 
-        Task<TypeDefinition> SaveTypeDefinition(string apiKey, TypeDefinition typeDefinition);
+        Task<TypeDefinition> SaveTypeDefinition(string entLookup, TypeDefinition typeDefinition);
     }
 }

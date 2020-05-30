@@ -25,7 +25,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
         #region API Methods
 
-        public virtual async Task<List<SchemaFunctionDefinition>> ListSchemaFunctionDefinitions(string apiKey)
+        public virtual async Task<List<SchemaFunctionDefinition>> ListSchemaFunctionDefinitions(string entLookup)
         {
             return await withG(async (client, g) =>
             {
@@ -36,18 +36,18 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
                 return results.ToList();
 
-            }, apiKey);
+            }, entLookup);
         }
 
-        public virtual async Task<SchemaFunctionDefinition> SaveSchemaFunctionDefinitionDefinition(string apiKey, SchemaFunctionDefinition schemaFunctionDefinition)
+        public virtual async Task<SchemaFunctionDefinition> SaveSchemaFunctionDefinitionDefinition(string entLookup, SchemaFunctionDefinition schemaFunctionDefinition)
         {
             return await withG(async (client, g) =>
             {
-                var registry = $"{apiKey}|SchemaFunctionDefinition";
+                var registry = $"{entLookup}|SchemaFunctionDefinition";
 
                 var existingQuery = g.V()
                     .HasLabel(EntGraphConstants.SchemaFunctionDefinitionVertexName)
-                    .Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+                    .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
                     .Has(EntGraphConstants.RegistryName, registry)
                     .Has("Lookup", schemaFunctionDefinition.Lookup);
 
@@ -56,7 +56,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
                 var query = existingResult == null ?
                     g.AddV(EntGraphConstants.SchemaFunctionDefinitionVertexName)
                     .Property(EntGraphConstants.RegistryName, registry)
-                    .Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey) : existingQuery;
+                    .Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup) : existingQuery;
 
                 query = query
                     .Property("Active", schemaFunctionDefinition.Active)
@@ -83,7 +83,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
                 var sfdResult = await SubmitFirst<SchemaFunctionDefinition>(query);
 
                 return sfdResult;
-            }, apiKey);
+            }, entLookup);
         }
 
         #endregion

@@ -7,18 +7,18 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 {
 	public interface IIdentityGraph
 	{
-		Task<Status> Exists(string email, string entApiKey = null);
+		Task<Status> Exists(string email, string entLookup = null);
 
 		Task<Account> Get(string email);
 
 		Task<IEnumerable<Claim>> GetClaims(string userId);
 
-		Task<Status> Register(string entApiKey, string email, string password);
+		Task<Status> Register(string entLookup, string email, string password);
 
-		Task<string> RetrieveThirdPartyAccessToken(string entApiKey, string email, string key);
+		Task<string> RetrieveThirdPartyAccessToken(string entLookup, string email, string key);
 
-		Task<Status> SetThirdPartyAccessToken(string entApiKey, string email, string key, string token, string encrypt);
+		Task<Status> SetThirdPartyAccessToken(string entLookup, string email, string key, string token, string encrypt);
 
-		Task<Status> Validate(string entApiKey, string email, string password);
+		Task<Status> Validate(string entLookup, string email, string password);
 	}
 }

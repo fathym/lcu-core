@@ -20,8 +20,5 @@ namespace LCU.Graphs.Registry.Enterprises
 
 		[DataMember]
 		public virtual bool PreventDefaultApplications { get; set; }
-
-		[DataMember]
-		public virtual string PrimaryAPIKey { get; set; }
 	}
 }

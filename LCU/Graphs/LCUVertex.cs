@@ -2,19 +2,21 @@
 using Fathym.Business.Models;
 using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace LCU.Graphs
 {
+	[DataContract]
 	public class LCUVertex : BusinessModel<Guid>
 	{
-		public virtual string Registry { get; set; }
+		[DataMember]
+		public virtual string EnterpriseLookup { get; set; }
 
-		#region Constructors
-		public LCUVertex()
-		{
-			Registry = "Registry";
-		}
-		#endregion
+		[DataMember]
+		public virtual string Label { get; set; }
+
+		[DataMember]
+		public virtual string Registry { get; set; }
 	}
 }

@@ -7,18 +7,18 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 {
 	public interface IDataFlowGraph
 	{
-		Task<Status> DeleteDataFlow(string apiKey, string envLookup, string dfLookup);
+		Task<Status> DeleteDataFlow(string entLookup, string envLookup, string dfLookup);
 
-		Task<DataFlow> GetDataFlow(string apiKey, string envLookup, string dfLookup);
+		Task<DataFlow> GetDataFlow(string entLookup, string envLookup, string dfLookup);
 
-		Task<ModulePackSetup> LoadModulePackSetup(string apiKey, string envLookup,
+		Task<ModulePackSetup> LoadModulePackSetup(string entLookup, string envLookup,
 			string dfLookup, string mdlPckLookup);
 
-		Task<List<DataFlow>> ListDataFlows(string apiKey, string envLookup);
+		Task<List<DataFlow>> ListDataFlows(string entLookup, string envLookup);
 
-		Task<DataFlow> SaveDataFlow(string apiKey, string envLookup, DataFlow dataFlow);
+		Task<DataFlow> SaveDataFlow(string entLookup, string envLookup, DataFlow dataFlow);
 
-		Task<ModulePack> UnpackModulePack(string apiKey, string envLookup, string dfLookup,
+		Task<ModulePack> UnpackModulePack(string entLookup, string envLookup, string dfLookup,
 			ModulePackSetup module);
 	}
 }

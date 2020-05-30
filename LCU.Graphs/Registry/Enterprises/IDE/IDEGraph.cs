@@ -30,16 +30,16 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 		#endregion
 
 		#region API Methods
-		public virtual async Task<Status> AddSideBarSection(string activityLookup, string section, string entApiKey, string container)
+		public virtual async Task<Status> AddSideBarSection(string activityLookup, string section, string entLookup, string container)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{entApiKey}|{container}";
+				var registry = $"{entLookup}|{container}";
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.ActivityVertexName)
 					.Has("Lookup", activityLookup)
@@ -49,19 +49,19 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				await Submit(query);
 
 				return Status.Success;
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<Status> DeleteActivity(string activityLookup, string entApiKey, string container)
+		public virtual async Task<Status> DeleteActivity(string activityLookup, string entLookup, string container)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{entApiKey}|{container}";
+				var registry = $"{entLookup}|{container}";
 
 				var dropActivityQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Out(EntGraphConstants.ManagesEdgeName)
 					.HasLabel(EntGraphConstants.ActivityVertexName)
 					.Has("Lookup", activityLookup)
@@ -71,19 +71,19 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				await Submit(dropActivityQuery);
 
 				return Status.Success;
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<Status> DeleteLCU(string lcuLookup, string entApiKey, string container)
+		public virtual async Task<Status> DeleteLCU(string lcuLookup, string entLookup, string container)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{entApiKey}|{container}";
+				var registry = $"{entLookup}|{container}";
 
 				var dropActivityQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Out(EntGraphConstants.ManagesEdgeName)
 					.HasLabel(EntGraphConstants.LCUConfigVertexName)
 					.Has("Lookup", lcuLookup)
@@ -93,19 +93,19 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				await Submit(dropActivityQuery);
 
 				return Status.Success;
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<Status> DeleteSectionAction(string activityLookup, string section, string action, string group, string entApiKey, string container)
+		public virtual async Task<Status> DeleteSectionAction(string activityLookup, string section, string action, string group, string entLookup, string container)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{entApiKey}|{container}";
+				var registry = $"{entLookup}|{container}";
 
 				var dropActivityQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Out(EntGraphConstants.ManagesEdgeName)
 					.HasLabel(EntGraphConstants.ActivityVertexName)
 					.Has("Lookup", activityLookup)
@@ -121,19 +121,19 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				await Submit(dropActivityQuery);
 
 				return Status.Success;
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<Status> DeleteSideBarSection(string activityLookup, string section, string entApiKey, string container)
+		public virtual async Task<Status> DeleteSideBarSection(string activityLookup, string section, string entLookup, string container)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{entApiKey}|{container}";
+				var registry = $"{entLookup}|{container}";
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.ActivityVertexName)
 					.Has("Lookup", activityLookup)
@@ -145,7 +145,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				await Submit(query);
 
 				return Status.Success;
-			}, entApiKey);
+			}, entLookup);
 		}
 
 		public virtual async Task<IDEContainerSettings> EnsureIDESettings(IDEContainerSettings settings)
@@ -173,16 +173,16 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 			});
 		}
 
-		public virtual async Task<IDEActivity> GetActivity(string activityLookup, string entApiKey, string container)
+		public virtual async Task<IDEActivity> GetActivity(string activityLookup, string entLookup, string container)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{entApiKey}|{container}";
+				var registry = $"{entLookup}|{container}";
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.ActivityVertexName)
 					.Has("Lookup", activityLookup)
@@ -191,19 +191,19 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var result = await SubmitFirst<IDEActivity>(query);
 
 				return result;
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<LowCodeUnitSetupConfig> GetLCU(string lcuLookup, string entApiKey, string container)
+		public virtual async Task<LowCodeUnitSetupConfig> GetLCU(string lcuLookup, string entLookup, string container)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{entApiKey}|{container}";
+				var registry = $"{entLookup}|{container}";
 
 				var dropActivityQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Out(EntGraphConstants.ManagesEdgeName)
 					.HasLabel(EntGraphConstants.LCUConfigVertexName)
 					.Has("Lookup", lcuLookup)
@@ -212,19 +212,19 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var lcu = await SubmitFirst<LowCodeUnitSetupConfig>(dropActivityQuery);
 
 				return lcu;
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<ModulePackSetup> GetModulePackSetup(string lcuLookup, string entApiKey, string container)
+		public virtual async Task<ModulePackSetup> GetModulePackSetup(string lcuLookup, string entLookup, string container)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{entApiKey}|{container}";
+				var registry = $"{entLookup}|{container}";
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.LCUConfigVertexName)
 					.Has("Lookup", lcuLookup)
@@ -236,19 +236,19 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var mps = results?.FirstOrDefault()?.FromJSON<ModulePackSetup>();
 
 				return mps?.Pack != null ? mps : null;
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<IdeSettingsConfigSolution> GetLCUSolution(string lcuLookup, string solution, string entApiKey, string container)
+		public virtual async Task<IdeSettingsConfigSolution> GetLCUSolution(string lcuLookup, string solution, string entLookup, string container)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{entApiKey}|{container}";
+				var registry = $"{entLookup}|{container}";
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.LCUConfigVertexName)
 					.Has("Lookup", lcuLookup)
@@ -260,19 +260,19 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var slnCfgs = results?.FirstOrDefault()?.FromJSON<List<IdeSettingsConfigSolution>>();
 
 				return slnCfgs.FirstOrDefault(sc => sc.Name == solution);
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<IDESideBarAction> GetSectionAction(string activityLookup, string section, string action, string group, string entApiKey, string container)
+		public virtual async Task<IDESideBarAction> GetSectionAction(string activityLookup, string section, string action, string group, string entLookup, string container)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{entApiKey}|{container}";
+				var registry = $"{entLookup}|{container}";
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.ActivityVertexName)
 					.Has("Lookup", activityLookup)
@@ -287,38 +287,38 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var result = await SubmitFirst<IDESideBarAction>(query);
 
 				return result;
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<List<IDEActivity>> ListActivities(string entApiKey, string container)
+		public virtual async Task<List<IDEActivity>> ListActivities(string entLookup, string container)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{entApiKey}|{container}";
+				var registry = $"{entLookup}|{container}";
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.ActivityVertexName);
 
 				var results = await Submit<IDEActivity>(query);
 
 				return results?.ToList();
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<List<ModulePackSetup>> ListModulePackSetups(string entApiKey, string container)
+		public virtual async Task<List<ModulePackSetup>> ListModulePackSetups(string entLookup, string container)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{entApiKey}|{container}";
+				var registry = $"{entLookup}|{container}";
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.LCUConfigVertexName)
 					.Has(EntGraphConstants.RegistryName, registry)
@@ -327,19 +327,19 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var results = await Submit<string>(query);
 
 				return results?.Select(r => r.FromJSON<ModulePackSetup>()).Where(mps => mps.Pack != null).ToList();
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<List<IdeSettingsConfigSolution>> ListLCUSolutions(string lcuLookup, string entApiKey, string container)
+		public virtual async Task<List<IdeSettingsConfigSolution>> ListLCUSolutions(string lcuLookup, string entLookup, string container)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{entApiKey}|{container}";
+				var registry = $"{entLookup}|{container}";
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.LCUConfigVertexName)
 					.Has("Lookup", lcuLookup)
@@ -349,38 +349,38 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var results = await Submit<string>(query);
 
 				return results?.FirstOrDefault()?.FromJSON<List<IdeSettingsConfigSolution>>();
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<List<LowCodeUnitSetupConfig>> ListLCUs(string entApiKey, string container)
+		public virtual async Task<List<LowCodeUnitSetupConfig>> ListLCUs(string entLookup, string container)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{entApiKey}|{container}";
+				var registry = $"{entLookup}|{container}";
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.LCUConfigVertexName);
 
 				var results = await Submit<LowCodeUnitSetupConfig>(query);
 
 				return results?.ToList();
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<List<IDESideBarAction>> ListSectionActions(string activityLookup, string section, string entApiKey, string container)
+		public virtual async Task<List<IDESideBarAction>> ListSectionActions(string activityLookup, string section, string entLookup, string container)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{entApiKey}|{container}";
+				var registry = $"{entLookup}|{container}";
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.ActivityVertexName)
 					.Has("Lookup", activityLookup)
@@ -393,19 +393,19 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var results = await Submit<IDESideBarAction>(query);
 
 				return results?.ToList();
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<List<string>> ListSideBarSections(string activityLookup, string entApiKey, string container)
+		public virtual async Task<List<string>> ListSideBarSections(string activityLookup, string entLookup, string container)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{entApiKey}|{container}";
+				var registry = $"{entLookup}|{container}";
 
 				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.ActivityVertexName)
 					.Has("Lookup", activityLookup)
@@ -424,21 +424,21 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				// var sections = result?.Metadata?["Section"];
 
 				// return sections is JArray ? sections.ToObject<List<string>>() : sections != null ? new List<string>() { sections.ToObject<string>() } : null;
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<IDEActivity> SaveActivity(IDEActivity activity, string entApiKey, string container)
+		public virtual async Task<IDEActivity> SaveActivity(IDEActivity activity, string entLookup, string container)
 		{
 			return await withG(async (client, g) =>
 			{
 				var ideQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey);
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, entLookup);
 
 				var ideResult = await SubmitFirst<IDEContainerSettings>(ideQuery);
 
-				var registry = $"{entApiKey}|{container}";
+				var registry = $"{entLookup}|{container}";
 
 				var existingActivityQuery = g.V(ideResult.ID)
 						.Out(EntGraphConstants.ConsumesEdgeName)
@@ -452,7 +452,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					g.AddV(EntGraphConstants.ActivityVertexName)
 						.Property("Lookup", activity.Lookup)
 						.Property(EntGraphConstants.RegistryName, registry)
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
 
 				saveQuery = saveQuery
 					.Property("Title", activity.Title)
@@ -464,28 +464,28 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				await ensureEdgeRelationships(g, ideResult.ID, activityResult.ID);
 
 				return activityResult.JSONConvert<IDEActivity>();
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<LowCodeUnitSetupConfig> SaveLCU(LowCodeUnitSetupConfig lcu, string entApiKey, string container)
+		public virtual async Task<LowCodeUnitSetupConfig> SaveLCU(LowCodeUnitSetupConfig lcu, string entLookup, string container)
 		{
 			return await withG(async (client, g) =>
 			{
 				var ideQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey);
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, entLookup);
 
 				var ideResult = await SubmitFirst<IDEContainerSettings>(ideQuery);
 
-				var registry = $"{entApiKey}|{container}";
+				var registry = $"{entLookup}|{container}";
 
 				var existingLCUQuery = g.V(ideResult.ID)
 						.Out(EntGraphConstants.ConsumesEdgeName)
 						.HasLabel(EntGraphConstants.LCUConfigVertexName)
 						.Has("Lookup", lcu.Lookup)
 						.Has(EntGraphConstants.RegistryName, registry)
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+						.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
 
 				var existingLCUResult = await SubmitFirst<BusinessModel<Guid>>(existingLCUQuery);
 
@@ -493,7 +493,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 					g.AddV(EntGraphConstants.LCUConfigVertexName)
 						.Property("Lookup", lcu.Lookup)
 						.Property(EntGraphConstants.RegistryName, registry)
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
 
 				saveQuery = saveQuery
 					.Property("NPMPackage", lcu.NPMPackage)
@@ -504,20 +504,20 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				await ensureEdgeRelationships(g, ideResult.ID, lcuResult.ID);
 
 				return lcuResult.JSONConvert<LowCodeUnitSetupConfig>();
-			}, entApiKey);
+			}, entLookup);
 		}
 
 		public virtual async Task<Status> SaveLCUCapabilities(string lcuLookup, List<string> files, 
-			List<IdeSettingsConfigSolution> solutions, ModulePackSetup modules, string entApiKey, string container)
+			List<IdeSettingsConfigSolution> solutions, ModulePackSetup modules, string entLookup, string container)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = $"{entApiKey}|{container}";
+				var registry = $"{entLookup}|{container}";
 
 				var saveQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.LCUConfigVertexName)
 					.Has("Lookup", lcuLookup)
@@ -529,19 +529,19 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				var lcuResult = await SubmitFirst<BusinessModel<Guid>>(saveQuery);
 
 				return Status.Success;
-			}, entApiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<IDESideBarAction> SaveSectionAction(string activityLookup, IDESideBarAction action, string entApiKey, string container)
+		public virtual async Task<IDESideBarAction> SaveSectionAction(string activityLookup, IDESideBarAction action, string entLookup, string container)
 		{
 			return await base.withG((async (client, g) =>
 			{
-				var registry = $"{entApiKey}|{container}";
+				var registry = $"{entLookup}|{container}";
 
 				var activityQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
 					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.ActivityVertexName)
 					.Has("Lookup", activityLookup)
@@ -565,7 +565,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 						.Property("Group", (object)action.Group)
 						.Property("Section", action.Section)
 						.Property(EntGraphConstants.RegistryName, registry)
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
 
 				saveQuery = saveQuery
 					.Property("Title", action.Title);
@@ -575,7 +575,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 				await ensureEdgeRelationships(g, activityResult.ID, secActResult.ID);
 
 				return secActResult.JSONConvert<IDESideBarAction>();
-			}), entApiKey);
+			}), entLookup);
 		}
 		#endregion
 

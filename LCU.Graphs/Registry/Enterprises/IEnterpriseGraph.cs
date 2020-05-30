@@ -10,6 +10,6 @@ namespace LCU.Graphs.Registry.Enterprises
 
 		Task<Enterprise> LoadByHost(string host);
 
-		Task<Enterprise> LoadByPrimaryAPIKey(string apiKey);
+		Task<Enterprise> LoadByPrimaryAPIKey(string entLookup);
 	}
 }

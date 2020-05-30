@@ -27,16 +27,16 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 		#endregion
 
 		#region API Methods
-		public virtual async Task<Status> AddDefaultApp(string apiKey, Guid appId)
+		public virtual async Task<Status> AddDefaultApp(string entLookup, Guid appId)
 		{
 			return await withG(async (client, g) =>
 			{
 				var defAppsQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has("PrimaryAPIKey", entLookup)
 					.Out(EntGraphConstants.OffersEdgeName)
 					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey);
+					.Has(EntGraphConstants.RegistryName, entLookup);
 
 				var defAppsResult = await SubmitFirst<BusinessModel<Guid>>(defAppsQuery);
 
@@ -47,16 +47,16 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 					});
 
 				return Status.Success;
-			}, apiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<Status> CreateDefaultApps(string apiKey)
+		public virtual async Task<Status> CreateDefaultApps(string entLookup)
 		{
 			return await withG(async (client, g) =>
 			{
 				var entQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey);
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has("PrimaryAPIKey", entLookup);
 
 				var entResult = await SubmitFirst<Enterprise>(entQuery);
 
@@ -68,18 +68,18 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				await Submit(dropDefaultsQuery);
 
 				var defAppsQuery = g.AddV(EntGraphConstants.DefaultAppsVertexName)
-					.Property(EntGraphConstants.RegistryName, apiKey)
-					.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey);
+					.Property(EntGraphConstants.RegistryName, entLookup)
+					.Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
 
 				var dafAppsResult = await SubmitFirst<BusinessModel<Guid>>(defAppsQuery);
 
 				await ensureEdgeRelationships(g, entResult.ID, dafAppsResult.ID);
 
 				return Status.Success;
-			}, apiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<List<DAFApplicationConfiguration>> GetDAFApplications(string apiKey, Guid appId)
+		public virtual async Task<List<DAFApplicationConfiguration>> GetDAFApplications(string entLookup, Guid appId)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -87,42 +87,42 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 					.Out(EntGraphConstants.ProvidesEdgeName)
 					.HasLabel(EntGraphConstants.DAFAppVertexName)
 					.Has("ApplicationID", appId)
-					.Has(EntGraphConstants.RegistryName, $"{apiKey}|{appId}")
+					.Has(EntGraphConstants.RegistryName, $"{entLookup}|{appId}")
 					.Order().By("Priority", Order.Decr);
 
 				var appAppResults = await Submit<DAFApplicationConfiguration>(query);
 
 				return appAppResults.ToList();
-			}, apiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<Status> HasDefaultApps(string apiKey)
+		public virtual async Task<Status> HasDefaultApps(string entLookup)
 		{
 			return await withG(async (client, g) =>
 			{
 				var defAppsQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has("PrimaryAPIKey", entLookup)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey);
+					.Has(EntGraphConstants.RegistryName, entLookup);
 
 				var defAppsResult = await SubmitFirst<BusinessModel<Guid>>(defAppsQuery);
 
 				return defAppsResult != null ? Status.Success : Status.NotLocated;
-			}, apiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<Status> IsDefaultApp(string apiKey, Guid appId)
+		public virtual async Task<Status> IsDefaultApp(string entLookup, Guid appId)
 		{
 			return await withG(async (client, g) =>
 			{
 				var defAppsQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has("PrimaryAPIKey", entLookup)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.AppVertexName)
 					.HasId(appId);
@@ -130,17 +130,17 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				var appsResult = await SubmitFirst<Application>(defAppsQuery);
 
 				return appsResult != null ? Status.Success : Status.NotLocated;
-			}, apiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<List<Application>> ListApplications(string apiKey)
+		public virtual async Task<List<Application>> ListApplications(string entLookup)
 		{
 			return await withG(async (client, g) =>
 			{
 				var
 				query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has("PrimaryAPIKey", entLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.AppVertexName)
 					.Order().By("Priority", Order.Decr);
@@ -148,16 +148,16 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				var results = await Submit<Application>(query);
 
 				return results.ToList();
-			}, apiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<List<Application>> LoadByEnterprise(string apiKey, string host, string container)
+		public virtual async Task<List<Application>> LoadByEnterprise(string entLookup, string host, string container)
 		{
 			return await withG(async (client, g) =>
 			{
 				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has("PrimaryAPIKey", entLookup)
 					.Out(EntGraphConstants.ConsumesEdgeName)
 					.HasLabel(EntGraphConstants.AppVertexName)
 					.Has("Hosts", host)
@@ -167,18 +167,18 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				var results = await Submit<Application>(query);
 
 				return results.ToList();
-			}, apiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<List<Application>> LoadDefaultApplications(string apiKey)
+		public virtual async Task<List<Application>> LoadDefaultApplications(string entLookup)
 		{
 			return await withG(async (client, g) =>
 			{
 				//	TODO:  Need to support attaching Enterprise to appropriate DefaultApplications node through some edge so this is pull not as a global default, but enterprise default
 
 				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has("PrimaryAPIKey", entLookup)
 					.Out(EntGraphConstants.OffersEdgeName)
 					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
 					.Out(EntGraphConstants.ConsumesEdgeName)
@@ -188,17 +188,17 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				var results = await Submit<Application>(query);
 
 				return results.ToList();
-			}, apiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<Status> RemoveDAFApplication(string apiKey, DAFApplicationConfiguration config)
+		public virtual async Task<Status> RemoveDAFApplication(string entLookup, DAFApplicationConfiguration config)
 		{
 			return await withG(async (client, g) =>
 			{
 				var existingQuery = g.V().HasLabel(EntGraphConstants.DAFAppVertexName)
 						.HasId(config.ID)
 						.Has("ApplicationID", config.ApplicationID)
-						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}");
+						.Has(EntGraphConstants.RegistryName, $"{entLookup}|{config.ApplicationID}");
 
 				if (!config.Lookup.IsNullOrEmpty())
 					existingQuery = existingQuery.Has("Lookup", config.Lookup);
@@ -208,26 +208,26 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				var existingResult = await SubmitFirst<DAFApplicationConfiguration>(existingQuery);
 
 				return Status.Success;
-			}, apiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<Status> RemoveDefaultApp(string apiKey, Guid appId)
+		public virtual async Task<Status> RemoveDefaultApp(string entLookup, Guid appId)
 		{
 			return await withG(async (client, g) =>
 			{
 				var dropQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has("PrimaryAPIKey", entLookup)
 					.Out(EntGraphConstants.OffersEdgeName)
 					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.BothE().Where(__.InV().HasId(appId))
 					.Drop();
 
 				await Submit(dropQuery);
 
 				return Status.Success;
-			}, apiKey);
+			}, entLookup);
 		}
 
 		public virtual async Task<Application> Save(Application application)
@@ -297,26 +297,26 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			}, application.ID.ToString());
 		}
 
-		public virtual async Task<DAFApplicationConfiguration> SaveDAFApplication(string apiKey, DAFApplicationConfiguration config)
+		public virtual async Task<DAFApplicationConfiguration> SaveDAFApplication(string entLookup, DAFApplicationConfiguration config)
 		{
 			return await withG(async (client, g) =>
 			{
 				var existingQuery = g.V().HasLabel(EntGraphConstants.DAFAppVertexName)
 						.HasId(config.ID)
 						.Has("ApplicationID", config.ApplicationID)
-						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}");
+						.Has(EntGraphConstants.RegistryName, $"{entLookup}|{config.ApplicationID}");
 
 				var existingAppResult = await SubmitFirst<DAFApplicationConfiguration>(existingQuery);
 
 				var query = existingAppResult == null ?
 					g.AddV(EntGraphConstants.DAFAppVertexName)
 						.Property("ApplicationID", config.ApplicationID)
-						.Property(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}")
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey) :
+						.Property(EntGraphConstants.RegistryName, $"{entLookup}|{config.ApplicationID}")
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup) :
 					g.V().HasLabel(EntGraphConstants.DAFAppVertexName)
 						.HasId(existingAppResult.ID)
 						.Has("ApplicationID", config.ApplicationID)
-						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}");
+						.Has(EntGraphConstants.RegistryName, $"{entLookup}|{config.ApplicationID}");
 
 				query = query.Property("Lookup", config.Lookup ?? "");
 
@@ -345,7 +345,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 
 				var appQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
 					.HasId(config.ApplicationID)
-					.Has(EntGraphConstants.RegistryName, apiKey);
+					.Has(EntGraphConstants.RegistryName, entLookup);
 
 				var appResult = await SubmitFirst<Application>(appQuery);
 
@@ -356,7 +356,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 					});
 
 				return appAppResult;
-			}, apiKey);
+			}, entLookup);
 		}
 
 		public virtual async Task<Status> SeedDefault(string sourceApiKey, string targetApiKey)

@@ -21,13 +21,13 @@ namespace LCU.Graphs
 		#endregion
 
 		#region Properties
-		public virtual IGremlinQuerySource G { get; protected set; }
+		public virtual IGremlinQuerySource g { get; protected set; }
 		#endregion
 
 		#region Constructors
 		public LCUGraph(LCUGraphConfig graphConfig, ILogger logger)
 		{
-			G = g.ConfigureEnvironment(env =>
+			g = g.ConfigureEnvironment(env =>
 			{
 				return env
 					.UseLogger(logger)

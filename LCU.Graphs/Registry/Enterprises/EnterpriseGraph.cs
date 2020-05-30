@@ -21,31 +21,25 @@ namespace LCU.Graphs.Registry.Enterprises
 		#endregion
 
 		#region API Methods
-		public virtual async Task<Enterprise> AddHost(string entApiKey, string host)
+		public virtual async Task<Enterprise> AddHost(string entLookup, string host)
 		{
-			return await withG(async (client, g) =>
+			var existingEnt = await LoadByHost(host);
+
+			if (existingEnt == null)
 			{
-				var existingEnt = await LoadByHost(host);
-
-				if (existingEnt == null)
-				{
-					var apiKey = Guid.NewGuid();
-
-					var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-						.Has("PrimaryAPIKey", entApiKey)
-						.Has(EntGraphConstants.RegistryName, entApiKey)
-						.Property(Cardinality.List, "Hosts", host);
-
-					return await SubmitFirst<Enterprise>(query);
-				}
+				return await g.V<Enterprise>()
+					.Where(e => e.PrimaryAPIKey == entLookup)
+					.Where(e => e.Registry == entLookup)
+					.Property(e => e.Hosts, new List<string>() { host })
+					.FirstAsync();
+			}
+			else
+			{
+				if (existingEnt.Metadata["Registry"].ToString() != entLookup)
+					throw new Exception("An enterprise with that host already exists.");
 				else
-				{
-					if (existingEnt.Metadata["Registry"].ToString() != entApiKey)
-						throw new Exception("An enterprise with that host already exists.");
-					else
-						return existingEnt;
-				}
-			}, entApiKey);
+					return existingEnt;
+			}
 		}
 
 		public virtual async Task<Enterprise> Create(string name, string description, string host)
@@ -54,17 +48,17 @@ namespace LCU.Graphs.Registry.Enterprises
 
 			if (existingEnt == null)
 			{
-				var apiKey = Guid.NewGuid().ToString();
+				var entLookup = Guid.NewGuid().ToString();
 
-				return await G.AddV(new Enterprise()
+				return await g.AddV(new Enterprise()
 				{
 					Name = name,
 					Hosts = new List<string>() { host },
 					Description = description,
 					PreventDefaultApplications = false,
 					Created = new Audit() { By = "LCU System", Description = typeof(EnterpriseGraph).FullName },
-					PrimaryAPIKey = apiKey,
-					Registry = apiKey
+					PrimaryAPIKey = entLookup,
+					Registry = entLookup
 				}).FirstAsync();
 			}
 			else
@@ -73,33 +67,31 @@ namespace LCU.Graphs.Registry.Enterprises
 			}
 		}
 
-		public virtual async Task<Status> DeleteEnterprise(string entApiKey)
+		public virtual async Task<Status> DeleteEnterprise(string entLookup)
 		{
-			return await withG(async (client, g) =>
+			var ent = await LoadByPrimaryAPIKey(entLookup);
+
+			if (ent != null)
 			{
-				var ent = await LoadByPrimaryAPIKey(entApiKey);
+				var dataQuery = g.V<LCUVertex>()
+					.Where(e => e.EnterpriseLookup == entLookup)
+					.Has("EnterpriseAPIKey", entLookup)
+					.Drop();
 
-				if (ent != null)
-				{
-					var dataQuery = g.V()
-						.Has("EnterpriseAPIKey", entApiKey)
-						.Drop();
+				await Submit(dataQuery);
 
-					await Submit(dataQuery);
+				var entQuery = g.V()
+					.Has("PrimaryAPIKey", entLookup)
+					.Drop();
 
-					var entQuery = g.V()
-						.Has("PrimaryAPIKey", entApiKey)
-						.Drop();
+				await Submit(entQuery);
 
-					await Submit(entQuery);
-
-					return Status.Success;
-				}
-				else
-				{
-					return Status.GeneralError.Clone("Unable to located enterprise by that api key");
-				}
-			}, entApiKey);
+				return Status.Success;
+			}
+			else
+			{
+				return Status.GeneralError.Clone("Unable to located enterprise by that api key");
+			}
 		}
 
 		public virtual async Task<bool> DoesHostExist(string host)
@@ -114,7 +106,7 @@ namespace LCU.Graphs.Registry.Enterprises
 			});
 		}
 
-		public virtual async Task<List<string>> FindRegisteredHosts(string apiKey, string hostRoot)
+		public virtual async Task<List<string>> FindRegisteredHosts(string entLookup, string hostRoot)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -125,16 +117,16 @@ namespace LCU.Graphs.Registry.Enterprises
 				var results = await Submit<string>(query);
 
 				return results.Distinct().ToList();
-			}, apiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<List<Enterprise>> ListChildEnterprises(string apiKey)
+		public virtual async Task<List<Enterprise>> ListChildEnterprises(string entLookup)
 		{
 			return await withG(async (client, g) =>
 			{
 				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has("PrimaryAPIKey", entLookup)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
 					.In(EntGraphConstants.OffersEdgeName)
@@ -143,21 +135,21 @@ namespace LCU.Graphs.Registry.Enterprises
 				var results = await Submit<Enterprise>(query);
 
 				return results.ToList();
-			}, apiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<List<string>> ListRegistrationHosts(string apiKey)
+		public virtual async Task<List<string>> ListRegistrationHosts(string entLookup)
 		{
 			return await withG(async (client, g) =>
 			{
 				var query = g.V().HasLabel(EntGraphConstants.EnterpriseRegistrationVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Values<string>("Hosts");
 
 				var results = await Submit<string>(query);
 
 				return results.ToList();
-			}, apiKey);
+			}, entLookup);
 		}
 
 		public virtual async Task<Enterprise> LoadByHost(string host)
@@ -170,58 +162,58 @@ namespace LCU.Graphs.Registry.Enterprises
 			});
 		}
 
-		public virtual async Task<Enterprise> LoadByPrimaryAPIKey(string apiKey)
+		public virtual async Task<Enterprise> LoadByPrimaryAPIKey(string entLookup)
 		{
 			return await withG(async (client, g) =>
 			{
 				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey);
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has("PrimaryAPIKey", entLookup);
 
 				return await SubmitFirst<Enterprise>(query);
-			}, apiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<string> RetrieveThirdPartyData(string apiKey, string key)
+		public virtual async Task<string> RetrieveThirdPartyData(string entLookup, string key)
 		{
 			return await withG(async (client, g) =>
 			{
-				var registry = apiKey;
+				var registry = entLookup;
 
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has("PrimaryAPIKey", entLookup)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.ThirdPartyDataVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Has("Key", key);
 
 				var tpdResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
 
 				return tpdResult?.Metadata["Value"].ToString();
-			}, apiKey);
+			}, entLookup);
 		}
 
-		public virtual async Task<Status> SetThirdPartyData(string apiKey, string key, string value)
+		public virtual async Task<Status> SetThirdPartyData(string entLookup, string key, string value)
 		{
 			return await withG(async (client, g) =>
 			{
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
+					.Has("PrimaryAPIKey", entLookup)
 					.Out(EntGraphConstants.OwnsEdgeName)
 					.HasLabel(EntGraphConstants.ThirdPartyDataVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
+					.Has(EntGraphConstants.RegistryName, entLookup)
 					.Has("Key", key);
 
 				var tpdResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
 
 				var setQuery = tpdResult != null ? existingQuery :
 					g.AddV(EntGraphConstants.ThirdPartyDataVertexName)
-						.Property(EntGraphConstants.RegistryName, apiKey)
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+						.Property(EntGraphConstants.RegistryName, entLookup)
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 						.Property("Key", key);
 
 				setQuery = setQuery.Property("Value", value);
@@ -230,8 +222,8 @@ namespace LCU.Graphs.Registry.Enterprises
 
 				var entQuery = g.V()
 				   .HasLabel(EntGraphConstants.EnterpriseVertexName)
-				   .Has(EntGraphConstants.RegistryName, apiKey)
-				   .Has("PrimaryAPIKey", apiKey);
+				   .Has(EntGraphConstants.RegistryName, entLookup)
+				   .Has("PrimaryAPIKey", entLookup);
 
 				var entResult = await SubmitFirst<Enterprise>(entQuery);
 
@@ -242,7 +234,7 @@ namespace LCU.Graphs.Registry.Enterprises
 					});
 
 				return Status.Success;
-			}, apiKey);
+			}, entLookup);
 		}
 		#endregion
 

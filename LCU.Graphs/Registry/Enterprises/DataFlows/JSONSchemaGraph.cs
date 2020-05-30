@@ -25,7 +25,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
 		#region API Methods
 
-		public virtual async Task<List<BusinessModel<Guid>>> FetchJSONSchemas(string apiKey, IEnumerable<string> schemaIds)
+		public virtual async Task<List<BusinessModel<Guid>>> FetchJSONSchemas(string entLookup, IEnumerable<string> schemaIds)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -35,22 +35,22 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
                 return results.ToList();
 
-            }, apiKey);
+            }, entLookup);
 		}
 
-        public virtual async Task<List<BusinessModel<Guid>>> ListJSONSchemas(string apiKey, string envLookup)
+        public virtual async Task<List<BusinessModel<Guid>>> ListJSONSchemas(string entLookup, string envLookup)
         {
             return await withG(async (client, g) =>
             {
-                var registry = $"{apiKey}|{envLookup}|JSONSchemaMap";
+                var registry = $"{entLookup}|{envLookup}|JSONSchemaMap";
 
                 var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-                    .Has(EntGraphConstants.RegistryName, apiKey)
-                    .Has("PrimaryAPIKey", apiKey)
+                    .Has(EntGraphConstants.RegistryName, entLookup)
+                    .Has("PrimaryAPIKey", entLookup)
                     .Out(EntGraphConstants.ConsumesEdgeName)
                     .HasLabel(EntGraphConstants.EnvironmentVertexName)
-                    .Has(EntGraphConstants.RegistryName, apiKey)
-                    .Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+                    .Has(EntGraphConstants.RegistryName, entLookup)
+                    .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
                     .Has("Lookup", envLookup)
                     .Out(EntGraphConstants.UsesEdgeName)
                     .HasLabel(EntGraphConstants.SemanticProfileVertexName)
@@ -61,23 +61,23 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
                 var results = await Submit<BusinessModel<Guid>>(query);
 
                 return results.ToList();
-            }, apiKey);
+            }, entLookup);
         }
 
-        public virtual async Task<Status> SaveJSONSchema(string apiKey, string envLookup, string lookup, 
+        public virtual async Task<Status> SaveJSONSchema(string entLookup, string envLookup, string lookup, 
             string name, string description, string schemaPath)
         {
             return await withG(async (client, g) =>
             {
-                var registry = $"{apiKey}|{envLookup}|JSONSchemaMap";
+                var registry = $"{entLookup}|{envLookup}|JSONSchemaMap";
 
                 var envQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-                    .Has(EntGraphConstants.RegistryName, apiKey)
-                    .Has("PrimaryAPIKey", apiKey)
+                    .Has(EntGraphConstants.RegistryName, entLookup)
+                    .Has("PrimaryAPIKey", entLookup)
                     .Out(EntGraphConstants.OwnsEdgeName)
                     .HasLabel(EntGraphConstants.EnvironmentVertexName)
-                    .Has(EntGraphConstants.RegistryName, apiKey)
-                    .Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
+                    .Has(EntGraphConstants.RegistryName, entLookup)
+                    .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
                     .Has("Lookup", envLookup);
 
                 var envResult = await SubmitFirst<LCUEnvironment>(envQuery);
@@ -98,7 +98,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
                 var query = existingResult == null ?
                     g.AddV(EntGraphConstants.JSONSchemaMapVertexName)
                     .Property(EntGraphConstants.RegistryName, registry)
-                    .Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey) : existingQuery;
+                    .Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup) : existingQuery;
 
                 query = query
                     .Property("Name", name ?? "")
@@ -117,7 +117,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
                 status.Metadata.Add("ID", result.Metadata["id"].ToString());
 
                 return status;
-            }, apiKey);
+            }, entLookup);
         }
 
         #endregion
