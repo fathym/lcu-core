@@ -632,7 +632,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					.HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
 					.Has(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.Username}")
 					.Has(EntGraphConstants.EnterpriseAPIKeyName, token.EnterpriseAPIKey)
-					.Has("Lookup", lookup);
+					.Has("Lookup", token.Lookup);
 
 				var tokResult = await SubmitFirst<LicenseAccessToken>(existingQuery);
 
