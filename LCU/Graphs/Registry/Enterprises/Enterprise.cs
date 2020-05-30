@@ -7,7 +7,7 @@ namespace LCU.Graphs.Registry.Enterprises
 {
 	[Serializable]
 	[DataContract]
-	public class Enterprise : BusinessModel<Guid>
+	public class Enterprise : LCUVertex
 	{
 		[DataMember]
 		public virtual string Description { get; set; }
@@ -19,9 +19,9 @@ namespace LCU.Graphs.Registry.Enterprises
 		public virtual string Name { get; set; }
 
 		[DataMember]
-		public virtual string PrimaryAPIKey { get; set; }
+		public virtual bool PreventDefaultApplications { get; set; }
 
 		[DataMember]
-		public virtual bool PreventDefaultApplications { get; set; }
+		public virtual string PrimaryAPIKey { get; set; }
 	}
 }

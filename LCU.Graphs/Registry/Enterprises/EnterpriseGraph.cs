@@ -1,6 +1,7 @@
-﻿using Fathym;
+﻿using ExRam.Gremlinq.Core;
+using Fathym;
 using Fathym.Business.Models;
-using Gremlin.Net.Process.Traversal;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,11 +15,9 @@ namespace LCU.Graphs.Registry.Enterprises
 		#endregion
 
 		#region Constructors
-		public EnterpriseGraph(GremlinClientPoolManager clientPool)
-			: base(clientPool)
-		{
-			ListProperties.Add("Hosts");
-		}
+		public EnterpriseGraph(LCUGraphConfig graphConfig, ILogger<EnterpriseGraph> logger)
+			: base(graphConfig, logger)
+		{ }
 		#endregion
 
 		#region API Methods
@@ -51,29 +50,27 @@ namespace LCU.Graphs.Registry.Enterprises
 
 		public virtual async Task<Enterprise> Create(string name, string description, string host)
 		{
-			return await withG(async (client, g) =>
+			var existingEnt = await LoadByHost(host);
+
+			if (existingEnt == null)
 			{
-				var existingEnt = await LoadByHost(host);
+				var apiKey = Guid.NewGuid().ToString();
 
-				if (existingEnt == null)
+				return await G.AddV(new Enterprise()
 				{
-					var apiKey = Guid.NewGuid();
-
-					var query = g.AddV(EntGraphConstants.EnterpriseVertexName)
-						.Property(Cardinality.List, "Hosts", host)
-						.Property("Name", name)
-						.Property("Description", description)
-						.Property("PreventDefaultApplications", false)
-						.Property("PrimaryAPIKey", apiKey)
-						.Property(EntGraphConstants.RegistryName, apiKey);
-
-					return await SubmitFirst<Enterprise>(query);
-				}
-				else
-				{
-					throw new Exception("An enterprise with that host already exists.");
-				}
-			});
+					Name = name,
+					Hosts = new List<string>() { host },
+					Description = description,
+					PreventDefaultApplications = false,
+					Created = new Audit() { By = "LCU System", Description = typeof(EnterpriseGraph).FullName },
+					PrimaryAPIKey = apiKey,
+					Registry = apiKey
+				}).FirstAsync();
+			}
+			else
+			{
+				throw new Exception("An enterprise with that host already exists.");
+			}
 		}
 
 		public virtual async Task<Status> DeleteEnterprise(string entApiKey)
