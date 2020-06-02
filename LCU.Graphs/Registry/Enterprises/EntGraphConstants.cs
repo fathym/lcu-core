@@ -14,10 +14,6 @@
 
 		public const string AppVertexName = "Application";
 
-		public const string CarriesEdgeName = "Carries";
-
-		public const string ConsumesEdgeName = "Consumes";
-
 		public const string DAFAppVertexName = "DAFApplication";
 
 		public const string DataFlowVertexName = "DataFlow";
@@ -34,15 +30,11 @@
 
 		public const string IDEContainerVertexName = "IDEContainer";
 
-		public const string IssuesEdgeName = "Issues";
-
         public const string JSONSchemaMapVertexName = "JSONSchemaMap";
 
         public const string LCUConfigVertexName = "LCUConfig";
 
 		public const string LicenseAccessTokenVertexName = "LicenseAccessToken";
-
-		public const string ManagesEdgeName = "Manages";
 
 		public const string ModuleVertexName = "Module";
 
@@ -52,13 +44,7 @@
 
 		public const string ModuleDisplayVertexName = "ModuleDisplay";
 
-		public const string OffersEdgeName = "Offers";
-
-		public const string OwnsEdgeName = "Owns";
-
 		public const string PassportVertexName = "Passport";
-
-		public const string ProvidesEdgeName = "Provides";
 
 		public const string RelyingPartyVertexName = "RelyingParty";
 
@@ -75,7 +61,5 @@
 		public const string ThirdPartyTokenVertexName = "ThirdPartyToken";
 
         public const string TypeDefinitionVertexName = "TypeDefinition";
-
-        public const string UsesEdgeName = "Uses";
     }
 }
