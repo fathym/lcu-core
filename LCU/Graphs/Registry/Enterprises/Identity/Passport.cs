@@ -14,5 +14,8 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
 		[DataMember]
 		public virtual string PasswordHash { get; set; }
+
+		[DataMember]
+		public virtual string ProviderID { get; set; }
 	}
 }
