@@ -15,7 +15,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 		public virtual string Identifier { get; set; }
 
 		[DataMember]
-		public virtual Guid ProviderID { get; set; }
+		public virtual string ProviderID { get; set; }
 		#endregion
 
 		#region API Methods
