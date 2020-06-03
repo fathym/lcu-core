@@ -44,6 +44,22 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 			}, entApiKey);
 		}
 
+		public virtual async Task<Status> DeleteRelyingParty(string entApiKey)
+		{
+			return await withG(async (client, g) =>
+			{
+				var dropQuery = g.V()
+					.HasLabel(EntGraphConstants.RelyingPartyVertexName)
+					.Has(EntGraphConstants.RegistryName, entApiKey)
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
+					.Drop();
+
+				await Submit(dropQuery);
+
+				return Status.Success;
+			}, entApiKey);
+		}
+
 		public virtual async Task<Status> Exists(string email, string entApiKey = null)
 		{
 			return await withG(async (client, g) =>
@@ -88,6 +104,28 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
 				return accResult;
 			});
+		}
+
+		public virtual async Task<Passport> GetPassport(string email, string entApiKey = null)
+		{
+			return await withG(async (client, g) =>
+			{
+				var registry = email.Split('@')[1];
+
+				var existingQuery = g.V()
+					.Has(EntGraphConstants.RegistryName, registry)
+					.Has("Email", email)
+					.Out(EntGraphConstants.CarriesEdgeName)
+					.HasLabel(EntGraphConstants.PassportVertexName)
+					.Has("IsActive", true);
+
+				if (!entApiKey.IsNullOrEmpty())
+					existingQuery = existingQuery.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+
+				var passportResult = await SubmitFirst<Passport>(existingQuery);
+
+				return passportResult;
+			}, entApiKey);
 		}
 
 		public virtual async Task<IEnumerable<Claim>> GetClaims(string userId)
@@ -260,7 +298,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 			});
 		}
 
-		public virtual async Task<Status> Register(string entApiKey, string email, string password)
+		public virtual async Task<Status> Register(string entApiKey, string email, string password, string providerId)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -298,6 +336,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					.Property(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
 					.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
 					.Property("PasswordHash", password.ToMD5Hash())
+					.Property("ProviderID", providerId)
 					.Property("IsActive", true);
 
 					existingPassportResult = await SubmitFirst<Passport>(passportQuery);
@@ -305,13 +344,22 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					await ensureEdgeRelationships(g, existingAccResult.ID, existingPassportResult.ID,
 						edgeToCheckBuy: EntGraphConstants.CarriesEdgeName, edgesToCreate: new List<string>()
 						{
-								EntGraphConstants.CarriesEdgeName
+							EntGraphConstants.CarriesEdgeName
 						});
 
 					status = Status.Success;
 				}
 				else
-					return Status.Conflict.Clone("Passport already exists.");
+				{
+					var updatePassportQuery = g.V(existingPassportResult.ID)
+					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
+					.Property("PasswordHash", password.ToMD5Hash())
+					.Property("ProviderID", providerId);
+
+					existingPassportResult = await SubmitFirst<Passport>(updatePassportQuery);
+
+					status = Status.Success;
+				}
 
 				if (!status)
 					return Status.GeneralError.Clone("There was an issue registering the current account.");
@@ -615,7 +663,8 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				var existingQuery = g.V()
 					.HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
 					.Has(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.Username}")
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, token.EnterpriseAPIKey);
+					.Has(EntGraphConstants.EnterpriseAPIKeyName, token.EnterpriseAPIKey)
+					.Has("Lookup", token.Lookup);
 
 				var tokResult = await SubmitFirst<LicenseAccessToken>(existingQuery);
 
@@ -701,8 +750,6 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 				return status;
 			}, entApiKey);
 		}
-
-
 		#endregion
 
 		#region Helpers
