@@ -350,7 +350,16 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					status = Status.Success;
 				}
 				else
-					return Status.Conflict.Clone("Passport already exists.");
+				{
+					var updatePassportQuery = g.V(existingPassportResult.ID)
+					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
+					.Property("PasswordHash", password.ToMD5Hash())
+					.Property("ProviderID", providerId);
+
+					existingPassportResult = await SubmitFirst<Passport>(updatePassportQuery);
+
+					status = Status.Success;
+				}
 
 				if (!status)
 					return Status.GeneralError.Clone("There was an issue registering the current account.");
