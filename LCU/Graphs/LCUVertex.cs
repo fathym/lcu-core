@@ -8,10 +8,13 @@ using System.Text;
 namespace LCU.Graphs
 {
 	[DataContract]
-	public class LCUVertex : BusinessModel<Guid>
+	public class LCUVertex //: BusinessModel<Guid>
 	{
 		[DataMember]
 		public virtual string EnterpriseLookup { get; set; }
+
+		[DataMember]
+		public virtual Guid ID { get; set; } 
 
 		[DataMember]
 		public virtual string Label { get; set; }

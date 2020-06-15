@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 namespace LCU.Graphs.Registry.Enterprises.Edges
 {
 	[DataContract]
-	public class Uses : LCUVertex
+	public class Uses : LCUEdge
 	{
 	}
 }

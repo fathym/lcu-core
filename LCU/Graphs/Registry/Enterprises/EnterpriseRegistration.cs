@@ -9,6 +9,6 @@ namespace LCU.Graphs.Registry.Enterprises
 	public class EnterpriseRegistration : LCUVertex
 	{
 		[DataMember]
-		public virtual List<string> Hosts { get; set; }
+		public virtual string[] Hosts { get; set; }
 	}
 }

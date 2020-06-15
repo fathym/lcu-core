@@ -31,12 +31,12 @@ namespace LCU.Graphs.Registry.Enterprises
 				return await g.V<Enterprise>()
 					.Where(e => e.EnterpriseLookup == entLookup)
 					.Where(e => e.Registry == entLookup)
-					.Property(e => e.Hosts, new List<string>() { host })
-					.FirstAsync();
+					.Property(e => e.Hosts, new string[] { host })
+					.FirstOrDefaultAsync();
 			}
 			else
 			{
-				if (existingEnt.Metadata["Registry"].ToString() != entLookup)
+				if (existingEnt.EnterpriseLookup != entLookup)
 					throw new Exception("An enterprise with that host already exists.");
 				else
 					return existingEnt;
@@ -53,14 +53,14 @@ namespace LCU.Graphs.Registry.Enterprises
 
 				return await g.AddV(new Enterprise()
 				{
+					ID = Guid.NewGuid(),
 					Name = name,
-					Hosts = new List<string>() { host },
+					Hosts = new string[] { host },
 					Description = description,
 					PreventDefaultApplications = false,
-					Created = buildAudit(),
 					EnterpriseLookup = entLookup,
 					Registry = entLookup
-				}).FirstAsync();
+				}).FirstOrDefaultAsync();
 			}
 			else
 			{
@@ -92,18 +92,19 @@ namespace LCU.Graphs.Registry.Enterprises
 		{
 			var ent = await g.V<Enterprise>()
 				.Where(e => e.Hosts.Contains(host))
-				.FirstAsync();
+				.FirstOrDefaultAsync();
 
 			return ent != null;
 		}
 
-		public virtual async Task<List<string>> FindRegisteredHosts(string entLookup, string hostRoot)
+		public virtual async Task<List<string>> FindRegisteredHosts(string hostRoot)
 		{
 			var hosts = await g.V<Enterprise>()
-				.Where(e => e.Hosts.Any(h => h.EndsWith(hostRoot)))
 				.Values(e => e.Hosts);
 
-			return hosts.SelectMany(hs => hs).Distinct().ToList();
+			hosts = hosts.Where(h => h.EndsWith(hostRoot)).ToArray();
+
+			return hosts.Distinct().ToList();
 		}
 
 		public virtual async Task<List<Enterprise>> ListChildEnterprises(string entLookup)
@@ -123,17 +124,16 @@ namespace LCU.Graphs.Registry.Enterprises
 			var hosts = await g.V<EnterpriseRegistration>()
 				.Where(e => e.EnterpriseLookup == entLookup)
 				.Where(e => e.Registry == entLookup)
-				.Values(e => e.Hosts)
-				.FirstAsync();
+				.Values(e => e.Hosts);
 
-			return hosts;
+			return hosts.ToList();
 		}
 
 		public virtual async Task<Enterprise> LoadByHost(string host)
 		{
 			return await g.V<Enterprise>()
 				.Where(e => e.Hosts.Contains(host))
-				.FirstAsync();
+				.FirstOrDefaultAsync();
 		}
 
 		public virtual async Task<Enterprise> LoadByLookup(string entLookup)
@@ -141,7 +141,7 @@ namespace LCU.Graphs.Registry.Enterprises
 			return await g.V<Enterprise>()
 				.Where(e => e.EnterpriseLookup == entLookup)
 				.Where(e => e.Registry == entLookup)
-				.FirstAsync();
+				.FirstOrDefaultAsync();
 		}
 
 		public virtual async Task<string> RetrieveThirdPartyData(string entLookup, string key)
@@ -154,7 +154,7 @@ namespace LCU.Graphs.Registry.Enterprises
 				.Where(e => e.Registry == entLookup)
 				.Where(e => e.Key == key)
 				.Values(e => e.Value)
-				.FirstAsync();
+				.FirstOrDefaultAsync();
 		}
 
 		public virtual async Task<Status> SetThirdPartyData(string entLookup, string key, string value)
@@ -166,31 +166,29 @@ namespace LCU.Graphs.Registry.Enterprises
 				.OfType<ThirdPartyIdentifier>()
 				.Where(e => e.Registry == entLookup)
 				.Where(e => e.Key == key)
-				.FirstAsync();
+				.FirstOrDefaultAsync();
 
 			if (tpi == null)
 			{
 				tpi = await g.AddV(new ThirdPartyIdentifier()
 				{
+					ID = Guid.NewGuid(),
 					Key = key,
 					Value = value,
 					EnterpriseLookup = entLookup,
 					Registry = entLookup,
-					Created = buildAudit()
+					//Created = buildAudit()
 				})
-				.FirstAsync();
+				.FirstOrDefaultAsync();
 
-				await g.V(ent.ID)
-					.AddE<Owns>()
-					.To(__ => __.V(tpi.ID))
-					.FirstAsync();
+				await ensureEdgeRelationship<Owns>(ent.ID, tpi.ID);
 			}
 			else
 			{
 				tpi = await g.V<ThirdPartyIdentifier>(tpi.ID)
 					.Property(e => e.Value, value)
-					.Property(e => e.Modified, buildAudit())
-					.FirstAsync();
+					//.Property(e => e.Modified, buildAudit())
+					.FirstOrDefaultAsync();
 			}
 
 			return Status.Success;

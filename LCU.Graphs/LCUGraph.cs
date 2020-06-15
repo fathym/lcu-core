@@ -17,7 +17,7 @@ using static ExRam.Gremlinq.Core.GremlinQuerySource;
 
 namespace LCU.Graphs
 {
-	public class LCUGraph : ILCUGraph
+	public class LCUGraph
 	{
 		#region Fields
 		#endregion
@@ -29,25 +29,28 @@ namespace LCU.Graphs
 		#region Constructors
 		public LCUGraph(LCUGraphConfig graphConfig, ILogger logger)
 		{
-			g = g.ConfigureEnvironment(env =>
+			g = GremlinQuerySource.g.ConfigureEnvironment(env =>
 			{
+				var graphModel = GraphModel.FromBaseTypes<LCUVertex, LCUEdge>(lookup =>
+				{
+					return lookup.IncludeAssembliesOfBaseTypes();
+				});
+
 				return env
 					.UseLogger(logger)
-					.UseModel(GraphModel.FromBaseTypes<LCUVertex, LCUEdge>(lookup =>
-					{
-						return lookup.IncludeAssembliesOfBaseTypes();
-					}))
+					.UseModel(graphModel)
 					.UseCosmosDb(builder =>
 					{
-						return builder.ConfigureWebSocket(builder =>
-						{
-							return builder.ConfigureQueryLoggingOptions(o =>
+						return builder
+							.At(new Uri(graphConfig.Host), graphConfig.Database, graphConfig.Graph)
+							.AuthenticateBy(graphConfig.APIKey)
+							.ConfigureWebSocket(builder =>
 							{
-								return o.SetQueryLoggingVerbosity(QueryLoggingVerbosity.None);
+								return builder.ConfigureQueryLoggingOptions(o =>
+								{
+									return o.SetQueryLoggingVerbosity(QueryLoggingVerbosity.None);
+								});
 							});
-						})
-						.At(graphConfig.Host, graphConfig.Database, graphConfig.Graph)
-						.AuthenticateBy(graphConfig.APIKey);
 					});
 			});
 		}
@@ -68,6 +71,21 @@ namespace LCU.Graphs
 				By = by,
 				Description = description
 			};
+		}
+
+		protected virtual async Task ensureEdgeRelationship<TEdge>(Guid fromId, Guid toId)
+			where TEdge : new()
+		{
+			var existing = await g.V(fromId)
+				.Out<TEdge>()
+				.V(toId)
+				.FirstOrDefaultAsync();
+
+			if (existing == null)
+				await g.V(fromId)
+					.AddE<TEdge>()
+					.To(__ => __.V(toId))
+					.FirstOrDefaultAsync();
 		}
 		#endregion
 	}

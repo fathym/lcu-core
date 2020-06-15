@@ -7,7 +7,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 {
 	[Serializable]
 	[DataContract]
-	public class DAFApplicationConfiguration : BusinessModel<Guid>
+	public class DAFApplicationConfiguration : LCUVertex
 	{
 		[DataMember]
 		public virtual Guid ApplicationID { get; set; }

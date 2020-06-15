@@ -1,4 +1,5 @@
-﻿using Fathym.Business.Models;
+﻿using Fathym;
+using Fathym.Business.Models;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -13,7 +14,7 @@ namespace LCU.Graphs.Registry.Enterprises
 		public virtual string Description { get; set; }
 
 		[DataMember]
-		public virtual List<string> Hosts { get; set; }
+		public virtual string[] Hosts { get; set; }
 
 		[DataMember]
 		public virtual string Name { get; set; }
