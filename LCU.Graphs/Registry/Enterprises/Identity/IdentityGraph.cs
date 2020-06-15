@@ -298,11 +298,15 @@
 //			});
 //		}
 
-//		public virtual async Task<Status> Register(string entApiKey, string email, string password, string providerId)
-//		{
-//			return await withG(async (client, g) =>
-//			{
-//				var status = Status.Initialized;
+<<<<<<< HEAD
+		public virtual async Task<Status> Register(string entLookup, string email, string password)
+=======
+		public virtual async Task<Status> Register(string entApiKey, string email, string password, string providerId)
+>>>>>>> integration
+		{
+			return await withG(async (client, g) =>
+			{
+				var status = Status.Initialized;
 
 //				var registry = email.Split('@')[1];
 
