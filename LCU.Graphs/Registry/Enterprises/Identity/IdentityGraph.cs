@@ -288,32 +288,28 @@
 //								.Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 //								.Has(EntGraphConstants.AccessConfigurationTypeName, accessConfigType);
 
-//				var results = await Submit<AccessCard>(query);
+//		var results = await Submit<AccessCard>(query);
 
-//				foreach (var result in results)
-//					if (result.Registry?.Split('|').Count() > 1)
-//						members.Add(result.Registry.Split('|')[1]);
+//		foreach (var result in results)
+//			if (result.Registry?.Split('|').Count() > 1)
+//				members.Add(result.Registry.Split('|')[1]);
 
-//				return members;
-//			});
-//		}
+//		return members;
+//	});
+//}
 
-<<<<<<< HEAD
-		public virtual async Task<Status> Register(string entLookup, string email, string password)
-=======
-		public virtual async Task<Status> Register(string entApiKey, string email, string password, string providerId)
->>>>>>> integration
-		{
-			return await withG(async (client, g) =>
-			{
-				var status = Status.Initialized;
+//public virtual async Task<Status> Register(string entApiKey, string email, string password, string providerId)
+//{
+//	return await withG(async (client, g) =>
+//	{
+//		var status = Status.Initialized;
 
-//				var registry = email.Split('@')[1];
+//		var registry = email.Split('@')[1];
 
-//				var existingQuery = g.V()
-//					.HasLabel(EntGraphConstants.AccountVertexName)
-//					.Has(EntGraphConstants.RegistryName, registry)
-//					.Has("Email", email);
+//		var existingQuery = g.V()
+//			.HasLabel(EntGraphConstants.AccountVertexName)
+//			.Has(EntGraphConstants.RegistryName, registry)
+//			.Has("Email", email);
 
 //				var existingAccResult = await SubmitFirst<Account>(existingQuery);
 
