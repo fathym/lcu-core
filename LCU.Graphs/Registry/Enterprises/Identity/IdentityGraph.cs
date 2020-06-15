@@ -106,6 +106,28 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 			});
 		}
 
+		public virtual async Task<Passport> GetPassport(string email, string entApiKey = null)
+		{
+			return await withG(async (client, g) =>
+			{
+				var registry = email.Split('@')[1];
+
+				var existingQuery = g.V()
+					.Has(EntGraphConstants.RegistryName, registry)
+					.Has("Email", email)
+					.Out(EntGraphConstants.CarriesEdgeName)
+					.HasLabel(EntGraphConstants.PassportVertexName)
+					.Has("IsActive", true);
+
+				if (!entApiKey.IsNullOrEmpty())
+					existingQuery = existingQuery.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
+
+				var passportResult = await SubmitFirst<Passport>(existingQuery);
+
+				return passportResult;
+			}, entApiKey);
+		}
+
 		public virtual async Task<IEnumerable<Claim>> GetClaims(string userId)
 		{
 			return new Claim[]
@@ -276,7 +298,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 			});
 		}
 
-		public virtual async Task<Status> Register(string entLookup, string email, string password)
+		public virtual async Task<Status> Register(string entApiKey, string email, string password, string providerId)
 		{
 			return await withG(async (client, g) =>
 			{
@@ -314,6 +336,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					.Property(EntGraphConstants.RegistryName, $"{entLookup}|{registry}")
 					.Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
 					.Property("PasswordHash", password.ToMD5Hash())
+					.Property("ProviderID", providerId)
 					.Property("IsActive", true);
 
 					existingPassportResult = await SubmitFirst<Passport>(passportQuery);
@@ -321,13 +344,22 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 					await ensureEdgeRelationships(g, existingAccResult.ID, existingPassportResult.ID,
 						edgeToCheckBuy: EntGraphConstants.CarriesEdgeName, edgesToCreate: new List<string>()
 						{
-								EntGraphConstants.CarriesEdgeName
+							EntGraphConstants.CarriesEdgeName
 						});
 
 					status = Status.Success;
 				}
 				else
-					return Status.Conflict.Clone("Passport already exists.");
+				{
+					var updatePassportQuery = g.V(existingPassportResult.ID)
+					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
+					.Property("PasswordHash", password.ToMD5Hash())
+					.Property("ProviderID", providerId);
+
+					existingPassportResult = await SubmitFirst<Passport>(updatePassportQuery);
+
+					status = Status.Success;
+				}
 
 				if (!status)
 					return Status.GeneralError.Clone("There was an issue registering the current account.");
