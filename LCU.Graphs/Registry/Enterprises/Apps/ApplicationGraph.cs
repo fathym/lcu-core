@@ -352,6 +352,10 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				{
 					query.Property("Redirect", config.Metadata["Redirect"]);
 				}
+				else if (config.Metadata.ContainsKey("DAFApplicationID"))
+				{
+					query.Property("DAFApplicationID", config.Metadata["DAFApplicationID"]);
+				}
 
 				var appAppResult = await SubmitFirst<DAFApplicationConfiguration>(query);
 
