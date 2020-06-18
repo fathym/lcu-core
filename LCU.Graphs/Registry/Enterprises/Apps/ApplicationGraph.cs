@@ -158,6 +158,13 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			return defApps;
 		}
 
+		public virtual async Task<Status> RemoveApplication(Guid appId)
+		{
+			await g.V<Application>(appId).Drop();
+
+			return Status.Success;
+		}
+
 		public virtual async Task<Status> RemoveDAFApplication(string entLookup, DAFApplicationConfiguration config)
 		{
 			var dropQuery = g.V<DAFApplicationConfiguration>(config.ID)
