@@ -354,7 +354,8 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				}
 				else if (config.Metadata.ContainsKey("DAFApplicationID"))
 				{
-					query.Property("DAFApplicationID", config.Metadata["DAFApplicationID"]);
+					query.Property("DAFApplicationID", config.Metadata["DAFApplicationID"])
+						.Property("DAFApplicationRoot", config.Metadata["DAFApplicationRoot"]);
 				}
 
 				var appAppResult = await SubmitFirst<DAFApplicationConfiguration>(query);
