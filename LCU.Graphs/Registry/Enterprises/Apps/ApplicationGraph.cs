@@ -79,6 +79,19 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			}, apiKey);
 		}
 
+		public virtual async Task<Application> GetApplication(Guid appId)
+		{
+			return await withG(async (client, g) =>
+			{
+				var query = g.V().HasLabel(EntGraphConstants.AppVertexName)
+						.HasId(appId);
+
+				var appAppResult = await SubmitFirst<Application>(query);
+
+				return appAppResult;
+			}, appId.ToString());
+		}
+
 		public virtual async Task<DAFApplicationConfiguration> GetDAFApplication(Guid dafAppId)
 		{
 			return await withG(async (client, g) =>
@@ -201,6 +214,20 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 
 				return results.ToList();
 			}, apiKey);
+		}
+
+		public virtual async Task<Status> RemoveApplication(Guid appId)
+		{
+			return await withG(async (client, g) =>
+			{
+				var existingQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
+						.HasId(appId)
+						.Drop();
+
+				var existingResult = await SubmitFirst<DAFApplicationConfiguration>(existingQuery);
+
+				return Status.Success;
+			}, appId.ToString());
 		}
 
 		public virtual async Task<Status> RemoveDAFApplication(string apiKey, DAFApplicationConfiguration config)
