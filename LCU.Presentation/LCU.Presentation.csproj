@@ -23,6 +23,7 @@
 		<PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="16.153.0" />
 		<PackageReference Include="Octokit" Version="0.48.0" />
 		<PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
+		<PackageReference Include="WindowsAzure.ServiceBus" Version="6.0.2" />
 	</ItemGroup>
 
 	<ItemGroup>
