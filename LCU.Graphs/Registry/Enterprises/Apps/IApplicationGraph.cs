@@ -11,7 +11,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 
 		Task<Status> CreateDefaultApps(string apiKey);
 
-		Task<List<DAFApplicationConfiguration>> GetDAFApplications(string apiKey, Guid appId);
+		Task<List<DAFApplicationConfiguration>> ListDAFApplications(string apiKey, Guid appId);
 
 		Task<Status> HasDefaultApps(string apiKey);
 

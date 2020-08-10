@@ -79,21 +79,29 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			}, apiKey);
 		}
 
-		public virtual async Task<List<DAFApplicationConfiguration>> GetDAFApplications(string apiKey, Guid appId)
+		public virtual async Task<Application> GetApplication(Guid appId)
 		{
 			return await withG(async (client, g) =>
 			{
-				var query = g.V(appId)
-					.Out(EntGraphConstants.ProvidesEdgeName)
-					.HasLabel(EntGraphConstants.DAFAppVertexName)
-					.Has("ApplicationID", appId)
-					.Has(EntGraphConstants.RegistryName, $"{apiKey}|{appId}")
-					.Order().By("Priority", Order.Decr);
+				var query = g.V().HasLabel(EntGraphConstants.AppVertexName)
+						.HasId(appId);
 
-				var appAppResults = await Submit<DAFApplicationConfiguration>(query);
+				var appAppResult = await SubmitFirst<Application>(query);
 
-				return appAppResults.ToList();
-			}, apiKey);
+				return appAppResult;
+			}, appId.ToString());
+		}
+
+		public virtual async Task<DAFApplicationConfiguration> GetDAFApplication(Guid dafAppId)
+		{
+			return await withG(async (client, g) =>
+			{
+				var query = g.V(dafAppId);
+
+				var appAppResult = await SubmitFirst<DAFApplicationConfiguration>(query);
+
+				return appAppResult;
+			}, dafAppId.ToString());
 		}
 
 		public virtual async Task<Status> HasDefaultApps(string apiKey)
@@ -151,6 +159,23 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			}, apiKey);
 		}
 
+		public virtual async Task<List<DAFApplicationConfiguration>> ListDAFApplications(string apiKey, Guid appId)
+		{
+			return await withG(async (client, g) =>
+			{
+				var query = g.V(appId)
+					.Out(EntGraphConstants.ProvidesEdgeName)
+					.HasLabel(EntGraphConstants.DAFAppVertexName)
+					.Has("ApplicationID", appId)
+					.Has(EntGraphConstants.RegistryName, $"{apiKey}|{appId}")
+					.Order().By("Priority", Order.Decr);
+
+				var appAppResults = await Submit<DAFApplicationConfiguration>(query);
+
+				return appAppResults.ToList();
+			}, apiKey);
+		}
+
 		public virtual async Task<List<Application>> LoadByEnterprise(string apiKey, string host, string container)
 		{
 			return await withG(async (client, g) =>
@@ -189,6 +214,20 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 
 				return results.ToList();
 			}, apiKey);
+		}
+
+		public virtual async Task<Status> RemoveApplication(Guid appId)
+		{
+			return await withG(async (client, g) =>
+			{
+				var existingQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
+						.HasId(appId)
+						.Drop();
+
+				var existingResult = await SubmitFirst<DAFApplicationConfiguration>(existingQuery);
+
+				return Status.Success;
+			}, appId.ToString());
 		}
 
 		public virtual async Task<Status> RemoveDAFApplication(string apiKey, DAFApplicationConfiguration config)
@@ -339,6 +378,11 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				else if (config.Metadata.ContainsKey("Redirect"))
 				{
 					query.Property("Redirect", config.Metadata["Redirect"]);
+				}
+				else if (config.Metadata.ContainsKey("DAFApplicationID"))
+				{
+					query.Property("DAFApplicationID", config.Metadata["DAFApplicationID"])
+						.Property("DAFApplicationRoot", config.Metadata["DAFApplicationRoot"]);
 				}
 
 				var appAppResult = await SubmitFirst<DAFApplicationConfiguration>(query);
