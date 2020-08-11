@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netcoreapp2.2</TargetFramework>
+		<TargetFrameworks>netstandard2.1;netcoreapp3.1</TargetFrameworks>
 		<Copyright>2019</Copyright>
 		<Company>Fathym, Inc</Company>
 		<Product>LCU Core</Product>
@@ -9,11 +9,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Fathym.API" Version="1.29.20212.3" />
+		<PackageReference Include="Fathym.API" Version="1.30.20223.7" />
+		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
 		<PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.2.0" />
-		<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="2.2.0" />
-		<PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
-		<PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Session" Version="2.2.0" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="3.1.7" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.7" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.7" />
 		<PackageReference Include="System.Net.Http.Formatting.Extension" Version="5.2.3" />
 	</ItemGroup>
 

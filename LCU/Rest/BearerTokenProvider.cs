@@ -65,7 +65,7 @@ namespace LCU.Rest
 		#region Helpers
 		protected override async Task<string> loadBearerToken()
 		{
-			return httpContextAccessor?.HttpContext?.Session?.GetString(sessionKey);
+			return httpContextAccessor?.HttpContext?.Session.GetString(sessionKey);
 		}
 
 		protected override async Task setBearerToken(string token)
