@@ -68,6 +68,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			return Status.Success;
 		}
 
+<<<<<<< HEAD
 		public virtual async Task<List<DAFApplicationConfiguration>> GetDAFApplications(string entLookup, Guid appId)
 		{
 			var dafApps = await g.V<Application>(appId)
@@ -79,6 +80,31 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				.ToListAsync();
 
 			return dafApps;
+=======
+		public virtual async Task<Application> GetApplication(Guid appId)
+		{
+			return await withG(async (client, g) =>
+			{
+				var query = g.V().HasLabel(EntGraphConstants.AppVertexName)
+						.HasId(appId);
+
+				var appAppResult = await SubmitFirst<Application>(query);
+
+				return appAppResult;
+			}, appId.ToString());
+		}
+
+		public virtual async Task<DAFApplicationConfiguration> GetDAFApplication(Guid dafAppId)
+		{
+			return await withG(async (client, g) =>
+			{
+				var query = g.V(dafAppId);
+
+				var appAppResult = await SubmitFirst<DAFApplicationConfiguration>(query);
+
+				return appAppResult;
+			}, dafAppId.ToString());
+>>>>>>> integration
 		}
 
 		public virtual async Task<Status> HasDefaultApps(string entLookup)
@@ -123,7 +149,28 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			return apps;
 		}
 
+<<<<<<< HEAD
 		public virtual async Task<List<Application>> LoadByEnterprise(string entLookup, string host, string container = null)
+=======
+		public virtual async Task<List<DAFApplicationConfiguration>> ListDAFApplications(string apiKey, Guid appId)
+		{
+			return await withG(async (client, g) =>
+			{
+				var query = g.V(appId)
+					.Out(EntGraphConstants.ProvidesEdgeName)
+					.HasLabel(EntGraphConstants.DAFAppVertexName)
+					.Has("ApplicationID", appId)
+					.Has(EntGraphConstants.RegistryName, $"{apiKey}|{appId}")
+					.Order().By("Priority", Order.Decr);
+
+				var appAppResults = await Submit<DAFApplicationConfiguration>(query);
+
+				return appAppResults.ToList();
+			}, apiKey);
+		}
+
+		public virtual async Task<List<Application>> LoadByEnterprise(string apiKey, string host, string container)
+>>>>>>> integration
 		{
 			var appsQuery = g.V<Enterprise>()
 				.Where(e => e.EnterpriseLookup == entLookup)
@@ -165,7 +212,25 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			return Status.Success;
 		}
 
+<<<<<<< HEAD
 		public virtual async Task<Status> RemoveDAFApplication(string entLookup, DAFApplicationConfiguration config)
+=======
+		public virtual async Task<Status> RemoveApplication(Guid appId)
+		{
+			return await withG(async (client, g) =>
+			{
+				var existingQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
+						.HasId(appId)
+						.Drop();
+
+				var existingResult = await SubmitFirst<DAFApplicationConfiguration>(existingQuery);
+
+				return Status.Success;
+			}, appId.ToString());
+		}
+
+		public virtual async Task<Status> RemoveDAFApplication(string apiKey, DAFApplicationConfiguration config)
+>>>>>>> integration
 		{
 			var dropQuery = g.V<DAFApplicationConfiguration>(config.ID)
 					.Where(da => da.Registry == $"{entLookup}|{config.ApplicationID}")
@@ -202,6 +267,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 
 			if (existingApp == null)
 			{
+<<<<<<< HEAD
 				if (application.ID.IsEmpty())
 					application.ID = Guid.NewGuid();
 
@@ -245,6 +311,69 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			await ensureEdgeRelationship<Owns>(ent.ID, application.ID);
 
 			return application;
+=======
+				var existingQuery = g.V().HasLabel(EntGraphConstants.DAFAppVertexName)
+						.HasId(config.ID)
+						.Has("ApplicationID", config.ApplicationID)
+						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}");
+
+				var existingAppResult = await SubmitFirst<DAFApplicationConfiguration>(existingQuery);
+
+				var query = existingAppResult == null ?
+					g.AddV(EntGraphConstants.DAFAppVertexName)
+						.Property("ApplicationID", config.ApplicationID)
+						.Property(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}")
+						.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey) :
+					g.V().HasLabel(EntGraphConstants.DAFAppVertexName)
+						.HasId(existingAppResult.ID)
+						.Has("ApplicationID", config.ApplicationID)
+						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}");
+
+				query = query.Property("Lookup", config.Lookup ?? "");
+
+				query = query.Property("Priority", config.Priority);
+
+				if (config.Metadata.ContainsKey("BaseHref"))
+				{
+					query.Property("BaseHref", config.Metadata["BaseHref"])
+						.Property("NPMPackage", config.Metadata["NPMPackage"])
+						.Property("PackageVersion", config.Metadata["PackageVersion"])
+						.Property("StateConfig", config.Metadata.ContainsKey("StateConfig") ? config.Metadata["StateConfig"] : "");
+				}
+				else if (config.Metadata.ContainsKey("APIRoot"))
+				{
+					query.Property("APIRoot", config.Metadata["APIRoot"])
+						.Property("InboundPath", config.Metadata["InboundPath"])
+						.Property("Methods", config.Metadata["Methods"])
+						.Property("Security", config.Metadata["Security"]);
+				}
+				else if (config.Metadata.ContainsKey("Redirect"))
+				{
+					query.Property("Redirect", config.Metadata["Redirect"]);
+				}
+				else if (config.Metadata.ContainsKey("DAFApplicationID"))
+				{
+					query.Property("DAFApplicationID", config.Metadata["DAFApplicationID"])
+						.Property("DAFApplicationRoot", config.Metadata["DAFApplicationRoot"]);
+				}
+
+				var appAppResult = await SubmitFirst<DAFApplicationConfiguration>(query);
+
+				var appQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
+					.HasId(config.ApplicationID)
+					.Has(EntGraphConstants.RegistryName, apiKey);
+
+				var appResult = await SubmitFirst<Application>(appQuery);
+
+				await ensureEdgeRelationships(g, appResult.ID, appAppResult.ID,
+					edgeToCheckBuy: EntGraphConstants.ProvidesEdgeName, edgesToCreate: new List<string>()
+					{
+						EntGraphConstants.ProvidesEdgeName
+					});
+
+				return appAppResult;
+			}, apiKey);
+>>>>>>> integration
 		}
 
 		public virtual async Task<DAFApplicationConfiguration> SaveDAFApplication(string entLookup, DAFApplicationConfiguration dafApp)

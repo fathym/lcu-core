@@ -1,36 +1,40 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netcoreapp3.1</TargetFramework>
+		<TargetFrameworks>netstandard2.1;netcoreapp3.1</TargetFrameworks>
 		<AssetTargetFallback>$(AssetTargetFallback);portable-net451+win8</AssetTargetFallback>
-    <Copyright>2019</Copyright>
-    <Company>Fathym, Inc</Company>
-    <Product>LCU Core</Product>
-    <Authors />
-  </PropertyGroup>
+		<Copyright>2019</Copyright>
+		<Company>Fathym, Inc</Company>
+		<Product>LCU Core</Product>
+		<Authors />
+	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Identity\Core\**" />
-	  <EmbeddedResource Remove="Identity\Core\**" />
-	  <None Remove="Identity\Core\**" />
+		<Compile Remove="Identity\Core\**" />
+		<EmbeddedResource Remove="Identity\Core\**" />
+		<None Remove="Identity\Core\**" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Fathym.Presentation" Version="1.27.20150.8-prerelease" />
+		<PackageReference Include="Fathym.Presentation" Version="1.202.20224.3" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.OAuth" Version="2.2.0" />
+<<<<<<< HEAD
 		<PackageReference Include="Microsoft.Azure.SignalR" Version="1.4.3" />
+=======
+		<PackageReference Include="Microsoft.Azure.SignalR" Version="1.5.0" />
+>>>>>>> integration
 		<PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="16.153.0" />
 		<PackageReference Include="Octokit" Version="0.48.0" />
 		<PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Rest\" />
+		<Folder Include="Rest\" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\LCU.Graphs\LCU.Graphs.csproj" />
+		<ProjectReference Include="..\LCU.Graphs\LCU.Graphs.csproj" />
 	</ItemGroup>
 
 </Project>
