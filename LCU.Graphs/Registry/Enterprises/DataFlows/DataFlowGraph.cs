@@ -150,12 +150,9 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
                     .Update(dataFlow)
                     .FirstOrDefaultAsync();
 
-            var ent = await g.V<Enterprise>()
+            var env = await g.V<Enterprise>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
-                .FirstOrDefaultAsync();
-
-            var env = await g.V<Enterprise>(ent.ID)
                 .Out<Owns>()
                 .OfType<LCUEnvironment>()
                 .Where(e => e.EnterpriseLookup == entLookup)
@@ -163,175 +160,139 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
                 .Where(e => e.Lookup == envLookup)
                 .FirstOrDefaultAsync();
 
-            await ensureEdgeRelationship<Provides>(app.ID, dafApp.ID);
+            await ensureEdgeRelationship<Consumes>(env.ID, dataFlow.ID);
 
-            return dafApp;
-            return await withG(async (client, g) =>
-            {
-                var envQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-                    .Has(EntGraphConstants.RegistryName, entLookup)
-                    .Has("PrimaryAPIKey", entLookup)
-                    .Out(EntGraphConstants.OwnsEdgeName)
-                    .HasLabel(EntGraphConstants.EnvironmentVertexName)
-                    .Has(EntGraphConstants.RegistryName, entLookup)
-                    .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
-                    .Has("Lookup", envLookup);
+            await ensureEdgeRelationship<Manages>(env.ID, dataFlow.ID);
 
-                var envResult = await SubmitFirst<LCUEnvironment>(envQuery);
+            await ensureEdgeRelationship<Owns>(env.ID, dataFlow.ID);
 
-                var existingQuery = envQuery
-                    .Out(EntGraphConstants.OwnsEdgeName)
-                    .HasLabel(EntGraphConstants.DataFlowVertexName)
-                    .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
-                    .Has(EntGraphConstants.RegistryName, registry)
-                    .Has("Lookup", dataFlow.Lookup);
-
-                var existingResult = loadDataFlowFromMetadata(await SubmitFirst<MetadataModel>(existingQuery));
-
-                var query = existingResult == null ?
-                    g.AddV(EntGraphConstants.DataFlowVertexName)
-                    .Property(EntGraphConstants.RegistryName, registry)
-                    .Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup) : existingQuery;
-
-                query = query
-                    .Property("Name", dataFlow.Name ?? "")
-                    .Property("Description", dataFlow.Description ?? "")
-                    .Property("Lookup", dataFlow.Lookup ?? "")
-                    .Property("Output", dataFlow.Output ?? new DataFlowOutput()
-                    {
-                        Modules = new List<Module>(),
-                        Streams = new List<ModuleStream>()
-                    });
-
-                query.SideEffect(__.Properties<string>("ModulePacks").Drop());
-
-                dataFlow.ModulePacks.Each(mp => query = query.Property(Cardinality.List, "ModulePacks", mp));
-
-                var dfResult = loadDataFlowFromMetadata(await SubmitFirst<MetadataModel>(query));
-
-                await ensureEdgeRelationships(g, envResult.ID, dfResult.ID);
-
-                return dfResult;
-            }, entLookup);
+            return dataFlow;
         }
 
-        public virtual async Task<ModulePack> UnpackModulePack(string entLookup, string envLookup, string dfLookup,
+        public virtual async Task<ModulePackSetup> UnpackModulePack(string entLookup, string envLookup, string dfLookup,
             ModulePackSetup module)
         {
-            return await withG(async (client, g) =>
+            var registry = $"{entLookup}|{envLookup}|DataFlow";
+
+            var dataFlow = await GetDataFlow(entLookup, envLookup, dfLookup);
+
+            var existingModulePack = await g.V<ModulePack>(module.Pack.ID)
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == registry)
+                .FirstOrDefaultAsync();
+
+            if (existingModulePack == null)
             {
-                var registry = $"{entLookup}|{envLookup}|DataFlow";
+                if (module.Pack.ID.IsEmpty())
+                    module.Pack.ID = Guid.NewGuid();
 
-                var dfQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-                    .Has(EntGraphConstants.RegistryName, entLookup)
-                    .Has("PrimaryAPIKey", entLookup)
-                    .Out(EntGraphConstants.OwnsEdgeName)
-                    .HasLabel(EntGraphConstants.EnvironmentVertexName)
-                    .Has(EntGraphConstants.RegistryName, entLookup)
-                    .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
-                    .Has("Lookup", envLookup)
-                    .Out(EntGraphConstants.OwnsEdgeName)
-                    .HasLabel(EntGraphConstants.DataFlowVertexName)
-                    .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
-                    .Has(EntGraphConstants.RegistryName, registry)
-                    .Has("Lookup", dfLookup);
+                module.Pack.EnterpriseLookup = entLookup;
 
-                var dfResult = await SubmitFirst<DataFlow>(dfQuery);
+                module.Pack.Registry = registry;
 
-                var existingQuery = dfQuery
-                    .Out(EntGraphConstants.OwnsEdgeName)
-                    .HasLabel(EntGraphConstants.ModulePackVertexName)
-                    .Has(EntGraphConstants.RegistryName, registry)
-                    .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
-                    .Has("Lookup", module.Pack.Lookup);
+                module.Pack = await g.AddV(module.Pack).FirstOrDefaultAsync();
+            }
+            else
+                module.Pack = await g.V<ModulePack>(module.Pack.ID)
+                    .Update(module.Pack)
+                    .FirstOrDefaultAsync();
 
-                var existingResult = await SubmitFirst<ModulePack>(existingQuery);
+            await ensureEdgeRelationship<Consumes>(dataFlow.ID, module.Pack.ID);
 
-                var query = existingResult == null ?
-                    g.AddV(EntGraphConstants.ModulePackVertexName)
-                    .Property(EntGraphConstants.RegistryName, registry)
-                    .Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup) : existingQuery;
+            await ensureEdgeRelationship<Manages>(dataFlow.ID, module.Pack.ID);
 
-                query = query
-                    .Property("Name", module.Pack.Name ?? "")
-                    .Property("Description", module.Pack.Description ?? "")
-                    .Property("Lookup", module.Pack.Lookup ?? "");
+            await ensureEdgeRelationship<Owns>(dataFlow.ID, module.Pack.ID);
 
-                var mpResult = await SubmitFirst<ModulePack>(query);
+            await g.V<ModulePack>(module.Pack.ID)
+                .Out<Owns>()
+                .OfType<ModuleOption>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == registry)
+                .Drop();
 
-                await ensureEdgeRelationships(g, dfResult.ID, mpResult.ID);
+            await module.Options.Each(async option =>
+            {
+                await unpackModuleOption(g, registry, entLookup, dataFlow.ID, module.Pack, option);
+            });
 
-                //	TODO:  Drop any previous Module Options for the Enterprise and reload new
-                var dropOptionsQuery = existingQuery
-                    .Out(EntGraphConstants.OwnsEdgeName)
-                    .HasLabel(EntGraphConstants.ModuleOptionVertexName)
-                    .Has(EntGraphConstants.RegistryName, registry)
-                    .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
-                    .Drop();
+            await module.Displays.Each(async display =>
+            {
+                await unpackModuleDisplay(g, registry, entLookup, dataFlow.ID, module.Pack, display);
+            });
 
-                await module.Options.Each(async option =>
-                {
-                    await unpackModuleOption(g, registry, entLookup, dfResult.ID, mpResult, option);
-                });
-
-                await module.Displays.Each(async display =>
-                {
-                    await unpackModuleDisplay(g, registry, entLookup, dfResult.ID, mpResult, display);
-                });
-
-                return mpResult;
-            }, entLookup);
+            return module;
         }
         #endregion
 
         #region Helpers
-        protected virtual async Task<ModuleOption> unpackModuleOption(GraphTraversalSource g, string registry,
+        protected virtual async Task<ModuleOption> unpackModuleOption(string registry,
             string entLookup, Guid dataFlowId, ModulePack modulePack, ModuleOption option)
         {
-            var existingQuery = g.V(modulePack.ID)
-                .Out(EntGraphConstants.OwnsEdgeName)
-                .HasLabel(EntGraphConstants.ModuleOptionVertexName)
-                .Has(EntGraphConstants.RegistryName, registry)
-                .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
-                .Has("ModuleType", option.ModuleType);
+            var existingModuleOption = await g.V<ModulePack>(modulePack.ID)
+                .Out<Owns>()
+                .OfType<ModuleOption>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == registry)
+                .Where(e => e.ModuleType == option.ModuleType)
+                .FirstOrDefault();
 
-            var existingResult = await SubmitFirst<ModuleOption>(existingQuery);
+            if (existingModuleOption == null)
+            {
+                if (option.ID.IsEmpty())
+                    option.ID = Guid.NewGuid();
 
-            var query = existingResult == null ?
-                g.AddV(EntGraphConstants.ModuleOptionVertexName)
-                .Property(EntGraphConstants.RegistryName, registry)
-                .Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
-                .Property("Active", true)
-                .Property("Visible", true) : existingQuery;
+                option.EnterpriseLookup = entLookup;
 
-            query = query
-                .Property("ControlType", option.ControlType)
-                .Property("Description", option.Description ?? "")
-                .Property("IncomingConnectionLimit", option.IncomingConnectionLimit)
-                .Property("ModuleType", option.ModuleType ?? "")
-                .Property("Name", option.Name ?? "")
-                .Property("OutgoingConnectionLimit", option.OutgoingConnectionLimit);
+                option.Registry = registry;
 
-            query.SideEffect(__.Properties<string>("IncomingConnectionTypes").Drop());
+                option = await g.AddV(option).FirstOrDefaultAsync();
+            }
+            else
+                option = await g.V<ModulePack>(option.ID)
+                    .Update(option)
+                    .FirstOrDefaultAsync();
 
-            option.IncomingConnectionTypes.Each(ict =>
-                query = query.Property(Cardinality.List, "IncomingConnectionTypes", ict));
+            await ensureEdgeRelationship<Consumes>(modulePack.ID, option.ID);
 
-            query.SideEffect(__.Properties<string>("OutgoingConnectionTypes").Drop());
+            await ensureEdgeRelationship<Manages>(modulePack.ID, option.ID);
 
-            option.OutgoingConnectionTypes.Each(oct =>
-                query = query.Property(Cardinality.List, "OutgoingConnectionTypes", oct));
+            await ensureEdgeRelationship<Owns>(modulePack.ID, option.ID);
 
-            var moResult = await SubmitFirst<ModuleOption>(query);
-
-            await ensureEdgeRelationships(g, dataFlowId, moResult.ID);
-
-            return moResult;
+            return option;
         }
 
-        protected virtual async Task<ModuleDisplay> unpackModuleDisplay(GraphTraversalSource g, string registry,
+        protected virtual async Task<ModuleDisplay> unpackModuleDisplay(string registry,
             string entLookup, Guid dataFlowId, ModulePack modulePack, ModuleDisplay display)
         {
+            var existingModuleDisplay = await g.V<ModulePack>(modulePack.ID)
+                .Out<Owns>()
+                .OfType<ModuleDisplay>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == registry)
+                .Where(e => e.ModuleType == display.ModuleType)
+                .FirstOrDefault();
+
+            if (existingModuleDisplay == null)
+            {
+                if (option.ID.IsEmpty())
+                    option.ID = Guid.NewGuid();
+
+                option.EnterpriseLookup = entLookup;
+
+                option.Registry = registry;
+
+                option = await g.AddV(option).FirstOrDefaultAsync();
+            }
+            else
+                option = await g.V<ModulePack>(option.ID)
+                    .Update(option)
+                    .FirstOrDefaultAsync();
+
+            await ensureEdgeRelationship<Consumes>(modulePack.ID, option.ID);
+
+            await ensureEdgeRelationship<Manages>(modulePack.ID, option.ID);
+
+            await ensureEdgeRelationship<Owns>(modulePack.ID, option.ID);
             var existingQuery = g.V(modulePack.ID)
                 .Out(EntGraphConstants.OwnsEdgeName)
                 .HasLabel(EntGraphConstants.ModuleDisplayVertexName)
