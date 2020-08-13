@@ -275,7 +275,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                     .FirstOrDefaultAsync();
             }
 
-            ensureEdgeRelationship<Carries>()
+            await ensureEdgeRelationship<Carries>(account.ID, passport.ID);
 
             return Status.Success;
         }
