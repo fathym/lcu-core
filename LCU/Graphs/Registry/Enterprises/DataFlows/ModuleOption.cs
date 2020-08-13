@@ -26,7 +26,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		public virtual int IncomingConnectionLimit { get; set; }
 
 		[DataMember]
-		public virtual IEnumerable<string> IncomingConnectionTypes { get; set; }
+		public virtual string[] IncomingConnectionTypes { get; set; }
 
 		[DataMember]
 		public virtual string ModuleType { get; set; }
@@ -38,7 +38,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		public virtual int OutgoingConnectionLimit { get; set; }
 
 		[DataMember]
-		public virtual IEnumerable<string> OutgoingConnectionTypes { get; set; }
+		public virtual string[] OutgoingConnectionTypes { get; set; }
 
 		[DataMember]
 		public virtual MetadataModel Settings { get; set; }

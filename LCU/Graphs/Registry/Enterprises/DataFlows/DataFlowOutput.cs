@@ -9,9 +9,9 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 	public class DataFlowOutput : BusinessModel<Guid>
 	{
 		[DataMember]
-		public virtual List<Module> Modules { get; set; }
+		public virtual Module[] Modules { get; set; }
 
 		[DataMember]
-		public virtual List<ModuleStream> Streams { get; set; }
+		public virtual ModuleStream[] Streams { get; set; }
 	}
 }

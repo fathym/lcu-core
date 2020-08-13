@@ -13,22 +13,19 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 		public virtual string AccessConfigurationType { get; set; }
 
 		[DataMember]
-		public virtual List<string> ExcludeAccessRights { get; set; }
+		public virtual string[] ExcludeAccessRights { get; set; }
 
 		[DataMember]
 		public virtual Audit FirstAccess { get; set; }
 
 		[DataMember]
-		public virtual List<string> IncludeAccessRights { get; set; }
+		public virtual string[] IncludeAccessRights { get; set; }
 
 		[DataMember]
 		public virtual Audit LastAccess { get; set; }
 
 		[DataMember]
 		public virtual Guid ProviderID { get; set; }
-
-        [DataMember]
-        public virtual string Registry { get; set; }
 
 		[DataMember]
 		public virtual DateTime ValidEndDate { get; set; }

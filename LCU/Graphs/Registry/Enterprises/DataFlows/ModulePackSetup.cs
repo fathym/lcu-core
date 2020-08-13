@@ -10,10 +10,10 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 	public class ModulePackSetup
 	{
 		[DataMember]
-		public virtual List<ModuleDisplay> Displays { get; set; }
+		public virtual ModuleDisplay[] Displays { get; set; }
 
 		[DataMember]
-		public virtual List<ModuleOption> Options { get; set; }
+		public virtual ModuleOption[] Options { get; set; }
 
 		[DataMember]
 		public virtual ModulePack Pack { get; set; }

@@ -113,14 +113,14 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
                 .OfType<ModuleDisplay>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == registry)
-                .ToListAsync();
+                .ToArrayAsync();
 
             setup.Options = await g.V<ModulePack>(setup.Pack.ID)
                 .Out<Owns>()
                 .OfType<ModuleOption>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == registry)
-                .ToListAsync();
+                .ToArrayAsync();
 
             return setup;
         }
@@ -129,10 +129,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
         {
             var registry = $"{entLookup}|{envLookup}|DataFlow";
 
-            var existingDataFlow = await g.V<DataFlow>(dataFlow.ID)
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == registry)
-                .FirstOrDefaultAsync();
+            var existingDataFlow = await GetDataFlow(entLookup, envLookup, dataFlow.Lookup);
 
             if (existingDataFlow == null)
             {
@@ -145,10 +142,12 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
                 dataFlow = await g.AddV(dataFlow).FirstOrDefaultAsync();
             }
-            else
+            else if (!dataFlow.ID.IsEmpty())
                 dataFlow = await g.V<DataFlow>(dataFlow.ID)
                     .Update(dataFlow)
                     .FirstOrDefaultAsync();
+            else
+                throw new Exception("A data flow with that lookup already exists");
 
             var env = await g.V<Enterprise>()
                 .Where(e => e.EnterpriseLookup == entLookup)

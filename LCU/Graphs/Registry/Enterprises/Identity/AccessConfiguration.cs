@@ -12,10 +12,10 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 	public class AccessConfiguration : MetadataModel
 	{
 		[DataMember]
-		public virtual List<Guid> AcceptedProviderIDs { get; set; }
+		public virtual Guid[] AcceptedProviderIDs { get; set; }
 
 		[DataMember]
-		public virtual List<string> AccessRights { get; set; }
+		public virtual string[] AccessRights { get; set; }
 
 		[DataMember]
 		public virtual string Type { get; set; }

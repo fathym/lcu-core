@@ -17,7 +17,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 		public virtual string Lookup { get; set; }
 
 		[DataMember]
-		public virtual List<string> ModulePacks { get; set; }
+		public virtual string[] ModulePacks { get; set; }
 
 		[DataMember]
 		public virtual string Name { get; set; }

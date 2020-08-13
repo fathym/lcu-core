@@ -8,7 +8,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 {
 	[Serializable]
 	[DataContract]
-	public class LowCodeUnitConfiguration : LCUVertex
+	public class LowCodeUnitConfiguration
 	{
 		[DataMember]
 		public virtual List<string> Files { get; set; }

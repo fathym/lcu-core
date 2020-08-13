@@ -244,6 +244,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             if (account == null)
                 account = await g.AddV(new Account()
                 {
+                    ID = Guid.NewGuid(),
                     Email = email,
                     Registry = registry
                 }).FirstOrDefaultAsync();
@@ -263,6 +264,8 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                 };
 
                 passport = await g.AddV(passport).FirstOrDefaultAsync();
+
+                await ensureEdgeRelationship<Carries>(account.ID, passport.ID);
             }
             else
             {
@@ -274,8 +277,6 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                     .Update(passport)
                     .FirstOrDefaultAsync();
             }
-
-            await ensureEdgeRelationship<Carries>(account.ID, passport.ID);
 
             return Status.Success;
         }
@@ -323,11 +324,13 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                 .Where(e => e.Email == email);
 
             if (!entLookup.IsNullOrEmpty())
+            {
                 tpiQuery = tpiQuery
                     .Out<Carries>()
                     .OfType<Passport>()
                     .Where(e => e.EnterpriseLookup == entLookup)
                     .Where(e => e.Registry == $"{entLookup}|{registry}");
+            }
 
             var tpi = await tpiQuery
                 .Out<Owns>()
@@ -353,6 +356,17 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                 };
 
                 tpi = await g.AddV(tpi).FirstOrDefaultAsync();
+
+                var parentId = account.ID;
+
+                if (!entLookup.IsNullOrEmpty())
+                {
+                    var passport = await GetPassport(email, entLookup);
+
+                    parentId = passport.ID;
+                }
+
+                await ensureEdgeRelationship<Owns>(parentId, tpi.ID);
             }
             else
             {
@@ -364,259 +378,123 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                     .Update(tpi)
                     .FirstOrDefaultAsync();
             }
-            return await withG(async (client, g) =>
-            {
-                existingQuery = existingQuery
-                    .Out(EntGraphConstants.OwnsEdgeName)
-                    .HasLabel(EntGraphConstants.ThirdPartyTokenVertexName)
-                    .Has(EntGraphConstants.RegistryName, email)
-                    .Has("Key", key);
 
-                var tptResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
-
-                var setQuery = tptResult != null ? existingQuery :
-                    g.AddV(EntGraphConstants.ThirdPartyTokenVertexName)
-                        .Property(EntGraphConstants.RegistryName, email)
-                        .Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
-                        .Property("Key", key);
-
-                setQuery = setQuery.Property("Token", token)
-                    .Property("Encrypt", encrypt);
-
-                tptResult = await SubmitFirst<BusinessModel<Guid>>(setQuery);
-
-                if (!entLookup.IsNullOrEmpty())
-                {
-                    var passQuery = g.V().HasLabel(EntGraphConstants.AccountVertexName)
-                        .Has(EntGraphConstants.RegistryName, registry)
-                        .Has("Email", email)
-                        .Out(EntGraphConstants.CarriesEdgeName)
-                        .HasLabel(EntGraphConstants.PassportVertexName)
-                        .Has(EntGraphConstants.RegistryName, $"{entLookup}|{registry}")
-                        .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
-
-                    var passResult = await SubmitFirst<Passport>(passQuery);
-
-                    await ensureEdgeRelationships(g, passResult.ID, tptResult.ID,
-                        edgeToCheckBuy: EntGraphConstants.OwnsEdgeName, edgesToCreate: new List<string>()
-                        {
-                                EntGraphConstants.OwnsEdgeName
-                        });
-                }
-                else
-                {
-                    var accQuery = g.V().HasLabel(EntGraphConstants.AccountVertexName)
-                        .Has(EntGraphConstants.RegistryName, registry)
-                        .Has("Email", email);
-
-                    var accResult = await SubmitFirst<Passport>(accQuery);
-
-                    await ensureEdgeRelationships(g, accResult.ID, tptResult.ID,
-                        edgeToCheckBuy: EntGraphConstants.OwnsEdgeName, edgesToCreate: new List<string>()
-                        {
-                                EntGraphConstants.OwnsEdgeName
-                        });
-                }
-
-                return Status.Success;
-            }, entLookup);
+            return Status.Success;
         }
 
         public virtual async Task<AccessCard> SaveAccessCard(AccessCard accessCard, string entLookup, string username)
         {
-            return await withG(async (client, g) =>
+            var account = await GetAccount(username);
+
+            var existingAccessCard = await GetAccessCard(entLookup, username, accessCard.AccessConfigurationType);
+
+            accessCard.EnterpriseLookup = entLookup;
+
+            accessCard.Registry = $"{entLookup}|{username}";
+
+            if (existingAccessCard == null)
             {
-                var existingQuery = g.V()
-                    .HasLabel(EntGraphConstants.AccessCardVertexName)
-                    .Has(EntGraphConstants.RegistryName, $"{entLookup}|{username}")
-                    .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
-                    .Has("AccessConfigurationType", accessCard.AccessConfigurationType);
+                if (accessCard.ID.IsEmpty())
+                    accessCard.ID = Guid.NewGuid();
 
-                var acResult = await SubmitFirst<AccessCard>(existingQuery);
+                accessCard = await g.AddV(accessCard).FirstOrDefaultAsync();
 
-                var setQuery = acResult != null ? existingQuery :
-                    g.AddV(EntGraphConstants.AccessCardVertexName)
-                        .Property(EntGraphConstants.RegistryName, $"{entLookup}|{username}")
-                        .Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
-                        .Property("AccessConfigurationType", accessCard.AccessConfigurationType);
+                await ensureEdgeRelationship<Carries>(account.ID, accessCard.ID);
+            }
+            else
+            {
+                accessCard.ID = existingAccessCard.ID;
 
-                setQuery = setQuery
-                    .Property("ProviderID", accessCard.ProviderID);
+                accessCard = await g.V<AccessCard>(accessCard.ID)
+                    .Update(accessCard)
+                    .FirstOrDefaultAsync();
+            }
 
-                accessCard.ExcludeAccessRights.Each(ear =>
+            if (accessCard != null)
+            {
+                var rp = await GetRelyingParty(entLookup);
+
+                if (rp != null)
                 {
-                    if (ear == accessCard.ExcludeAccessRights.First())
-                        setQuery = setQuery.Property("ExcludeAccessRights", ear);
-                    else
-                        setQuery = setQuery.Property(Cardinality.List, "ExcludeAccessRights", ear);
-                });
+                    await ensureEdgeRelationship<Provides>(rp.ID, accessCard.ID);
 
-                accessCard.IncludeAccessRights.Each(iar =>
-                {
-                    if (iar == accessCard.IncludeAccessRights.First())
-                        setQuery = setQuery.Property("IncludeAccessRights", iar);
-                    else
-                        setQuery = setQuery.Property(Cardinality.List, "IncludeAccessRights", iar);
-                });
-
-                acResult = await SubmitFirst<AccessCard>(setQuery);
-
-                if (acResult != null)
-                {
-                    var rpQuery = g.V()
-                        .HasLabel(EntGraphConstants.RelyingPartyVertexName)
-                        .Has(EntGraphConstants.RegistryName, entLookup)
-                        .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
-
-                    var rpResult = await SubmitFirst<BusinessModel<Guid>>(rpQuery);
-
-                    if (rpResult != null)
-                    {
-                        var registry = username.Split('@')[1];
-
-                        var accQuery = g.V()
-                            .HasLabel(EntGraphConstants.AccountVertexName)
-                            .Has(EntGraphConstants.RegistryName, registry)
-                            .Has("Email", username);
-
-                        var accResult = await SubmitFirst<Account>(accQuery);
-
-                        await ensureEdgeRelationships(g, rpResult.ID, acResult.ID,
-                            edgeToCheckBuy: EntGraphConstants.ProvidesEdgeName, edgesToCreate: new List<string>()
-                            {
-                                EntGraphConstants.ProvidesEdgeName
-                            });
-
-                        await ensureEdgeRelationships(g, accResult.ID, acResult.ID,
-                            edgeToCheckBuy: EntGraphConstants.ConsumesEdgeName, edgesToCreate: new List<string>()
-                            {
-                                EntGraphConstants.ConsumesEdgeName
-                            });
-                    }
-
-                    accessCard = acResult;
+                    await ensureEdgeRelationship<Consumes>(account.ID, accessCard.ID);
                 }
+            }
 
-                return accessCard;
-            }, entLookup);
+            return accessCard;
         }
 
         public virtual async Task<RelyingParty> SaveRelyingParty(RelyingParty relyingParty, string entLookup)
         {
-            return await withG(async (client, g) =>
+            var existingRP = await GetRelyingParty(entLookup);
+
+            relyingParty.EnterpriseLookup = entLookup;
+
+            relyingParty.Registry = entLookup;
+
+            if (existingRP == null)
             {
-                var existingQuery = g.V()
-                    .HasLabel(EntGraphConstants.RelyingPartyVertexName)
-                    .Has(EntGraphConstants.RegistryName, entLookup)
-                    .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
+                if (relyingParty.ID.IsEmpty())
+                    relyingParty.ID = Guid.NewGuid();
 
-                var rpResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
+                relyingParty = await g.AddV(relyingParty).FirstOrDefaultAsync();
 
-                var setQuery = rpResult != null ? existingQuery :
-                    g.AddV(EntGraphConstants.RelyingPartyVertexName)
-                        .Property(EntGraphConstants.RegistryName, entLookup)
-                        .Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup);
+                var ent = await g.V<Enterprise>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == entLookup)
+                    .FirstOrDefaultAsync();
 
-                setQuery = setQuery
-                    .Property("AccessConfigurations", relyingParty.AccessConfigurations.ToJSON())
-                    .Property("AccessRights", relyingParty.AccessRights.ToJSON())
-                    .Property("DefaultAccessConfigurationType", relyingParty.DefaultAccessConfigurationType)
-                    .Property("Providers", relyingParty.Providers.ToJSON());
+                await ensureEdgeRelationship<Owns>(ent.ID, relyingParty.ID);
+            }
+            else
+            {
+                relyingParty.ID = existingRP.ID;
 
-                rpResult = await SubmitFirst<BusinessModel<Guid>>(setQuery);
+                relyingParty = await g.V<RelyingParty>(relyingParty.ID)
+                    .Update(relyingParty)
+                    .FirstOrDefaultAsync();
+            }
 
-                if (rpResult != null)
-                {
-                    var entQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-                        .Has(EntGraphConstants.RegistryName, entLookup)
-                        .Has("PrimaryAPIKey", entLookup);
-
-                    var entResult = await SubmitFirst<BusinessModel<Guid>>(entQuery);
-
-                    await ensureEdgeRelationships(g, entResult.ID, rpResult.ID,
-                        edgeToCheckBuy: EntGraphConstants.OwnsEdgeName, edgesToCreate: new List<string>()
-                        {
-                            EntGraphConstants.OwnsEdgeName
-                        });
-
-                    rpResult.Metadata["AccessConfigurations"] = rpResult.Metadata["AccessConfigurations"].ToString().FromJSON<JToken>();
-
-                    rpResult.Metadata["AccessRights"] = rpResult.Metadata["AccessRights"].ToString().FromJSON<JToken>();
-
-                    rpResult.Metadata["Providers"] = rpResult.Metadata["Providers"].ToString().FromJSON<JToken>();
-
-                    relyingParty = rpResult.JSONConvert<RelyingParty>();
-                }
-
-                return relyingParty;
-            }, entLookup);
+            return relyingParty;
         }
 
-        public virtual async Task<LicenseAccessToken> SetLicenseAccessToken(LicenseAccessToken token)
+        public virtual async Task<LicenseAccessToken> SetLicenseAccessToken(string entLookup, string username, LicenseAccessToken token)
         {
-            return await withG(async (client, g) =>
+            var existingLAT = await GetLicenseAccessToken(entLookup, username, token.Lookup);
+
+            token.EnterpriseLookup = entLookup;
+
+            token.Registry = $"{entLookup}|{username}";
+
+            if (token.IsLocked) 
+                token.ExpirationDate = System.DateTime.Now;
+
+            if (token.IsReset)
             {
-                // Check for existing token
-                var existingQuery = g.V()
-                    .HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
-                    .Has(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.Username}")
-                    .Has(EntGraphConstants.EnterpriseAPIKeyName, token.EnterpriseAPIKey)
-                    .Has("Lookup", token.Lookup);
+                token.AccessStartDate = System.DateTime.Now;
 
-                var tokResult = await SubmitFirst<LicenseAccessToken>(existingQuery);
+                if (token.TrialPeriodDays > 0)
+                    token.ExpirationDate = DateTime.Now.AddDays(token.TrialPeriodDays);
+            }
 
-                // If token already exists, apply updates to license properties 
-                if (tokResult != null)
-                {
-                    var accDate = tokResult.AccessStartDate;
-                    var expDate = tokResult.ExpirationDate;
+            if (existingLAT == null)
+            {
+                if (token.ID.IsEmpty())
+                    token.ID = Guid.NewGuid();
 
-                    if (token.IsLocked) expDate = System.DateTime.Now;
+                token = await g.AddV(token).FirstOrDefaultAsync();
+            }
+            else
+            {
+                token.ID = existingLAT.ID;
 
-                    if (token.IsReset)
-                    {
-                        accDate = System.DateTime.Now;
+                token = await g.V<LicenseAccessToken>(token.ID)
+                    .Update(token)
+                    .FirstOrDefaultAsync();
+            }
 
-                        if (token.TrialPeriodDays > 0)
-                            expDate = DateTime.Now.AddDays(token.TrialPeriodDays);
-                    }
-
-                    var setQuery =
-                        g.V().HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
-                        .Has(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.Username}")
-                        .Has(EntGraphConstants.EnterpriseAPIKeyName, token.EnterpriseAPIKey)
-                        .Property("AccessStartDate", accDate)
-                        .Property("ExpirationDate", expDate)
-                        .Property("Lookup", token.Lookup)
-                        .Property("TrialPeriodDays", token.TrialPeriodDays)
-                        .Property("Username", token.Username)
-                        .AttachMetadataProperties<LicenseAccessToken>(token);
-
-                    var updateResult = await SubmitFirst<BusinessModel<Guid>>(setQuery);
-
-                    tokResult = updateResult.JSONConvert<LicenseAccessToken>();
-                }
-                else
-                {
-                    var expDays = token.TrialPeriodDays > 0 ? token.TrialPeriodDays : 31;  //  Exp Should not be set without trial period days? 
-
-                    // If not, create the license access token 
-                    var setQuery =
-                        g.AddV(EntGraphConstants.LicenseAccessTokenVertexName)
-                            .Property(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.Username}")
-                            .Property(EntGraphConstants.EnterpriseAPIKeyName, token.EnterpriseAPIKey)
-                            .Property("AccessStartDate", DateTime.Now)
-                            .Property("ExpirationDate", DateTime.Now.AddDays(expDays))
-                            .Property("Lookup", token.Lookup)
-                            .Property("TrialPeriodDays", token.TrialPeriodDays)
-                            .Property("Username", token.Username)
-                            .AttachMetadataProperties<LicenseAccessToken>(token);
-
-                    tokResult = await SubmitFirst<LicenseAccessToken>(setQuery);
-
-                }
-                return tokResult;
-            }, token.EnterpriseAPIKey);
+            return token;
         }
 
         public virtual async Task<Status> Validate(string entLookup, string email, string password)

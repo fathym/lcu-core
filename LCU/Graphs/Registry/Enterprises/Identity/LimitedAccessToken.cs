@@ -16,9 +16,6 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
         public DateTime ExpirationDate { get; set; }
 
         [DataMember]
-        public string EnterpriseAPIKey { get; set; }
-
-        [DataMember]
         public Fathym.Status EnterpriseOverride { get; set; }
 
         [DataMember]

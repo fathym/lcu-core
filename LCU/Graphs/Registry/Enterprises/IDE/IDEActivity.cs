@@ -19,6 +19,9 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 		public virtual string Lookup { get; set; }
 
 		[DataMember]
+		public virtual string[] Sections { get; set; }
+
+		[DataMember]
 		public virtual string Title { get; set; }
 	}
 }
