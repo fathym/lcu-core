@@ -68,8 +68,25 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			return Status.Success;
 		}
 
+		public virtual async Task<Application> GetApplication(Guid appId)
 		public virtual async Task<List<DAFApplicationConfiguration>> GetDAFApplications(string entLookup, Guid appId)
 		{
+			return await withG(async (client, g) =>
+			{
+				var query = g.V().HasLabel(EntGraphConstants.AppVertexName)
+						.HasId(appId);
+
+				var appAppResult = await SubmitFirst<Application>(query);
+
+				return appAppResult;
+			}, appId.ToString());
+		}
+
+		public virtual async Task<DAFApplicationConfiguration> GetDAFApplication(Guid dafAppId)
+		{
+			return await withG(async (client, g) =>
+			{
+				var query = g.V(dafAppId);
 			var dafApps = await g.V<Application>(appId)
 				.Out<Provides>()
 				.OfType<DAFApplicationConfiguration>()
@@ -78,6 +95,10 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				.Order(_ => _.By(da => da.Priority))
 				.ToListAsync();
 
+				var appAppResult = await SubmitFirst<DAFApplicationConfiguration>(query);
+
+				return appAppResult;
+			}, dafAppId.ToString());
 			return dafApps;
 		}
 
@@ -123,6 +144,24 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			return apps;
 		}
 
+		public virtual async Task<List<DAFApplicationConfiguration>> ListDAFApplications(string apiKey, Guid appId)
+		{
+			return await withG(async (client, g) =>
+			{
+				var query = g.V(appId)
+					.Out(EntGraphConstants.ProvidesEdgeName)
+					.HasLabel(EntGraphConstants.DAFAppVertexName)
+					.Has("ApplicationID", appId)
+					.Has(EntGraphConstants.RegistryName, $"{apiKey}|{appId}")
+					.Order().By("Priority", Order.Decr);
+
+				var appAppResults = await Submit<DAFApplicationConfiguration>(query);
+
+				return appAppResults.ToList();
+			}, apiKey);
+		}
+
+		public virtual async Task<List<Application>> LoadByEnterprise(string apiKey, string host, string container)
 		public virtual async Task<List<Application>> LoadByEnterprise(string entLookup, string host, string container = null)
 		{
 			var appsQuery = g.V<Enterprise>()
@@ -165,6 +204,28 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 			return Status.Success;
 		}
 
+		public virtual async Task<Status> RemoveApplication(Guid appId)
+		{
+			return await withG(async (client, g) =>
+			{
+				var existingQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
+						.HasId(appId)
+						.Drop();
+
+				var existingResult = await SubmitFirst<DAFApplicationConfiguration>(existingQuery);
+
+				return Status.Success;
+			}, appId.ToString());
+		}
+
+		public virtual async Task<Status> RemoveDAFApplication(string apiKey, DAFApplicationConfiguration config)
+		{
+			return await withG(async (client, g) =>
+			{
+				var existingQuery = g.V().HasLabel(EntGraphConstants.DAFAppVertexName)
+						.HasId(config.ID)
+						.Has("ApplicationID", config.ApplicationID)
+						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}");
 		public virtual async Task<Status> RemoveDAFApplication(string entLookup, DAFApplicationConfiguration config)
 		{
 			var dropQuery = g.V<DAFApplicationConfiguration>(config.ID)
@@ -254,6 +315,35 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 				.Where(da => da.ApplicationID == dafApp.ApplicationID)
 				.FirstOrDefaultAsync();
 
+				if (config.Metadata.ContainsKey("BaseHref"))
+				{
+					query.Property("BaseHref", config.Metadata["BaseHref"])
+						.Property("NPMPackage", config.Metadata["NPMPackage"])
+						.Property("PackageVersion", config.Metadata["PackageVersion"])
+						.Property("StateConfig", config.Metadata.ContainsKey("StateConfig") ? config.Metadata["StateConfig"] : "");
+				}
+				else if (config.Metadata.ContainsKey("APIRoot"))
+				{
+					query.Property("APIRoot", config.Metadata["APIRoot"])
+						.Property("InboundPath", config.Metadata["InboundPath"])
+						.Property("Methods", config.Metadata["Methods"])
+						.Property("Security", config.Metadata["Security"]);
+				}
+				else if (config.Metadata.ContainsKey("Redirect"))
+				{
+					query.Property("Redirect", config.Metadata["Redirect"]);
+				}
+				else if (config.Metadata.ContainsKey("DAFApplicationID"))
+				{
+					query.Property("DAFApplicationID", config.Metadata["DAFApplicationID"])
+						.Property("DAFApplicationRoot", config.Metadata["DAFApplicationRoot"]);
+				}
+
+				var appAppResult = await SubmitFirst<DAFApplicationConfiguration>(query);
+
+				var appQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
+					.HasId(config.ApplicationID)
+					.Has(EntGraphConstants.RegistryName, apiKey);
 			if (existingDafApp == null)
 			{
 				if (dafApp.ID.IsEmpty())

@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Copyright>2019</Copyright>
-    <Company>Fathym, Inc</Company>
-    <Product>LCU Core</Product>
-    <Authors />
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>netcoreapp3.1</TargetFrameworks>
+		<Copyright>2019</Copyright>
+		<Company>Fathym, Inc</Company>
+		<Product>LCU Core</Product>
+		<Authors />
+	</PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\LCU\LCU.csproj" />
