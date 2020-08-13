@@ -101,7 +101,7 @@ namespace LCU.Testing.Graphs
 					Assert.IsTrue(status);
 				}
 
-				//var defaultRelyingParty = await loadDefaultRelyingParty(parentEntApiKey);
+				//var defaultRelyingParty = await loadDefaultRelyingParty(parententLookup);
 
 				//relyingParty = await idGraph.SaveRelyingParty(defaultRelyingParty, mainEnt.EnterpriseLookup);
 

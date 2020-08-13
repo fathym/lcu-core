@@ -7,7 +7,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 {
 	[Serializable]
 	[DataContract]
-	public class Passport : BusinessModel<Guid>
+	public class Passport : LCUVertex  //BusinessModel<Guid>
 	{
 		[DataMember]
         public virtual bool IsActive { get; set; }

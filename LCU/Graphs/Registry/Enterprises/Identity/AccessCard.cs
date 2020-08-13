@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 namespace LCU.Graphs.Registry.Enterprises.Identity
 {
 	[DataContract]
-	public class AccessCard : BusinessModel<Guid>
+	public class AccessCard : LCUVertex  //BusinessModel<Guid>
 	{
 		[DataMember]
 		public virtual string AccessConfigurationType { get; set; }

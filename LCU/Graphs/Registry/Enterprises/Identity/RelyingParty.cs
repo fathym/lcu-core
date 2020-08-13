@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace LCU.Graphs.Registry.Enterprises.Identity
 {
 	[DataContract]
-	public class RelyingParty : BusinessModel<Guid>
+	public class RelyingParty : LCUVertex //BusinessModel<Guid>
 	{
 		[DataMember]
 		public virtual List<AccessRight> AccessRights { get; set; }
