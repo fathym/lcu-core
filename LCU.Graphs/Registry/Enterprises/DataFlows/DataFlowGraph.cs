@@ -212,12 +212,12 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
             await module.Options.Each(async option =>
             {
-                await unpackModuleOption(g, registry, entLookup, dataFlow.ID, module.Pack, option);
+                await unpackModuleOption(registry, entLookup, dataFlow.ID, module.Pack, option);
             });
 
             await module.Displays.Each(async display =>
             {
-                await unpackModuleDisplay(g, registry, entLookup, dataFlow.ID, module.Pack, display);
+                await unpackModuleDisplay(registry, entLookup, dataFlow.ID, module.Pack, display);
             });
 
             return module;
@@ -234,7 +234,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == registry)
                 .Where(e => e.ModuleType == option.ModuleType)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (existingModuleOption == null)
             {
@@ -248,7 +248,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
                 option = await g.AddV(option).FirstOrDefaultAsync();
             }
             else
-                option = await g.V<ModulePack>(option.ID)
+                option = await g.V<ModuleOption>(option.ID)
                     .Update(option)
                     .FirstOrDefaultAsync();
 
@@ -270,7 +270,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == registry)
                 .Where(e => e.ModuleType == display.ModuleType)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (existingModuleDisplay == null)
             {
@@ -284,7 +284,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
                 display = await g.AddV(display).FirstOrDefaultAsync();
             }
             else
-                display = await g.V<ModulePack>(display.ID)
+                display = await g.V<ModuleDisplay>(display.ID)
                     .Update(display)
                     .FirstOrDefaultAsync();
 
