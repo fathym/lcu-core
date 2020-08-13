@@ -8,7 +8,7 @@ using System.Runtime.Serialization;
 namespace LCU.Graphs.Registry.Enterprises.DataFlows
 {
 	[DataContract]
-	public class ModuleDisplay : BusinessModel<Guid>
+	public class ModuleDisplay : LCUVertex //BusinessModel<Guid>
 	{
 		[DataMember]
 		public virtual List<ModuleAction> Actions { get; set; }

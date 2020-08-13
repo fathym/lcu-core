@@ -10,7 +10,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 {
 	[Serializable]
 	[DataContract]
-	public class ModuleOption : BusinessModel<Guid>
+	public class ModuleOption : LCUVertex //BusinessModel<Guid>
 	{
 		[DataMember]
 		public virtual bool Active { get; set; }

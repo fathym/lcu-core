@@ -8,7 +8,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 {
 	[Serializable]
 	[DataContract]
-	public class DataFlow : BusinessModel<Guid>
+	public class DataFlow : LCUVertex //BusinessModel<Guid>
 	{
 		[DataMember]
 		public virtual string Description { get; set; }

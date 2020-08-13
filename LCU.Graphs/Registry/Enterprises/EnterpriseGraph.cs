@@ -70,21 +70,21 @@ namespace LCU.Graphs.Registry.Enterprises
 
 		public virtual async Task<Status> DeleteEnterprise(string entLookup)
 		{
-			var ent = await LoadByLookup(entLookup);
+			//var ent = await LoadByLookup(entLookup);
 
-			if (ent != null)
+			//if (ent != null)
+			//{
+			//	//	TODO:  We should be archiving the Enterprise records somewhere for potential reimport?
+
+			//	await g.V<LCUVertex>()
+			//		.Where(e => e.EnterpriseLookup == entLookup)
+			//		.Drop();
+
+			//	return Status.Success;
+			//}
+			//else
 			{
-				//	TODO:  We should be archiving the Enterprise records somewhere for potential reimport?
-
-				await g.V<LCUVertex>()
-					.Where(e => e.EnterpriseLookup == entLookup)
-					.Drop();
-
-				return Status.Success;
-			}
-			else
-			{
-				return Status.GeneralError.Clone("Unable to located enterprise by that api key");
+				return Status.GeneralError.Clone("Unable to located enterprise by that enterprise lookup");
 			}
 		}
 
