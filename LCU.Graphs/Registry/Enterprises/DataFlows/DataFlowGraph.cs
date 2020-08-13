@@ -274,56 +274,27 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 
             if (existingModuleDisplay == null)
             {
-                if (option.ID.IsEmpty())
-                    option.ID = Guid.NewGuid();
+                if (display.ID.IsEmpty())
+                    display.ID = Guid.NewGuid();
 
-                option.EnterpriseLookup = entLookup;
+                display.EnterpriseLookup = entLookup;
 
-                option.Registry = registry;
+                display.Registry = registry;
 
-                option = await g.AddV(option).FirstOrDefaultAsync();
+                display = await g.AddV(display).FirstOrDefaultAsync();
             }
             else
-                option = await g.V<ModulePack>(option.ID)
-                    .Update(option)
+                display = await g.V<ModulePack>(display.ID)
+                    .Update(display)
                     .FirstOrDefaultAsync();
 
-            await ensureEdgeRelationship<Consumes>(modulePack.ID, option.ID);
+            await ensureEdgeRelationship<Consumes>(modulePack.ID, display.ID);
 
-            await ensureEdgeRelationship<Manages>(modulePack.ID, option.ID);
+            await ensureEdgeRelationship<Manages>(modulePack.ID, display.ID);
 
-            await ensureEdgeRelationship<Owns>(modulePack.ID, option.ID);
-            var existingQuery = g.V(modulePack.ID)
-                .Out(EntGraphConstants.OwnsEdgeName)
-                .HasLabel(EntGraphConstants.ModuleDisplayVertexName)
-                .Has(EntGraphConstants.RegistryName, registry)
-                .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
-                .Has("ModuleType", display.ModuleType);
+            await ensureEdgeRelationship<Owns>(modulePack.ID, display.ID);
 
-            var existingResult = await SubmitFirst<ModuleDisplay>(existingQuery);
-
-            //	In case the Module Display has been updated, only create new, and don't update if it exists
-            if (existingResult == null)
-            {
-                var query = g.AddV(EntGraphConstants.ModuleDisplayVertexName)
-                    .Property(EntGraphConstants.RegistryName, registry)
-                    .Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
-                    .Property("Category", display.Category)
-                    .Property("Element", display.Element)
-                    .Property("Height", display.Height)
-                    .Property("Icon", display.Icon)
-                    .Property("ModuleType", display.ModuleType)
-                    .Property("Shape", display.Shape)
-                    .Property("Width", display.Width);
-
-                var msResult = await SubmitFirst<ModuleDisplay>(query);
-
-                await ensureEdgeRelationships(g, dataFlowId, msResult.ID);
-
-                return msResult;
-            }
-            else
-                return existingResult;
+            return display;
         }
         #endregion
     }
