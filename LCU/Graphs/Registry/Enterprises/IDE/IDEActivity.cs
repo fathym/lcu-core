@@ -7,7 +7,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 {
 	[Serializable]
 	[DataContract]
-	public class IDEActivity
+	public class IDEActivity : LCUVertex
 	{
 		[DataMember]
 		public virtual string Icon { get; set; }
