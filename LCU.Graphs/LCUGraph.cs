@@ -46,37 +46,37 @@ namespace LCU.Graphs
 							{
 								return conf
 									.IgnoreOnUpdate(x => x.Registry);
-							})
-							.ConfigureCustomSerializers(cs =>
-							{
-								//cs.Add(new GraphElementPropertySerializer(pi =>
-								//{
-								//	return pi.DeclaringType == typeof(MetadataModel) && pi.PropertyType == typeof(IDictionary<string, JToken>);
-								//},
-								//obj =>
-								//{
-								//	return new Dictionary<string, string>()
-								//	{
-								//		{ "Metadata", obj.ToJSON() }
-								//	};
-								//	//return obj.As<IDictionary<string, JToken>>().ToDictionary(o => o.Key, o => o.Value.ToJSON());
-								//}));
-
-								cs.Add(new GraphElementPropertySerializer(pi =>
-								{
-									return pi.PropertyType == typeof(MetadataModel);
-								},
-								obj =>
-								{
-									return new Dictionary<string, string>()
-									{
-										{ "", obj.ToJSON() }
-									};
-									//return obj.As<IDictionary<string, JToken>>().ToDictionary(o => o.Key, o => o.Value.ToJSON());
-								}));
-
-								return cs;
 							});
+							//.ConfigureCustomSerializers(cs =>
+							//{
+							//	//cs.Add(new GraphElementPropertySerializer(pi =>
+							//	//{
+							//	//	return pi.DeclaringType == typeof(MetadataModel) && pi.PropertyType == typeof(IDictionary<string, JToken>);
+							//	//},
+							//	//obj =>
+							//	//{
+							//	//	return new Dictionary<string, string>()
+							//	//	{
+							//	//		{ "Metadata", obj.ToJSON() }
+							//	//	};
+							//	//	//return obj.As<IDictionary<string, JToken>>().ToDictionary(o => o.Key, o => o.Value.ToJSON());
+							//	//}));
+
+							//	cs.Add(new GraphElementPropertySerializer(pi =>
+							//	{
+							//		return pi.PropertyType == typeof(MetadataModel);
+							//	},
+							//	obj =>
+							//	{
+							//		return new Dictionary<string, string>()
+							//		{
+							//			{ "", obj.ToJSON() }
+							//		};
+							//		//return obj.As<IDictionary<string, JToken>>().ToDictionary(o => o.Key, o => o.Value.ToJSON());
+							//	}));
+
+							//	return cs;
+							//});
 					}))
 					.UseCosmosDb(builder =>
 					{
