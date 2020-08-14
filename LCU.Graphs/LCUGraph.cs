@@ -1,4 +1,5 @@
 ﻿using ExRam.Gremlinq.Core;
+using ExRam.Gremlinq.Core.AspNet;
 using ExRam.Gremlinq.Providers.WebSocket;
 using Fathym;
 using Gremlin.Net.Structure;
@@ -38,7 +39,45 @@ namespace LCU.Graphs
 
 				return env
 					.UseLogger(logger)
-					.UseModel(graphModel)
+					.UseModel(graphModel.ConfigureProperties(model =>
+					{
+						return model
+							.ConfigureElement<LCUVertex>(conf =>
+							{
+								return conf
+									.IgnoreOnUpdate(x => x.Registry);
+							})
+							.ConfigureCustomSerializers(cs =>
+							{
+								//cs.Add(new GraphElementPropertySerializer(pi =>
+								//{
+								//	return pi.DeclaringType == typeof(MetadataModel) && pi.PropertyType == typeof(IDictionary<string, JToken>);
+								//},
+								//obj =>
+								//{
+								//	return new Dictionary<string, string>()
+								//	{
+								//		{ "Metadata", obj.ToJSON() }
+								//	};
+								//	//return obj.As<IDictionary<string, JToken>>().ToDictionary(o => o.Key, o => o.Value.ToJSON());
+								//}));
+
+								cs.Add(new GraphElementPropertySerializer(pi =>
+								{
+									return pi.PropertyType == typeof(MetadataModel);
+								},
+								obj =>
+								{
+									return new Dictionary<string, string>()
+									{
+										{ "", obj.ToJSON() }
+									};
+									//return obj.As<IDictionary<string, JToken>>().ToDictionary(o => o.Key, o => o.Value.ToJSON());
+								}));
+
+								return cs;
+							});
+					}))
 					.UseCosmosDb(builder =>
 					{
 						return builder
@@ -46,11 +85,8 @@ namespace LCU.Graphs
 							.AuthenticateBy(graphConfig.APIKey)
 							.ConfigureWebSocket(builder =>
 							{
-								return builder.ConfigureQueryLoggingOptions(o =>
-								{
-									return o.SetQueryLoggingVerbosity(QueryLoggingVerbosity.None);
-								});
-							});
+                                return builder;
+                            });
 					});
 			});
 		}

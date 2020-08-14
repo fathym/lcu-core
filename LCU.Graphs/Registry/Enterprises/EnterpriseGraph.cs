@@ -3,6 +3,7 @@ using Fathym;
 using Fathym.Business.Models;
 using LCU.Graphs.Registry.Enterprises.Edges;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,20 +71,23 @@ namespace LCU.Graphs.Registry.Enterprises
 
 		public virtual async Task<Status> DeleteEnterprise(string entLookup)
 		{
-			//var ent = await LoadByLookup(entLookup);
+			if (entLookup == "3ebd1c0d-22d0-489e-a46f-3260103c8cd7")
+				throw new Exception("This would blow up everything, so don't do it");
 
-			//if (ent != null)
-			//{
-			//	//	TODO:  We should be archiving the Enterprise records somewhere for potential reimport?
+			var ent = await LoadByLookup(entLookup);
 
-			//	await g.V<LCUVertex>()
-			//		.Where(e => e.EnterpriseLookup == entLookup)
-			//		.Drop();
+            if (ent != null && ent.EnterpriseLookup != "3ebd1c0d-22d0-489e-a46f-3260103c8cd7")
+            {
+                //	TODO:  We should be archiving the Enterprise records somewhere for potential reimport?
 
-			//	return Status.Success;
-			//}
-			//else
-			{
+                await g.V<LCUVertex>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Drop();
+
+                return Status.Success;
+            }
+            else
+            {
 				return Status.GeneralError.Clone("Unable to located enterprise by that enterprise lookup");
 			}
 		}

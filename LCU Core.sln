@@ -23,9 +23,23 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LCU.Presentation", "LCU.Pre
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataImport", "DataImport\DataImport.csproj", "{F188AB65-8343-4C36-A9BD-588356A007BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LCU.Graphs.Tests", "LCU.Graphs.Tests\LCU.Graphs.Tests.csproj", "{400BC5A0-E037-4BF7-A1E5-508C74022490}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LCU.Graphs.Tests", "LCU.Graphs.Tests\LCU.Graphs.Tests.csproj", "{400BC5A0-E037-4BF7-A1E5-508C74022490}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LCU.Testing", "LCU.Testing\LCU.Testing.csproj", "{906EE8DB-4750-40B7-B6D5-64A6B1EF4052}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LCU.Testing", "LCU.Testing\LCU.Testing.csproj", "{906EE8DB-4750-40B7-B6D5-64A6B1EF4052}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{FC84E979-FA47-4B89-AB49-C35CC037D467}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Providers.CosmosDb.AspNet", "..\..\Open Source\fathym-it\ExRam.Gremlinq\ExRam.Gremlinq.Providers.CosmosDb.AspNet\ExRam.Gremlinq.Providers.CosmosDb.AspNet.csproj", "{D75C095F-5012-4999-8E0F-6C2556494412}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Providers.CosmosDb", "..\..\Open Source\fathym-it\ExRam.Gremlinq\ExRam.Gremlinq.Providers.CosmosDb\ExRam.Gremlinq.Providers.CosmosDb.csproj", "{3D14CA99-D329-44C0-9671-3A565697ED67}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Providers.WebSocket.AspNet", "..\..\Open Source\fathym-it\ExRam.Gremlinq\ExRam.Gremlinq.Providers.WebSocket.AspNet\ExRam.Gremlinq.Providers.WebSocket.AspNet.csproj", "{0A279F66-8F5A-4F5A-A2B0-064ADD976E72}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Providers.WebSocket", "..\..\Open Source\fathym-it\ExRam.Gremlinq\ExRam.Gremlinq.Providers.WebSocket\ExRam.Gremlinq.Providers.WebSocket.csproj", "{EBE0E865-07A2-445E-B530-31F7919E7B3B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Core.AspNet", "..\..\Open Source\fathym-it\ExRam.Gremlinq\ExRam.Gremlinq.Core.AspNet\ExRam.Gremlinq.Core.AspNet.csproj", "{D7F0D76A-B402-4BE6-990F-F5A1F2D1F223}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Core", "..\..\Open Source\fathym-it\ExRam.Gremlinq\ExRam.Gremlinq.Core\ExRam.Gremlinq.Core.csproj", "{E8C9B611-1C5E-4CE5-B425-BC6C2041E5C7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +71,30 @@ Global
 		{906EE8DB-4750-40B7-B6D5-64A6B1EF4052}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{906EE8DB-4750-40B7-B6D5-64A6B1EF4052}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{906EE8DB-4750-40B7-B6D5-64A6B1EF4052}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D75C095F-5012-4999-8E0F-6C2556494412}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D75C095F-5012-4999-8E0F-6C2556494412}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D75C095F-5012-4999-8E0F-6C2556494412}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D75C095F-5012-4999-8E0F-6C2556494412}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D14CA99-D329-44C0-9671-3A565697ED67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D14CA99-D329-44C0-9671-3A565697ED67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D14CA99-D329-44C0-9671-3A565697ED67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D14CA99-D329-44C0-9671-3A565697ED67}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A279F66-8F5A-4F5A-A2B0-064ADD976E72}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A279F66-8F5A-4F5A-A2B0-064ADD976E72}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A279F66-8F5A-4F5A-A2B0-064ADD976E72}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A279F66-8F5A-4F5A-A2B0-064ADD976E72}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBE0E865-07A2-445E-B530-31F7919E7B3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBE0E865-07A2-445E-B530-31F7919E7B3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBE0E865-07A2-445E-B530-31F7919E7B3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBE0E865-07A2-445E-B530-31F7919E7B3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7F0D76A-B402-4BE6-990F-F5A1F2D1F223}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7F0D76A-B402-4BE6-990F-F5A1F2D1F223}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7F0D76A-B402-4BE6-990F-F5A1F2D1F223}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7F0D76A-B402-4BE6-990F-F5A1F2D1F223}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8C9B611-1C5E-4CE5-B425-BC6C2041E5C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8C9B611-1C5E-4CE5-B425-BC6C2041E5C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8C9B611-1C5E-4CE5-B425-BC6C2041E5C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8C9B611-1C5E-4CE5-B425-BC6C2041E5C7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -68,6 +106,12 @@ Global
 		{F188AB65-8343-4C36-A9BD-588356A007BC} = {2934BD99-4DF4-4B0D-B8CB-72DC0ED2B64C}
 		{400BC5A0-E037-4BF7-A1E5-508C74022490} = {2934BD99-4DF4-4B0D-B8CB-72DC0ED2B64C}
 		{906EE8DB-4750-40B7-B6D5-64A6B1EF4052} = {D6404F8C-B497-46CC-8A16-666BE8E3D611}
+		{D75C095F-5012-4999-8E0F-6C2556494412} = {FC84E979-FA47-4B89-AB49-C35CC037D467}
+		{3D14CA99-D329-44C0-9671-3A565697ED67} = {FC84E979-FA47-4B89-AB49-C35CC037D467}
+		{0A279F66-8F5A-4F5A-A2B0-064ADD976E72} = {FC84E979-FA47-4B89-AB49-C35CC037D467}
+		{EBE0E865-07A2-445E-B530-31F7919E7B3B} = {FC84E979-FA47-4B89-AB49-C35CC037D467}
+		{D7F0D76A-B402-4BE6-990F-F5A1F2D1F223} = {FC84E979-FA47-4B89-AB49-C35CC037D467}
+		{E8C9B611-1C5E-4CE5-B425-BC6C2041E5C7} = {FC84E979-FA47-4B89-AB49-C35CC037D467}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D0A1F403-B69B-40C0-9AFF-2FB7AB422DF0}

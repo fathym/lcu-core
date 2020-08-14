@@ -154,7 +154,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
             return env;
         }
 
-        public virtual async Task<MetadataModel> SaveEnvironmentSettings(string entLookup, string envLookup, LCUEnvironmentSettings settings)
+        public virtual async Task<LCUEnvironmentSettings> SaveEnvironmentSettings(string entLookup, string envLookup, LCUEnvironmentSettings settings)
         {
             var existingSettings = await GetEnvironmentSettings(entLookup, envLookup);
 
