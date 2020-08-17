@@ -1,6 +1,7 @@
 using LCU.Graphs.Registry.Enterprises.Apps;
 using LCU.Testing.Graphs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -111,8 +112,53 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
             var viewApp = dafApp.JSONConvert<DAFViewConfiguration>();
 
             Assert.IsNotNull(viewApp);
-            Assert.AreEqual(expected, dafApp.Registry);
+            Assert.AreEqual(expected.Registry, dafApp.Registry);
         }
+
+        //[TestMethod]
+        //public async Task SaveListRemoveDAFApplicationWithMetadata()
+        //{
+        //    var appTest = createTestApplication();
+
+        //    // append metadata
+        //    //dynamic someStuff = new
+        //    //{
+        //    //    Property = "Metadata Test"
+        //    //};
+
+        //    //// if this works, then metadata model should work - if it doesnt, try with string intsead of JToken
+        //    //var someStuffDict = new Dictionary<string, JToken>();
+        //    //someStuffDict.Add("PropertyCollection", JToken.Parse(JsonConvert.SerializeObject(someStuff)));
+
+        //    //appTest.Metadata = someStuffDict;
+        //    //appTest.MetadataProxy = "Metadata proxy test";
+
+        //    // save with metadata
+        //    var app = await appGraph.Save(appTest);
+
+        //    Assert.IsNotNull(app);
+        //    Assert.AreNotEqual(Guid.Empty, app.ID);
+        //    Assert.IsNotNull(app.Metadata);
+
+        //    var expected = createTestDAFApplication(app.ID);
+
+        //    // append metadata
+        //    var dafApp = await appGraph.SaveDAFApplication(mainEnt.EnterpriseLookup, expected);
+
+        //    Assert.IsNotNull(dafApp);
+        //    Assert.AreNotEqual(Guid.Empty, dafApp.ID);
+        //    Assert.AreEqual(expected.ApplicationID, dafApp.ApplicationID);
+        //    Assert.AreEqual(expected.EnterpriseLookup, dafApp.EnterpriseLookup);
+        //    Assert.AreEqual(expected.Lookup, dafApp.Lookup);
+        //    Assert.AreEqual(expected.Priority, dafApp.Priority);
+        //    Assert.AreEqual(expected.Registry, dafApp.Registry);
+
+
+        //    var viewApp = dafApp.JSONConvert<DAFViewConfiguration>();
+
+        //    Assert.IsNotNull(viewApp);
+        //    Assert.AreEqual(expected.Registry, dafApp.Registry);
+        //}
         #endregion
 
         #region Helpers
@@ -145,21 +191,22 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
 
             return new DAFViewConfiguration()
             {
-                ApplicationID = appId,
+                ApplicationID = appId.ToString(),
                 BaseHref = "/something/",
                 EnterpriseLookup = mainEnt.EnterpriseLookup,
                 Lookup = "something",
                 NPMPackage = "@habistack/lcu-fathym-forecast-lcu",
                 PackageVersion = "latest",
                 Priority = 100,
-                Registry = appId.ToString(),
-                StateConfig = new Fathym.MetadataModel()
-                {
-                    Metadata = new Dictionary<string, JToken>()
-                    {
-                        { "hello", "world" }
-                    }
-                }
+                Registry = appId.ToString()
+                //,
+                //StateConfig = new Fathym.MetadataModel()
+                //{
+                //    Metadata = new Dictionary<string, JToken>()
+                //    {
+                //        { "hello", "world" }
+                //    }
+                //}
             };
         }
         #endregion

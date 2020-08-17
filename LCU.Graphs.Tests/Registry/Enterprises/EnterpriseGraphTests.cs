@@ -185,6 +185,8 @@ namespace LCU.Graphs.Tests.Registry.Enterprises
 			Assert.IsTrue(ent.Hosts.Contains($"added-{mainHost}"));
 			Assert.IsTrue(ent.Hosts.Contains($"added2-{mainHost}"));
 		}
+
+
 		#endregion
 	}
 }

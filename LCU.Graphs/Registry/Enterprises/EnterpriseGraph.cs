@@ -11,70 +11,70 @@ using System.Threading.Tasks;
 
 namespace LCU.Graphs.Registry.Enterprises
 {
-	public class EnterpriseGraph : LCUGraph
-	{
-		#region Properties
-		#endregion
+    public class EnterpriseGraph : LCUGraph
+    {
+        #region Properties
+        #endregion
 
-		#region Constructors
-		public EnterpriseGraph(LCUGraphConfig graphConfig, ILogger<EnterpriseGraph> logger)
-			: base(graphConfig, logger)
-		{ }
-		#endregion
+        #region Constructors
+        public EnterpriseGraph(LCUGraphConfig graphConfig, ILogger<EnterpriseGraph> logger)
+            : base(graphConfig, logger)
+        { }
+        #endregion
 
-		#region API Methods
-		public virtual async Task<Enterprise> AddHost(string entLookup, string host)
-		{
-			var existingEnt = await LoadByHost(host);
+        #region API Methods
+        public virtual async Task<Enterprise> AddHost(string entLookup, string host)
+        {
+            var existingEnt = await LoadByHost(host);
 
-			if (existingEnt == null)
-			{
-				return await g.V<Enterprise>()
-					.Where(e => e.EnterpriseLookup == entLookup)
-					.Where(e => e.Registry == entLookup)
-					.Property(e => e.Hosts, new string[] { host })
-					.FirstOrDefaultAsync();
-			}
-			else
-			{
-				if (existingEnt.EnterpriseLookup != entLookup)
-					throw new Exception("An enterprise with that host already exists.");
-				else
-					return existingEnt;
-			}
-		}
+            if (existingEnt == null)
+            {
+                return await g.V<Enterprise>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == entLookup)
+                    .Property(e => e.Hosts, new string[] { host })
+                    .FirstOrDefaultAsync();
+            }
+            else
+            {
+                if (existingEnt.EnterpriseLookup != entLookup)
+                    throw new Exception("An enterprise with that host already exists.");
+                else
+                    return existingEnt;
+            }
+        }
 
-		public virtual async Task<Enterprise> Create(string name, string description, string host)
-		{
-			var existingEnt = await LoadByHost(host);
+        public virtual async Task<Enterprise> Create(string name, string description, string host)
+        {
+            var existingEnt = await LoadByHost(host);
 
-			if (existingEnt == null)
-			{
-				var entLookup = Guid.NewGuid().ToString();
+            if (existingEnt == null)
+            {
+                var entLookup = Guid.NewGuid().ToString();
 
-				return await g.AddV(new Enterprise()
-				{
-					ID = Guid.NewGuid(),
-					Name = name,
-					Hosts = new string[] { host },
-					Description = description,
-					PreventDefaultApplications = false,
-					EnterpriseLookup = entLookup,
-					Registry = entLookup
-				}).FirstOrDefaultAsync();
-			}
-			else
-			{
-				throw new Exception("An enterprise with that host already exists.");
-			}
-		}
+                return await g.AddV(new Enterprise()
+                {
+                    ID = Guid.NewGuid(),
+                    Name = name,
+                    Hosts = new string[] { host },
+                    Description = description,
+                    PreventDefaultApplications = false,
+                    EnterpriseLookup = entLookup,
+                    Registry = entLookup
+                }).FirstOrDefaultAsync();
+            }
+            else
+            {
+                throw new Exception("An enterprise with that host already exists.");
+            }
+        }
 
-		public virtual async Task<Status> DeleteEnterprise(string entLookup)
-		{
-			if (entLookup == "3ebd1c0d-22d0-489e-a46f-3260103c8cd7")
-				throw new Exception("This would blow up everything, so don't do it");
+        public virtual async Task<Status> DeleteEnterprise(string entLookup)
+        {
+            if (entLookup == "3ebd1c0d-22d0-489e-a46f-3260103c8cd7")
+                throw new Exception("This would blow up everything, so don't do it");
 
-			var ent = await LoadByLookup(entLookup);
+            var ent = await LoadByLookup(entLookup);
 
             if (ent != null && ent.EnterpriseLookup != "3ebd1c0d-22d0-489e-a46f-3260103c8cd7")
             {
@@ -88,118 +88,126 @@ namespace LCU.Graphs.Registry.Enterprises
             }
             else
             {
-				return Status.GeneralError.Clone("Unable to located enterprise by that enterprise lookup");
-			}
-		}
+                return Status.GeneralError.Clone("Unable to located enterprise by that enterprise lookup");
+            }
+        }
 
-		public virtual async Task<bool> DoesHostExist(string host)
-		{
-			var ent = await g.V<Enterprise>()
-				.Where(e => e.Hosts.Contains(host))
-				.FirstOrDefaultAsync();
+        public virtual async Task<bool> DoesHostExist(string host)
+        {
+            var ent = await g.V<Enterprise>()
+                .Where(e => e.Hosts.Contains(host))
+                .FirstOrDefaultAsync();
 
-			return ent != null;
-		}
+            return ent != null;
+        }
 
-		public virtual async Task<List<string>> FindRegisteredHosts(string hostRoot)
-		{
-			var hosts = await g.V<Enterprise>()
-				.Values(e => e.Hosts);
+        public virtual async Task<List<string>> FindRegisteredHosts(string hostRoot)
+        {
+            var hosts = await g.V<Enterprise>()
+                .Values(e => e.Hosts);
 
-			hosts = hosts.Where(h => h.EndsWith(hostRoot)).ToArray();
+            hosts = hosts.Where(h => h.EndsWith(hostRoot)).ToArray();
 
-			return hosts.Distinct().ToList();
-		}
+            return hosts.Distinct().ToList();
+        }
 
-		public virtual async Task<List<Enterprise>> ListChildEnterprises(string entLookup)
-		{
-			return await g.V<Enterprise>()
-				.Where(e => e.EnterpriseLookup == entLookup)
-				.Where(e => e.Registry == entLookup)
-				.Out<Owns>()
-				.OfType<DefaultApplications>()
-				.In<Offers>()
-				.OfType<Enterprise>()
-				.ToListAsync();
-		}
+        public virtual async Task<List<Enterprise>> ListChildEnterprises(string entLookup)
+        {
+            return await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Out<Owns>()
+                .OfType<DefaultApplications>()
+                .In<Offers>()
+                .OfType<Enterprise>()
+                .ToListAsync();
+        }
 
-		public virtual async Task<List<string>> ListRegistrationHosts(string entLookup)
-		{
-			var hosts = await g.V<EnterpriseRegistration>()
-				.Where(e => e.EnterpriseLookup == entLookup)
-				.Where(e => e.Registry == entLookup)
-				.Values(e => e.Hosts);
+        public virtual async Task<List<string>> ListRegistrationHosts(string entLookup)
+        {
+            var hosts = await g.V<EnterpriseRegistration>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Values(e => e.Hosts);
 
-			return hosts.ToList();
-		}
+            return hosts.ToList();
+        }
 
-		public virtual async Task<Enterprise> LoadByHost(string host)
-		{
-			return await g.V<Enterprise>()
-				.Where(e => e.Hosts.Contains(host))
-				.FirstOrDefaultAsync();
-		}
+        public virtual async Task<Enterprise> LoadByHost(string host)
+        {
+            try
+            {
+                return await g.V<Enterprise>()
+                        .Where(e => e.Hosts.Contains(host))
+                        .FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
 
-		public virtual async Task<Enterprise> LoadByLookup(string entLookup)
-		{
-			return await g.V<Enterprise>()
-				.Where(e => e.EnterpriseLookup == entLookup)
-				.Where(e => e.Registry == entLookup)
-				.FirstOrDefaultAsync();
-		}
+                throw;
+            }
+        }
 
-		public virtual async Task<string> RetrieveThirdPartyData(string entLookup, string key)
-		{
-			return await g.V<Enterprise>()
-				.Where(e => e.EnterpriseLookup == entLookup)
-				.Where(e => e.Registry == entLookup)
-				.Out<Owns>()
-				.OfType<ThirdPartyIdentifier>()
-				.Where(e => e.Registry == entLookup)
-				.Where(e => e.Key == key)
-				.Values(e => e.Value)
-				.FirstOrDefaultAsync();
-		}
+        public virtual async Task<Enterprise> LoadByLookup(string entLookup)
+        {
+            return await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .FirstOrDefaultAsync();
+        }
 
-		public virtual async Task<Status> SetThirdPartyData(string entLookup, string key, string value)
-		{
-			var ent = await LoadByLookup(entLookup);
+        public virtual async Task<string> RetrieveThirdPartyData(string entLookup, string key)
+        {
+            return await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Out<Owns>()
+                .OfType<ThirdPartyIdentifier>()
+                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Key == key)
+                .Values(e => e.Value)
+                .FirstOrDefaultAsync();
+        }
 
-			var tpi = await g.V<Enterprise>(ent.ID)
-				.Out<Owns>()
-				.OfType<ThirdPartyIdentifier>()
-				.Where(e => e.Registry == entLookup)
-				.Where(e => e.Key == key)
-				.FirstOrDefaultAsync();
+        public virtual async Task<Status> SetThirdPartyData(string entLookup, string key, string value)
+        {
+            var ent = await LoadByLookup(entLookup);
 
-			if (tpi == null)
-			{
-				tpi = await g.AddV(new ThirdPartyIdentifier()
-				{
-					ID = Guid.NewGuid(),
-					Key = key,
-					Value = value,
-					EnterpriseLookup = entLookup,
-					Registry = entLookup,
-					//Created = buildAudit()
-				})
-				.FirstOrDefaultAsync();
+            var tpi = await g.V<Enterprise>(ent.ID)
+                .Out<Owns>()
+                .OfType<ThirdPartyIdentifier>()
+                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Key == key)
+                .FirstOrDefaultAsync();
 
-				await ensureEdgeRelationship<Owns>(ent.ID, tpi.ID);
-			}
-			else
-			{
-				tpi = await g.V<ThirdPartyIdentifier>(tpi.ID)
-					.Property(e => e.Value, value)
-					//.Property(e => e.Modified, buildAudit())
-					.FirstOrDefaultAsync();
-			}
+            if (tpi == null)
+            {
+                tpi = await g.AddV(new ThirdPartyIdentifier()
+                {
+                    ID = Guid.NewGuid(),
+                    Key = key,
+                    Value = value,
+                    EnterpriseLookup = entLookup,
+                    Registry = entLookup,
+                    //Created = buildAudit()
+                })
+                .FirstOrDefaultAsync();
 
-			return Status.Success;
-		}
-		#endregion
+                await ensureEdgeRelationship<Owns>(ent.ID, tpi.ID);
+            }
+            else
+            {
+                tpi = await g.V<ThirdPartyIdentifier>(tpi.ID)
+                    .Property(e => e.Value, value)
+                    //.Property(e => e.Modified, buildAudit())
+                    .FirstOrDefaultAsync();
+            }
 
-		#region Helpers
-		#endregion
-	}
+            return Status.Success;
+        }
+        #endregion
+
+        #region Helpers
+        #endregion
+    }
 }

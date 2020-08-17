@@ -10,12 +10,14 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 	public class DAFApplicationConfiguration : LCUVertex
 	{
 		[DataMember]
-		public virtual Guid ApplicationID { get; set; }
+		//public virtual Guid ApplicationID { get; set; }
+		public virtual string ApplicationID { get; set; }
 
 		[DataMember]
 		public virtual string Lookup { get; set; }
 
 		[DataMember]
 		public virtual int Priority { get; set; }
+
 	}
 }

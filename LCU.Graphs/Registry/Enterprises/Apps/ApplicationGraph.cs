@@ -130,7 +130,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
                 .Out<Provides>()
                 .OfType<DAFApplicationConfiguration>()
                 .Where(da => da.Registry == $"{entLookup}|{appId}")
-                .Where(da => da.ApplicationID == appId)
+                .Where(da => da.ApplicationID == appId.ToString())
                 .Order(_ => _.By(da => da.Priority))
                 .ToListAsync();
 
@@ -263,28 +263,34 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 
         public virtual async Task<DAFApplicationConfiguration> SaveDAFApplication(string entLookup, DAFApplicationConfiguration dafApp)
         {
-            var existingDafApp = await g.V<DAFApplicationConfiguration>(dafApp.ID)
-                .Where(da => da.Registry == $"{entLookup}|{dafApp.ApplicationID}")
-                .Where(da => da.ApplicationID == dafApp.ApplicationID)
-                .FirstOrDefaultAsync();
-
-            if (existingDafApp == null)
+            try
             {
-                if (dafApp.ID.IsEmpty())
-                    dafApp.ID = Guid.NewGuid();
-
-                dafApp = await g.AddV(dafApp).FirstOrDefaultAsync();
-            }
-            else
-                dafApp = await g.V<DAFApplicationConfiguration>(existingDafApp.ID)
-                    .Update(dafApp)
+                var existingDafApp = await g.V<DAFApplicationConfiguration>(dafApp.ID)
+                    .Where(da => da.Registry == $"{entLookup}|{dafApp.ApplicationID}")
+                    .Where(da => da.ApplicationID == dafApp.ApplicationID)
                     .FirstOrDefaultAsync();
 
-            var app = await g.V<Application>(dafApp.ApplicationID)
-                .Where(a => a.Registry == entLookup)
-                .FirstOrDefaultAsync();
+                if (existingDafApp == null)
+                {
+                    if (dafApp.ID.IsEmpty())
+                        dafApp.ID = Guid.NewGuid();
 
-            await ensureEdgeRelationship<Provides>(app.ID, dafApp.ID);
+                    dafApp = await g.AddV(dafApp).FirstOrDefaultAsync();
+                }
+                else
+                    dafApp = await g.V<DAFApplicationConfiguration>(existingDafApp.ID)
+                        .Update(dafApp)
+                        .FirstOrDefaultAsync();
+
+                var app = await g.V<Application>(dafApp.ApplicationID)
+                    .Where(a => a.Registry == entLookup)
+                    .FirstOrDefaultAsync();
+
+                await ensureEdgeRelationship<Provides>(app.ID, dafApp.ID);
+            } catch (Exception ex)
+            {
+                throw ex;
+            }
 
             return dafApp;
             //var existingDafApp = await g.V<DAFApplicationConfiguration>(dafApp.ID)
