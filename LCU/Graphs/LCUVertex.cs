@@ -11,7 +11,7 @@ using System.Text;
 namespace LCU.Graphs
 {
     [DataContract]
-    public class LCUVertex : MetadataModel// BusinessModel<Guid>
+    public class LCUVertex //: MetadataModel// BusinessModel<Guid>
     {
         [DataMember]
         public virtual string EnterpriseLookup { get; set; }

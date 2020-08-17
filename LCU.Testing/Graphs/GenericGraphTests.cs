@@ -51,7 +51,7 @@ namespace LCU.Testing.Graphs
 
 			hostRoot = config["LCU-HOST-ROOT"];
 
-			orgLookup = config["LCU-ORG-LOOKUP"] + Guid.NewGuid().ToString().Substring(0, 4);
+			orgLookup = config["LCU-ORG-LOOKUP"] + Guid.NewGuid().ToString().Substring(0, 16);
 
 			mainHost = $"{orgLookup}.{hostRoot}";
 
