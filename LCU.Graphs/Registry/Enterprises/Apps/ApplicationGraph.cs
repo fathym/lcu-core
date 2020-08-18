@@ -275,7 +275,8 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
                     if (dafApp.ID.IsEmpty())
                         dafApp.ID = Guid.NewGuid();
 
-                    dafApp = await g.AddV(dafApp).FirstOrDefaultAsync();
+                    dafApp = await g.AddV(dafApp)
+                        .FirstOrDefaultAsync();
                 }
                 else
                     dafApp = await g.V<DAFApplicationConfiguration>(existingDafApp.ID)

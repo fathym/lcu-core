@@ -21,11 +21,11 @@ namespace LCU.Graphs
 
         //[DataMember]
         ////[JsonExtensionData]
-        //public new virtual IDictionary<string, JToken> Metadata { get; set; }
+        //public virtual IDictionary<string, JToken> Metadata { get; set; }
 
         //[DataMember(Name = "Metadata")]
         ////[JsonIgnore]
-        //public new virtual string MetadataProxy
+        //public virtual string MetadataProxy
         //{
         //    get
         //    {

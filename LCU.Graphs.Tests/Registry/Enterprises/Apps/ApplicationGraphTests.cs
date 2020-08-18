@@ -112,7 +112,8 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
             var viewApp = dafApp.JSONConvert<DAFViewConfiguration>();
 
             Assert.IsNotNull(viewApp);
-            Assert.AreEqual(expected.Registry, dafApp.Registry);
+            Assert.AreEqual(expected.Registry, viewApp.Registry);
+            Assert.AreEqual("world", viewApp.StateConfig.Metadata["hello"].ToString());
         }
 
         //[TestMethod]
@@ -198,15 +199,14 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
                 NPMPackage = "@habistack/lcu-fathym-forecast-lcu",
                 PackageVersion = "latest",
                 Priority = 100,
-                Registry = appId.ToString()
-                //,
-                //StateConfig = new Fathym.MetadataModel()
-                //{
-                //    Metadata = new Dictionary<string, JToken>()
-                //    {
-                //        { "hello", "world" }
-                //    }
-                //}
+                Registry = appId.ToString(),
+                StateConfig = new Fathym.MetadataModel()
+                {
+                    Metadata = new Dictionary<string, JToken>()
+                    {
+                        { "hello", "world" }
+                    }
+                }
             };
         }
         #endregion
