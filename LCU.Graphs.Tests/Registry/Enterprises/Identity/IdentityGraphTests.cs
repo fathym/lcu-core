@@ -14,8 +14,11 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
     public class IdentityGraphTests : GenericGraphTests
     {
         #region Fields
+        protected readonly string accessRight = "LCU.Test.Everything";
 
         protected readonly IdentityGraph identityGraph;
+
+        protected readonly string license = "lcu";
         #endregion
 
         #region Constructors
@@ -36,12 +39,64 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
         [TestInitialize]
         public virtual async Task Initialize()
         {
-            //await setupMainEnt(entGraph, identityGraph);
+            await setupMainEnt(entGraph, null, null, identityGraph);
         }
         #endregion
 
         #region API Methods
+        [TestMethod]
+        public async Task RetrieveAccessCards()
+        {
+            throw new NotImplementedException("Not implemented");
+        }
 
+        [TestMethod]
+        public async Task RetrieveAccounts()
+        {
+            throw new NotImplementedException("Not implemented");
+        }
+
+        [TestMethod]
+        public async Task RetrievePassports()
+        {
+            throw new NotImplementedException("Not implemented");
+        }
+
+        [TestMethod]
+        public async Task RetrieveRelyingParty()
+        {
+            throw new NotImplementedException("Not implemented");
+        }
+
+        [TestMethod]
+        public async Task RetrieveLicenseAccessTokens()
+        {
+            throw new NotImplementedException("Not implemented");
+        }
+
+        [TestMethod]
+        public async Task CreateThirdPartyTokenRemove()
+        {
+            throw new NotImplementedException("Not implemented");
+        }
+
+        [TestMethod]
+        public async Task CreateAccessCardRemove()
+        {
+            throw new NotImplementedException("Not implemented");
+        }
+
+        [TestMethod]
+        public async Task CreateRelyingPartyRemove()
+        {
+            throw new NotImplementedException("Not implemented");
+        }
+
+        [TestMethod]
+        public async Task TestAuthorization()
+        {
+            throw new NotImplementedException("Not implemented");
+        }
         #endregion
 
         #region Helpers

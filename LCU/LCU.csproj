@@ -21,7 +21,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\..\Open Source\fathym-it\ExRam.Gremlinq\ExRam.Gremlinq.Providers.CosmosDb.AspNet\ExRam.Gremlinq.Providers.CosmosDb.AspNet.csproj" />
+	  <ProjectReference Include="..\..\..\Third Party Libraries\ExRam.Gremlinq\ExRam.Gremlinq.Providers.CosmosDb.AspNet\ExRam.Gremlinq.Providers.CosmosDb.AspNet.csproj" />
 	</ItemGroup>
 
 </Project>
