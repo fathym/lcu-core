@@ -74,9 +74,9 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
                 .FirstOrDefaultAsync();
         }
 
-        public virtual async Task<DAFApplicationConfiguration> GetDAFApplication(Guid dafAppId)
+        public virtual async Task<DAFApplication> GetDAFApplication(Guid dafAppId)
         {
-            return await g.V<DAFApplicationConfiguration>(dafAppId)
+            return await g.V<DAFApplication>(dafAppId)
                 .FirstOrDefaultAsync();
         }
 
@@ -122,13 +122,13 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
             return apps;
         }
 
-        public virtual async Task<List<DAFApplicationConfiguration>> ListDAFApplications(string entLookup, Guid appId)
+        public virtual async Task<List<DAFApplication>> ListDAFApplications(string entLookup, Guid appId)
         {
             var dafApps = await g.V<Application>(appId)
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
                 .Out<Provides>()
-                .OfType<DAFApplicationConfiguration>()
+                .OfType<DAFApplication>()
                 .Where(da => da.Registry == $"{entLookup}|{appId}")
                 .Where(da => da.ApplicationID == appId.ToString())
                 .Order(_ => _.By(da => da.Priority))
@@ -179,9 +179,9 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
             return Status.Success;
         }
 
-        public virtual async Task<Status> RemoveDAFApplication(string entLookup, DAFApplicationConfiguration config)
+        public virtual async Task<Status> RemoveDAFApplication(string entLookup, DAFApplication config)
         {
-            var dropQuery = g.V<DAFApplicationConfiguration>(config.ID)
+            var dropQuery = g.V<DAFApplication>(config.ID)
                     .Where(da => da.Registry == $"{entLookup}|{config.ApplicationID}")
                     .Where(da => da.ApplicationID == config.ApplicationID);
 
@@ -261,11 +261,11 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
             return application;
         }
 
-        public virtual async Task<DAFApplicationConfiguration> SaveDAFApplication(string entLookup, DAFApplicationConfiguration dafApp)
+        public virtual async Task<DAFApplication> SaveDAFApplication(string entLookup, DAFApplication dafApp)
         {
             try
             {
-                var existingDafApp = await g.V<DAFApplicationConfiguration>(dafApp.ID)
+                var existingDafApp = await g.V<DAFApplication>(dafApp.ID)
                     .Where(da => da.Registry == $"{entLookup}|{dafApp.ApplicationID}")
                     .Where(da => da.ApplicationID == dafApp.ApplicationID)
                     .FirstOrDefaultAsync();
@@ -279,7 +279,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
                         .FirstOrDefaultAsync();
                 }
                 else
-                    dafApp = await g.V<DAFApplicationConfiguration>(existingDafApp.ID)
+                    dafApp = await g.V<DAFApplication>(existingDafApp.ID)
                         .Update(dafApp)
                         .FirstOrDefaultAsync();
 

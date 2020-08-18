@@ -109,11 +109,10 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
             Assert.AreEqual(expected.Priority, dafApp.Priority);
             Assert.AreEqual(expected.Registry, dafApp.Registry);
 
-            var viewApp = dafApp.JSONConvert<DAFViewConfiguration>();
+            var viewDetails = dafApp.Details?.JSONConvert<DAFViewApplication>();
 
-            Assert.IsNotNull(viewApp);
-            Assert.AreEqual(expected.Registry, viewApp.Registry);
-            Assert.AreEqual("world", viewApp.StateConfig.Metadata["hello"].ToString());
+            Assert.IsNotNull(viewDetails);
+            Assert.AreEqual("world", viewDetails.StateConfig.Metadata["hello"].ToString());
         }
 
         //[TestMethod]
@@ -186,25 +185,28 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
             };
         }
 
-        protected virtual DAFApplicationConfiguration createTestDAFApplication(Guid appId)
+        protected virtual DAFApplication createTestDAFApplication(Guid appId)
         {
             var rand = Guid.NewGuid();
 
-            return new DAFViewConfiguration()
+            return new DAFApplication()
             {
                 ApplicationID = appId.ToString(),
-                BaseHref = "/something/",
+                Registry = appId.ToString(),
                 EnterpriseLookup = mainEnt.EnterpriseLookup,
                 Lookup = "something",
-                NPMPackage = "@habistack/lcu-fathym-forecast-lcu",
-                PackageVersion = "latest",
                 Priority = 100,
-                Registry = appId.ToString(),
-                StateConfig = new Fathym.MetadataModel()
+                Details = new DAFViewApplication()
                 {
-                    Metadata = new Dictionary<string, JToken>()
+                    BaseHref = "/something/",
+                    NPMPackage = "@habistack/lcu-fathym-forecast-lcu",
+                    PackageVersion = "latest",
+                    StateConfig = new Fathym.MetadataModel()
                     {
-                        { "hello", "world" }
+                        Metadata = new Dictionary<string, JToken>()
+                        {
+                            { "hello", "world" }
+                        }
                     }
                 }
             };

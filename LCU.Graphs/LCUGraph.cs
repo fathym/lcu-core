@@ -51,24 +51,26 @@ namespace LCU.Graphs
                             .ConfigureCustomSerializers(cs =>
                             {
                                 cs.Add(new GraphElementPropertySerializer(
-                                pi => {
-                                    return pi.PropertyType == typeof(MetadataModel);
-                                },
-                                obj =>
-                                {
-                                    return new Dictionary<string, string>()
+                                    pi =>
                                     {
-                                        { "", obj.ToJSON() }
-                                    };
-                                },
-                                type =>
-                                {
-                                    return type == typeof(MetadataModel);
-                                },
-                                token =>
-                                {
-                                    return token[0]["value"].ToString().FromJSON<MetadataModel>();
-                                }));
+                                        return pi.PropertyType == typeof(MetadataModel);
+                                    },
+                                    obj =>
+                                    {
+                                        return new Dictionary<string, string>()
+                                        {
+                                            { "", obj.ToJSON() }
+                                        };
+                                    },
+                                    type =>
+                                    {
+                                        return type == typeof(MetadataModel);
+                                    },
+                                    token =>
+                                    {
+                                        return token[0]["value"].ToString().FromJSON<MetadataModel>();
+                                    })
+                                );
 
                                 return cs;
                             });
