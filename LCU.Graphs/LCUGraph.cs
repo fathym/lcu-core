@@ -5,6 +5,7 @@ using Fathym;
 using Gremlin.Net.Structure;
 using LCU.Graphs.Registry.Enterprises;
 using LCU.Graphs.Registry.Enterprises.Apps;
+using LCU.Graphs.Registry.Enterprises.DataFlows;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -51,24 +52,48 @@ namespace LCU.Graphs
                             .ConfigureCustomSerializers(cs =>
                             {
                                 cs.Add(new GraphElementPropertySerializer(
-                                pi => {
-                                    return pi.PropertyType == typeof(MetadataModel);
-                                },
-                                obj =>
-                                {
-                                    return new Dictionary<string, string>()
+                                    pi =>
                                     {
-                                        { "", obj.ToJSON() }
-                                    };
-                                },
-                                type =>
-                                {
-                                    return type == typeof(MetadataModel);
-                                },
-                                token =>
-                                {
-                                    return token[0]["value"].ToString().FromJSON<MetadataModel>();
-                                }));
+                                        return pi.PropertyType == typeof(MetadataModel);
+                                    },
+                                    obj =>
+                                    {
+                                        return new Dictionary<string, string>()
+                                        {
+                                            { "", obj.ToJSON() }
+                                        };
+                                    },
+                                    type =>
+                                    {
+                                        return type == typeof(MetadataModel);
+                                    },
+                                    token =>
+                                    {
+                                        return token[0]["value"].ToString().FromJSON<MetadataModel>();
+                                    })
+                                );
+
+                                cs.Add(new GraphElementPropertySerializer(
+                                    pi =>
+                                    {
+                                        return pi.PropertyType == typeof(DataFlowOutput);
+                                    },
+                                    obj =>
+                                    {
+                                        return new Dictionary<string, string>()
+                                        {
+                                            { "", obj.ToJSON() }
+                                        };
+                                    },
+                                    type =>
+                                    {
+                                        return type == typeof(DataFlowOutput);
+                                    },
+                                    token =>
+                                    {
+                                        return token[0]["value"].ToString().FromJSON<DataFlowOutput>();
+                                    })
+                                );
 
                                 return cs;
                             });
@@ -107,10 +132,12 @@ namespace LCU.Graphs
         protected virtual async Task ensureEdgeRelationship<TEdge>(Guid fromId, Guid toId)
             where TEdge : new()
         {
-            var existing = await g.V(fromId)
+            var outEdges = await g.V(fromId)
                 .Out<TEdge>()
-                .V(toId)
-                .FirstOrDefaultAsync();
+                .OfType<LCUVertex>()
+                .ToListAsync();
+
+            var existing = outEdges.FirstOrDefault(oe => oe.ID == toId);
 
             if (existing == null)
                 await g.V(fromId)

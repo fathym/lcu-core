@@ -2,6 +2,8 @@
 using LCU.Graphs;
 using LCU.Graphs.Registry.Enterprises;
 using LCU.Graphs.Registry.Enterprises.Apps;
+using LCU.Graphs.Registry.Enterprises.Identity;
+using LCU.Graphs.Registry.Enterprises.Provisioning;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -22,6 +24,8 @@ namespace LCU.Testing.Graphs
 		protected readonly string hostRoot;
 
 		protected Enterprise mainEnt;
+
+		protected LCUEnvironment mainEnv;
 
 		protected readonly string mainHost;
 
@@ -67,6 +71,11 @@ namespace LCU.Testing.Graphs
 			createdEntLookups.Add(entLookup);
 		}
 
+		protected virtual string buildEnvironmentLookup()
+        {
+			return orgLookup;
+        }
+
 		protected virtual async Task cleanupEnterprises()
 		{
 			await createdEntLookups.Each(async entLookup =>
@@ -78,7 +87,7 @@ namespace LCU.Testing.Graphs
 			});
 		}
 
-		protected virtual async Task setupMainEnt(EnterpriseGraph entGraph, ApplicationGraph appGraph)//, IdentityGraph idGraph, AzureDevOpsRepoManager devOpsRepoMgr)
+		protected virtual async Task setupMainEnt(EnterpriseGraph entGraph, ApplicationGraph appGraph = null, ProvisioningGraph prvGraph = null, IdentityGraph idGraph = null)//, AzureDevOpsRepoManager devOpsRepoMgr)
 		{
 			Assert.AreNotEqual("www.fathym-int.com", mainHost, "This would blow up everything, so don't do it");
 			Assert.AreNotEqual("www.fathym-it.com", mainHost, "This would blow up everything, so don't do it");
@@ -116,19 +125,30 @@ namespace LCU.Testing.Graphs
 
 				//Assert.IsNotNull(accessCard);
 
-				//var settings = new AzureInfrastructureConfig()
-				//{
-				//	AzureAppAuthKey = config["LCU-AZURE-APP-AUTH-KEY"],
-				//	AzureAppID = config["LCU-AZURE-APP-ID"],
-				//	AzureLocation = config["LCU-AZURE-LOCATION"],
-				//	AzureRegion = config["LCU-AZURE-REGION"],
-				//	AzureSubID = config["LCU-AZURE-SUB-ID"],
-				//	AzureTenantID = config["LCU-AZURE-TENANT-ID"]
-				//}.JSONConvert<MetadataModel>();
+				if (prvGraph != null)
+				{
+                    mainEnv = await prvGraph.SaveEnvironment(mainEnt.EnterpriseLookup, new LCUEnvironment()
+					{
+						Lookup = buildEnvironmentLookup()
+					});
 
-				//var env = await devOpsRepoMgr.EnsureEnvironment(mainEnt.EnterpriseLookup, orgLookup, settings);
+                    Assert.IsNotNull(mainEnv);
 
-				//Assert.IsNotNull(env);
+					var settings = new
+					{
+						AzureAppAuthKey = config["LCU-AZURE-APP-AUTH-KEY"],
+						AzureAppID = config["LCU-AZURE-APP-ID"],
+						AzureLocation = config["LCU-AZURE-LOCATION"],
+						AzureRegion = config["LCU-AZURE-REGION"],
+						AzureSubID = config["LCU-AZURE-SUB-ID"],
+						AzureTenantID = config["LCU-AZURE-TENANT-ID"]
+					}.JSONConvert<MetadataModel>();
+
+					var envSettings = await prvGraph.SaveEnvironmentSettings(mainEnt.EnterpriseLookup, mainEnv.Lookup, new LCUEnvironmentSettings()
+					{
+						Settings = settings
+					});
+				}
 			}
 
 			Assert.AreNotEqual("3ebd1c0d-22d0-489e-a46f-3260103c8cd7", mainEnt.EnterpriseLookup, "This would blow up everything, so don't do it");

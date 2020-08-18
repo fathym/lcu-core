@@ -1,4 +1,5 @@
-﻿using Fathym.Business.Models;
+﻿using Fathym;
+using Fathym.Business.Models;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -9,5 +10,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 	[DataContract]
 	public class LCUEnvironmentSettings : LCUVertex
 	{
+		[DataMember]
+		public virtual MetadataModel Settings { get; set; }
 	}
 }

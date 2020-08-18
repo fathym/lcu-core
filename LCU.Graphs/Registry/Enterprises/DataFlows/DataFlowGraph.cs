@@ -66,19 +66,39 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
         {
             var registry = $"{entLookup}|{envLookup}|DataFlow";
 
-            return await g.V<Enterprise>()
+            var ent = await g.V<Enterprise>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
+                .FirstOrDefaultAsync();
+
+            var env = await g.V<Enterprise>(ent.ID)
                 .Out<Consumes>()
                 .OfType<LCUEnvironment>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
                 .Where(e => e.Lookup == envLookup)
+                .FirstOrDefaultAsync();
+
+            return await g.V<LCUEnvironment>(env.ID)
                 .Out<Consumes>()
                 .OfType<DataFlow>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == registry)
                 .ToListAsync();
+
+            //var ent = await g.V<Enterprise>()
+            //    .Where(e => e.EnterpriseLookup == entLookup)
+            //    .Where(e => e.Registry == entLookup)
+            //    .Out<Consumes>()
+            //    .OfType<LCUEnvironment>()
+            //    .Where(e => e.EnterpriseLookup == entLookup)
+            //    .Where(e => e.Registry == entLookup)
+            //    .Where(e => e.Lookup == envLookup)
+            //    .Out<Consumes>()
+            //    .OfType<DataFlow>()
+            //    .Where(e => e.EnterpriseLookup == entLookup)
+            //    .Where(e => e.Registry == registry)
+            //    .ToListAsync();
         }
 
         public virtual async Task<ModulePackSetup> LoadModulePackSetup(string entLookup, string envLookup,

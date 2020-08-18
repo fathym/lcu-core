@@ -79,7 +79,6 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
                 .OfType<LCUEnvironment>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
-                .Order(x => x.By(e => e.Priority))
                 .ToListAsync();
         }
 

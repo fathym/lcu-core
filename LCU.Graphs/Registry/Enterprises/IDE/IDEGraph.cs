@@ -27,7 +27,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
         #endregion
 
         #region API Methods
-        public virtual async Task<Status> AddSideBarSection(string activityLookup, string section, string entLookup, string container)
+        public virtual async Task<Status> AddSideBarSection(string entLookup, string container, string activityLookup, string section)
         {
             var registry = $"{entLookup}|{container}";
 
@@ -54,7 +54,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
             return activity != null;
         }
 
-        public virtual async Task<Status> DeleteActivity(string activityLookup, string entLookup, string container)
+        public virtual async Task<Status> DeleteActivity(string entLookup, string container, string activityLookup)
         {
             var act = await GetActivity(activityLookup, entLookup, container);
 
@@ -90,7 +90,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
             }
         }
 
-        public virtual async Task<Status> DeleteSectionAction(string activityLookup, string section, string action, string group, string entLookup, string container)
+        public virtual async Task<Status> DeleteSectionAction(string entLookup, string container, string activityLookup, string section, string action, string group)
         {
             var secAct = await GetSectionAction(activityLookup, section, action, group, entLookup, container);
 
@@ -108,7 +108,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
             }
         }
 
-        public virtual async Task<Status> DeleteSideBarSection(string activityLookup, string section, string entLookup, string container)
+        public virtual async Task<Status> DeleteSideBarSection(string entLookup, string container, string activityLookup, string section)
         {
             var registry = $"{entLookup}|{container}";
 
@@ -166,7 +166,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
             return container;
         }
 
-        public virtual async Task<IDEActivity> GetActivity(string activityLookup, string entLookup, string container)
+        public virtual async Task<IDEActivity> GetActivity(string entLookup, string container, string activityLookup)
         {
             return await g.V<IDEContainer>()
                 .Where(e => e.EnterpriseLookup == entLookup)
@@ -180,7 +180,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
                 .FirstOrDefaultAsync();
         }
 
-        public virtual async Task<LCUConfig> GetLCU(string lcuLookup, string entLookup, string container)
+        public virtual async Task<LCUConfig> GetLCU(string entLookup, string container, string lcuLookup)
         {
             return await g.V<IDEContainer>()
                 .Where(e => e.EnterpriseLookup == entLookup)
@@ -194,7 +194,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
                 .FirstOrDefaultAsync();
         }
 
-        public virtual async Task<SectionAction> GetSectionAction(string activityLookup, string section, string action, string group, string entLookup, string container)
+        public virtual async Task<SectionAction> GetSectionAction(string entLookup, string container, string activityLookup, string section, string action, string group)
         {
             return await g.V<IDEContainer>()
                 .Where(e => e.EnterpriseLookup == entLookup)
@@ -241,7 +241,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
                 .ToListAsync();
         }
 
-        public virtual async Task<List<SectionAction>> ListSectionActions(string activityLookup, string section, string entLookup, string container)
+        public virtual async Task<List<SectionAction>> ListSectionActions(string entLookup, string container, string activityLookup, string section)
         {
             return await g.V<IDEContainer>()
                 .Where(e => e.EnterpriseLookup == entLookup)
@@ -260,7 +260,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
                 .ToListAsync();
         }
 
-        public virtual async Task<List<string>> ListSideBarSections(string activityLookup, string entLookup, string container)
+        public virtual async Task<List<string>> ListSideBarSections(string entLookup, string container, string activityLookup)
         {
             var registry = $"{entLookup}|{container}";
 
@@ -278,7 +278,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
             return activity?.Sections.ToList();
         }
 
-        public virtual async Task<IDEActivity> SaveActivity(IDEActivity activity, string entLookup, string container)
+        public virtual async Task<IDEActivity> SaveActivity(string entLookup, string container, IDEActivity activity)
         {
             var existingAct = await GetActivity(activity.Lookup, entLookup, container);
 
@@ -317,7 +317,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
             return activity;
         }
 
-        public virtual async Task<LCUConfig> SaveLCU(LCUConfig lcu, string entLookup, string container)
+        public virtual async Task<LCUConfig> SaveLCU(string entLookup, string container, LCUConfig lcu)
         {
             var existingLCU = await GetLCU(lcu.Lookup, entLookup, container);
 
@@ -356,7 +356,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
             return lcu;
         }
 
-        public virtual async Task<SectionAction> SaveSectionAction(string activityLookup, SectionAction action, string entLookup, string container)
+        public virtual async Task<SectionAction> SaveSectionAction(string entLookup, string container, string activityLookup, SectionAction action)
         {
             var existingAct = await GetSectionAction(activityLookup, action.Section, action.Action, action.Group, entLookup, container);
 
