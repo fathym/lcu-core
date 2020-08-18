@@ -359,7 +359,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
             var ent = await g.V<Enterprise>()
                 .Where(e => e.EnterpriseLookup == targetEntLookup)
                 .Where(e => e.Registry == targetEntLookup)
-                .FirstOrDefaultAsync(); ;
+                .FirstOrDefaultAsync();
 
             await ensureEdgeRelationship<Offers>(ent.ID, defaultApp.ID);
 

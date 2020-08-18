@@ -112,7 +112,7 @@ namespace LCU.Graphs.Registry.Enterprises
         }
 
         public virtual async Task<List<Enterprise>> ListChildEnterprises(string entLookup)
-        {
+            {
             return await g.V<Enterprise>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)

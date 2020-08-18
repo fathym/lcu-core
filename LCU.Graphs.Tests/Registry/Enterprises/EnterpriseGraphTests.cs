@@ -1,4 +1,5 @@
 using LCU.Graphs.Registry.Enterprises;
+using LCU.Graphs.Registry.Enterprises.Apps;
 using LCU.Testing.Graphs;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,12 +15,15 @@ namespace LCU.Graphs.Tests.Registry.Enterprises
 	public class EnterpriseGraphTests : GenericGraphTests
 	{
 		#region Fields
+        protected readonly ApplicationGraph appGraph;
 		#endregion
 
 		#region Constructors
 		public EnterpriseGraphTests()
 			: base()
-		{ }
+		{ 
+            appGraph = new ApplicationGraph(graphConfig, createLogger<ApplicationGraph>());
+		}
 		#endregion
 
 		#region Life Cycle
@@ -106,16 +110,35 @@ namespace LCU.Graphs.Tests.Registry.Enterprises
 		}
 
 		[TestMethod]
-		public async Task EnterpriseWhitelabelingChecks()
+		public async Task EnterpriseWhitelabelingEntChildren()
 		{
 			var rand = Guid.NewGuid();
 
 			var name = $"{GetType().FullName}-Test-{rand}";
 
+			var ent = await entGraph.Create(name, "A description", mainHost);
+
+			Assert.IsNotNull(ent);
+
+			addEntForCleanup(ent.EnterpriseLookup);
+
+			var seeded = await appGraph.SeedDefault(parentEntLookup, ent.EnterpriseLookup);
+
+			Assert.IsNotNull(seeded);
+			Assert.IsTrue(seeded);
+
 			var childEnts = await entGraph.ListChildEnterprises(parentEntLookup);
 
 			Assert.IsNotNull(childEnts);
 			Assert.IsFalse(childEnts.IsNullOrEmpty());
+		}
+
+		[TestMethod]
+		public async Task EnterpriseWhitelabelingRegHosts()
+		{
+			var rand = Guid.NewGuid();
+
+			var name = $"{GetType().FullName}-Test-{rand}";
 
 			var regHosts = await entGraph.ListRegistrationHosts(parentEntLookup);
 
