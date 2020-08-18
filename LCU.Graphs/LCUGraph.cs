@@ -132,10 +132,12 @@ namespace LCU.Graphs
         protected virtual async Task ensureEdgeRelationship<TEdge>(Guid fromId, Guid toId)
             where TEdge : new()
         {
-            var existing = await g.V(fromId)
+            var outEdges = await g.V(fromId)
                 .Out<TEdge>()
-                .V(toId)
-                .FirstOrDefaultAsync();
+                .OfType<LCUVertex>()
+                .ToListAsync();
+
+            var existing = outEdges.FirstOrDefault(oe => oe.ID == toId);
 
             if (existing == null)
                 await g.V(fromId)

@@ -1,7 +1,6 @@
 using Fathym;
 using LCU.Graphs.Registry.Enterprises.Apps;
 using LCU.Graphs.Registry.Enterprises.DataFlows;
-using LCU.Graphs.Registry.Enterprises.IDE;
 using LCU.Graphs.Registry.Enterprises.Provisioning;
 using LCU.Testing.Graphs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,13 +11,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace LCU.Graphs.Tests.Registry.Enterprises.DataFlows
+namespace LCU.Graphs.Tests.Registry.Enterprises.IDE
 {
     [TestClass]
-    public class DataFlowGraphTests : GenericGraphTests
+    public class IDEGraphTests : GenericGraphTests
     {
         #region Fields
-        protected readonly IDEGraph ideGraph;
+        protected readonly string accessRight = "LCU.Test.Everything";
+
+        protected readonly DataFlowGraph dfGraph;
 
         protected readonly string dataFlowSuffix = "qatest";
 
@@ -26,10 +27,10 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.DataFlows
         #endregion
 
         #region Constructors
-        public DataFlowGraphTests()
+        public IDEGraphTests()
             : base()
         {
-            ideGraph = new IDEGraph(graphConfig, createLogger<IDEGraph>());
+            dfGraph = new DataFlowGraph(graphConfig, createLogger<DataFlowGraph>());
 
             prvGraph = new ProvisioningGraph(graphConfig, createLogger<ProvisioningGraph>());
         }
@@ -51,13 +52,13 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.DataFlows
 
         #region API Methods
         [TestMethod]
-        public async Task SaveListRemoveIDESetup()
+        public async Task SaveListRemoveDataFlow()
         {
             var envLookup = mainEnv.Lookup;
 
             var expected = createTestDataFlow(envLookup);
 
-            var dataFlow = await ideGraph.(mainEnt.EnterpriseLookup, envLookup, expected);
+            var dataFlow = await dfGraph.SaveDataFlow(mainEnt.EnterpriseLookup, envLookup, expected);
 
             Assert.IsNotNull(dataFlow);
             Assert.AreNotEqual(Guid.Empty, dataFlow.ID);
@@ -91,6 +92,11 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.DataFlows
         #endregion
 
         #region Helpers
+        protected override string buildEnvironmentLookup()
+        {
+            return $"{orgLookup}-{dataFlowSuffix}";
+        }
+
         protected virtual DataFlow createTestDataFlow(string envLookup)
         {
             var safeEnvLookup = envLookup.Replace("-", "");
