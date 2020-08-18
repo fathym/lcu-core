@@ -1,4 +1,5 @@
-﻿using LCU.Graphs.Registry.Enterprises.DataFlows;
+﻿using Fathym;
+using LCU.Graphs.Registry.Enterprises.DataFlows;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -27,5 +28,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 		[DataMember]
 		public virtual IdeSettingsConfigSolution[] Solutions { get; set; }
+
+		[DataMember]
+		public virtual MetadataModel StateConfig { get; set; }
 	}
 }

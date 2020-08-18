@@ -6,6 +6,7 @@ using Gremlin.Net.Structure;
 using LCU.Graphs.Registry.Enterprises;
 using LCU.Graphs.Registry.Enterprises.Apps;
 using LCU.Graphs.Registry.Enterprises.DataFlows;
+using LCU.Graphs.Registry.Enterprises.IDE;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -51,49 +52,13 @@ namespace LCU.Graphs
                             })
                             .ConfigureCustomSerializers(cs =>
                             {
-                                cs.Add(new GraphElementPropertySerializer(
-                                    pi =>
-                                    {
-                                        return pi.PropertyType == typeof(MetadataModel);
-                                    },
-                                    obj =>
-                                    {
-                                        return new Dictionary<string, string>()
-                                        {
-                                            { "", obj.ToJSON() }
-                                        };
-                                    },
-                                    type =>
-                                    {
-                                        return type == typeof(MetadataModel);
-                                    },
-                                    token =>
-                                    {
-                                        return token[0]["value"].ToString().FromJSON<MetadataModel>();
-                                    })
-                                );
+                                cs.Add(new GenericGraphElementPropertySerializer<MetadataModel>());
 
-                                cs.Add(new GraphElementPropertySerializer(
-                                    pi =>
-                                    {
-                                        return pi.PropertyType == typeof(DataFlowOutput);
-                                    },
-                                    obj =>
-                                    {
-                                        return new Dictionary<string, string>()
-                                        {
-                                            { "", obj.ToJSON() }
-                                        };
-                                    },
-                                    type =>
-                                    {
-                                        return type == typeof(DataFlowOutput);
-                                    },
-                                    token =>
-                                    {
-                                        return token[0]["value"].ToString().FromJSON<DataFlowOutput>();
-                                    })
-                                );
+                                cs.Add(new GenericGraphElementPropertySerializer<DataFlowOutput>());
+
+                                cs.Add(new GenericGraphElementPropertySerializer<ModulePackSetup>());
+
+                                cs.Add(new GenericGraphElementPropertySerializer<IdeSettingsConfigSolution[]>());
 
                                 return cs;
                             });
@@ -147,4 +112,6 @@ namespace LCU.Graphs
         }
         #endregion
     }
+
+
 }

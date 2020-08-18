@@ -29,17 +29,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LCU.Testing", "LCU.Testing\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{FC84E979-FA47-4B89-AB49-C35CC037D467}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Core", "..\..\Third Party Libraries\ExRam.Gremlinq\ExRam.Gremlinq.Core\ExRam.Gremlinq.Core.csproj", "{07D3DB5A-C9D6-4C5F-B082-E9BC434CA96D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Core", "..\..\Open Source\fathym-it\ExRam.Gremlinq\ExRam.Gremlinq.Core\ExRam.Gremlinq.Core.csproj", "{07D3DB5A-C9D6-4C5F-B082-E9BC434CA96D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Core.AspNet", "..\..\Third Party Libraries\ExRam.Gremlinq\ExRam.Gremlinq.Core.AspNet\ExRam.Gremlinq.Core.AspNet.csproj", "{AD3DCFE3-1F35-4FA5-9940-759A8D8E76B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Core.AspNet", "..\..\Open Source\fathym-it\ExRam.Gremlinq\ExRam.Gremlinq.Core.AspNet\ExRam.Gremlinq.Core.AspNet.csproj", "{AD3DCFE3-1F35-4FA5-9940-759A8D8E76B9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Providers.CosmosDb", "..\..\Third Party Libraries\ExRam.Gremlinq\ExRam.Gremlinq.Providers.CosmosDb\ExRam.Gremlinq.Providers.CosmosDb.csproj", "{B4F0F624-A8F8-4A8F-9E2B-86E4AF7999AB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Providers.CosmosDb", "..\..\Open Source\fathym-it\ExRam.Gremlinq\ExRam.Gremlinq.Providers.CosmosDb\ExRam.Gremlinq.Providers.CosmosDb.csproj", "{B4F0F624-A8F8-4A8F-9E2B-86E4AF7999AB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Providers.CosmosDb.AspNet", "..\..\Third Party Libraries\ExRam.Gremlinq\ExRam.Gremlinq.Providers.CosmosDb.AspNet\ExRam.Gremlinq.Providers.CosmosDb.AspNet.csproj", "{E8C7EF2B-834A-4ECB-8C8C-1934A9D1BC67}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Providers.CosmosDb.AspNet", "..\..\Open Source\fathym-it\ExRam.Gremlinq\ExRam.Gremlinq.Providers.CosmosDb.AspNet\ExRam.Gremlinq.Providers.CosmosDb.AspNet.csproj", "{E8C7EF2B-834A-4ECB-8C8C-1934A9D1BC67}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Providers.WebSocket", "..\..\Third Party Libraries\ExRam.Gremlinq\ExRam.Gremlinq.Providers.WebSocket\ExRam.Gremlinq.Providers.WebSocket.csproj", "{6828DAFC-667A-4CE3-85E3-3A3A0D847432}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Providers.WebSocket", "..\..\Open Source\fathym-it\ExRam.Gremlinq\ExRam.Gremlinq.Providers.WebSocket\ExRam.Gremlinq.Providers.WebSocket.csproj", "{6828DAFC-667A-4CE3-85E3-3A3A0D847432}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Providers.WebSocket.AspNet", "..\..\Third Party Libraries\ExRam.Gremlinq\ExRam.Gremlinq.Providers.WebSocket.AspNet\ExRam.Gremlinq.Providers.WebSocket.AspNet.csproj", "{A35CB5EF-3154-4CC9-8511-3F13F45AF171}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Providers.WebSocket.AspNet", "..\..\Open Source\fathym-it\ExRam.Gremlinq\ExRam.Gremlinq.Providers.WebSocket.AspNet\ExRam.Gremlinq.Providers.WebSocket.AspNet.csproj", "{A35CB5EF-3154-4CC9-8511-3F13F45AF171}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
