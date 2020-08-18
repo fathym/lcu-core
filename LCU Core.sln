@@ -29,17 +29,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LCU.Testing", "LCU.Testing\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{FC84E979-FA47-4B89-AB49-C35CC037D467}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Core", "..\..\Open Source\fathym-it\ExRam.Gremlinq\ExRam.Gremlinq.Core\ExRam.Gremlinq.Core.csproj", "{D520D6E9-E5E4-4427-A42A-478436A471DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Core", "..\..\Third Party Libraries\ExRam.Gremlinq\ExRam.Gremlinq.Core\ExRam.Gremlinq.Core.csproj", "{07D3DB5A-C9D6-4C5F-B082-E9BC434CA96D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Core.AspNet", "..\..\Open Source\fathym-it\ExRam.Gremlinq\ExRam.Gremlinq.Core.AspNet\ExRam.Gremlinq.Core.AspNet.csproj", "{8246CFF1-36BF-4C3E-A6EF-40535B9D00A8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Core.AspNet", "..\..\Third Party Libraries\ExRam.Gremlinq\ExRam.Gremlinq.Core.AspNet\ExRam.Gremlinq.Core.AspNet.csproj", "{AD3DCFE3-1F35-4FA5-9940-759A8D8E76B9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Providers.CosmosDb", "..\..\Open Source\fathym-it\ExRam.Gremlinq\ExRam.Gremlinq.Providers.CosmosDb\ExRam.Gremlinq.Providers.CosmosDb.csproj", "{F46AC3AF-A8BD-442B-8BBE-CC50F85FAC6C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Providers.CosmosDb", "..\..\Third Party Libraries\ExRam.Gremlinq\ExRam.Gremlinq.Providers.CosmosDb\ExRam.Gremlinq.Providers.CosmosDb.csproj", "{B4F0F624-A8F8-4A8F-9E2B-86E4AF7999AB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Providers.CosmosDb.AspNet", "..\..\Open Source\fathym-it\ExRam.Gremlinq\ExRam.Gremlinq.Providers.CosmosDb.AspNet\ExRam.Gremlinq.Providers.CosmosDb.AspNet.csproj", "{A93BB36C-D9CB-4599-81B0-66A4E98588E9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Providers.CosmosDb.AspNet", "..\..\Third Party Libraries\ExRam.Gremlinq\ExRam.Gremlinq.Providers.CosmosDb.AspNet\ExRam.Gremlinq.Providers.CosmosDb.AspNet.csproj", "{E8C7EF2B-834A-4ECB-8C8C-1934A9D1BC67}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Providers.WebSocket", "..\..\Open Source\fathym-it\ExRam.Gremlinq\ExRam.Gremlinq.Providers.WebSocket\ExRam.Gremlinq.Providers.WebSocket.csproj", "{D32DE0AE-FAFE-4283-B4B4-69E7CD20277E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Providers.WebSocket", "..\..\Third Party Libraries\ExRam.Gremlinq\ExRam.Gremlinq.Providers.WebSocket\ExRam.Gremlinq.Providers.WebSocket.csproj", "{6828DAFC-667A-4CE3-85E3-3A3A0D847432}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Providers.WebSocket.AspNet", "..\..\Open Source\fathym-it\ExRam.Gremlinq\ExRam.Gremlinq.Providers.WebSocket.AspNet\ExRam.Gremlinq.Providers.WebSocket.AspNet.csproj", "{4106FCAB-C265-4035-93E3-8571F4562B39}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExRam.Gremlinq.Providers.WebSocket.AspNet", "..\..\Third Party Libraries\ExRam.Gremlinq\ExRam.Gremlinq.Providers.WebSocket.AspNet\ExRam.Gremlinq.Providers.WebSocket.AspNet.csproj", "{A35CB5EF-3154-4CC9-8511-3F13F45AF171}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -71,30 +71,30 @@ Global
 		{906EE8DB-4750-40B7-B6D5-64A6B1EF4052}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{906EE8DB-4750-40B7-B6D5-64A6B1EF4052}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{906EE8DB-4750-40B7-B6D5-64A6B1EF4052}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D520D6E9-E5E4-4427-A42A-478436A471DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D520D6E9-E5E4-4427-A42A-478436A471DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D520D6E9-E5E4-4427-A42A-478436A471DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D520D6E9-E5E4-4427-A42A-478436A471DE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8246CFF1-36BF-4C3E-A6EF-40535B9D00A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8246CFF1-36BF-4C3E-A6EF-40535B9D00A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8246CFF1-36BF-4C3E-A6EF-40535B9D00A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8246CFF1-36BF-4C3E-A6EF-40535B9D00A8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F46AC3AF-A8BD-442B-8BBE-CC50F85FAC6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F46AC3AF-A8BD-442B-8BBE-CC50F85FAC6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F46AC3AF-A8BD-442B-8BBE-CC50F85FAC6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F46AC3AF-A8BD-442B-8BBE-CC50F85FAC6C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A93BB36C-D9CB-4599-81B0-66A4E98588E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A93BB36C-D9CB-4599-81B0-66A4E98588E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A93BB36C-D9CB-4599-81B0-66A4E98588E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A93BB36C-D9CB-4599-81B0-66A4E98588E9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D32DE0AE-FAFE-4283-B4B4-69E7CD20277E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D32DE0AE-FAFE-4283-B4B4-69E7CD20277E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D32DE0AE-FAFE-4283-B4B4-69E7CD20277E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D32DE0AE-FAFE-4283-B4B4-69E7CD20277E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4106FCAB-C265-4035-93E3-8571F4562B39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4106FCAB-C265-4035-93E3-8571F4562B39}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4106FCAB-C265-4035-93E3-8571F4562B39}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4106FCAB-C265-4035-93E3-8571F4562B39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07D3DB5A-C9D6-4C5F-B082-E9BC434CA96D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07D3DB5A-C9D6-4C5F-B082-E9BC434CA96D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07D3DB5A-C9D6-4C5F-B082-E9BC434CA96D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07D3DB5A-C9D6-4C5F-B082-E9BC434CA96D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD3DCFE3-1F35-4FA5-9940-759A8D8E76B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD3DCFE3-1F35-4FA5-9940-759A8D8E76B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD3DCFE3-1F35-4FA5-9940-759A8D8E76B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD3DCFE3-1F35-4FA5-9940-759A8D8E76B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4F0F624-A8F8-4A8F-9E2B-86E4AF7999AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4F0F624-A8F8-4A8F-9E2B-86E4AF7999AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4F0F624-A8F8-4A8F-9E2B-86E4AF7999AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4F0F624-A8F8-4A8F-9E2B-86E4AF7999AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8C7EF2B-834A-4ECB-8C8C-1934A9D1BC67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8C7EF2B-834A-4ECB-8C8C-1934A9D1BC67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8C7EF2B-834A-4ECB-8C8C-1934A9D1BC67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8C7EF2B-834A-4ECB-8C8C-1934A9D1BC67}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6828DAFC-667A-4CE3-85E3-3A3A0D847432}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6828DAFC-667A-4CE3-85E3-3A3A0D847432}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6828DAFC-667A-4CE3-85E3-3A3A0D847432}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6828DAFC-667A-4CE3-85E3-3A3A0D847432}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A35CB5EF-3154-4CC9-8511-3F13F45AF171}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A35CB5EF-3154-4CC9-8511-3F13F45AF171}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A35CB5EF-3154-4CC9-8511-3F13F45AF171}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A35CB5EF-3154-4CC9-8511-3F13F45AF171}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -106,12 +106,12 @@ Global
 		{F188AB65-8343-4C36-A9BD-588356A007BC} = {2934BD99-4DF4-4B0D-B8CB-72DC0ED2B64C}
 		{400BC5A0-E037-4BF7-A1E5-508C74022490} = {2934BD99-4DF4-4B0D-B8CB-72DC0ED2B64C}
 		{906EE8DB-4750-40B7-B6D5-64A6B1EF4052} = {D6404F8C-B497-46CC-8A16-666BE8E3D611}
-		{D520D6E9-E5E4-4427-A42A-478436A471DE} = {FC84E979-FA47-4B89-AB49-C35CC037D467}
-		{8246CFF1-36BF-4C3E-A6EF-40535B9D00A8} = {FC84E979-FA47-4B89-AB49-C35CC037D467}
-		{F46AC3AF-A8BD-442B-8BBE-CC50F85FAC6C} = {FC84E979-FA47-4B89-AB49-C35CC037D467}
-		{A93BB36C-D9CB-4599-81B0-66A4E98588E9} = {FC84E979-FA47-4B89-AB49-C35CC037D467}
-		{D32DE0AE-FAFE-4283-B4B4-69E7CD20277E} = {FC84E979-FA47-4B89-AB49-C35CC037D467}
-		{4106FCAB-C265-4035-93E3-8571F4562B39} = {FC84E979-FA47-4B89-AB49-C35CC037D467}
+		{07D3DB5A-C9D6-4C5F-B082-E9BC434CA96D} = {FC84E979-FA47-4B89-AB49-C35CC037D467}
+		{AD3DCFE3-1F35-4FA5-9940-759A8D8E76B9} = {FC84E979-FA47-4B89-AB49-C35CC037D467}
+		{B4F0F624-A8F8-4A8F-9E2B-86E4AF7999AB} = {FC84E979-FA47-4B89-AB49-C35CC037D467}
+		{E8C7EF2B-834A-4ECB-8C8C-1934A9D1BC67} = {FC84E979-FA47-4B89-AB49-C35CC037D467}
+		{6828DAFC-667A-4CE3-85E3-3A3A0D847432} = {FC84E979-FA47-4B89-AB49-C35CC037D467}
+		{A35CB5EF-3154-4CC9-8511-3F13F45AF171} = {FC84E979-FA47-4B89-AB49-C35CC037D467}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D0A1F403-B69B-40C0-9AFF-2FB7AB422DF0}
