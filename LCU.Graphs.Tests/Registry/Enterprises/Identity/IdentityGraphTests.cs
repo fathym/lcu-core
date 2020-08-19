@@ -23,11 +23,15 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
 
         protected readonly string domain = "testdomain.fathym.com";
 
+        protected readonly string username = "testuser@fathym.com";
+
         protected readonly string password = "somepassword";
 
         protected readonly string tokenKey = "TEST_THIRD_PARTY_TOKEN";
 
         protected readonly string tokenValue = "test token value";
+
+        protected readonly string accessConfigType = "LCU";
         #endregion
 
         #region Constructors
@@ -54,52 +58,91 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
 
         #region API Methods
         [TestMethod]
-        public async Task RetrieveAccessCards()
-        {
-            throw new NotImplementedException("Not implemented");
-        }
-
-        [TestMethod]
-        public async Task RetrieveAccounts()
-        {
-            throw new NotImplementedException("Not implemented");
-        }
-
-        [TestMethod]
-        public async Task RetrievePassports()
-        {
-            throw new NotImplementedException("Not implemented");
-        }
-
-        [TestMethod]
-        public async Task RetrieveRelyingParty()
-        {
-
-            throw new NotImplementedException("Not implemented");
-        }
-
-        [TestMethod]
-        public async Task RetrieveLicenseAccessTokens()
-        {
-            throw new NotImplementedException("Not implemented");
-        }
-
-        [TestMethod]
         public async Task CreateThirdPartyTokenRemove()
         {
-            throw new NotImplementedException("Not implemented");
+            var expected = createThirdPartyToken(mainEnt.EnterpriseLookup, username);
+
+            var status = await identityGraph.SetThirdPartyAccessToken(mainEnt.EnterpriseLookup, username, expected.Key, expected.Token);
+
+            Assert.IsNotNull(status);
+            Assert.IsTrue(status);
+
+            var actual = await identityGraph.RetrieveThirdPartyAccessToken(mainEnt.EnterpriseLookup, username, expected.Key);
+
+            Assert.IsNotNull(actual);
+            Assert.AreEqual(expected.Token, actual);
         }
 
         [TestMethod]
         public async Task CreateAccessCardRemove()
         {
-            throw new NotImplementedException("Not implemented");
+            var expected = createAccessCard(mainEnt.EnterpriseLookup);
+
+            var actual = await identityGraph.SaveAccessCard(expected, mainEnt.EnterpriseLookup, username);
+
+            // TODO: Use reflection to write an object equivalency checker and add it to LCU.Testing
+            Assert.IsNotNull(actual);
+            Assert.AreEqual(expected.EnterpriseLookup, actual.EnterpriseLookup);
+            Assert.AreEqual(expected.AccessConfigurationType, actual.AccessConfigurationType);
+            Assert.AreEqual(expected.Registry, actual.Registry);
+
+            var status = await identityGraph.DeleteAccessCard(mainEnt.EnterpriseLookup, username, accessConfigType);
+
+            Assert.IsNotNull(status);
+            Assert.IsTrue(status);
         }
 
         [TestMethod]
         public async Task CreateRelyingPartyRemove()
         {
-            throw new NotImplementedException("Not implemented");
+            var expected = createRelyingParty(mainEnt.EnterpriseLookup);
+
+            var actual = await identityGraph.SaveRelyingParty(expected, mainEnt.EnterpriseLookup);
+
+            // TODO: Use reflection to write an object equivalency checker and add it to LCU.Testing
+            Assert.IsNotNull(actual);
+            Assert.AreEqual(expected.EnterpriseLookup, actual.EnterpriseLookup);
+            Assert.AreEqual(expected.Registry, actual.Registry);
+            Assert.AreEqual(expected.DefaultAccessConfigurationType, actual.DefaultAccessConfigurationType);
+
+            var status = await identityGraph.DeleteRelyingParty(mainEnt.EnterpriseLookup);
+
+            Assert.IsNotNull(status);
+            Assert.IsTrue(status);
+        }
+
+        [TestMethod]
+        public async Task CreateLicenseAccessTokenRemove()
+        {
+            var expected = createLicenseAccessToken(mainEnt.EnterpriseLookup, username);
+
+            var actual = await identityGraph.SetLicenseAccessToken(mainEnt.EnterpriseLookup, username, expected);
+
+            // TODO: Use reflection to write an object equivalency checker and add it to LCU.Testing
+            Assert.IsNotNull(actual);
+            Assert.AreEqual(expected.EnterpriseLookup, actual.EnterpriseLookup);
+            Assert.AreEqual(expected.Registry, actual.Registry);
+            Assert.AreEqual(expected.IsLocked, actual.IsLocked);
+            Assert.AreEqual(expected.IsReset, actual.IsReset);
+            Assert.AreEqual(expected.Label, actual.Label);
+            Assert.AreEqual(expected.Lookup, actual.Lookup);
+            Assert.AreEqual(expected.TrialPeriodDays, actual.TrialPeriodDays);
+            Assert.AreEqual(expected.AccessStartDate, actual.AccessStartDate);
+            Assert.AreEqual(expected.ExpirationDate, actual.ExpirationDate);
+
+            var metadata = actual.Metadata?.JSONConvert<Dictionary<string, JToken>>();
+
+            Assert.IsNotNull(metadata);
+            Assert.AreEqual(expected.Metadata["PlanGroup"], metadata["PlanGroup"]);
+            Assert.AreEqual(expected.Metadata["Priority"], metadata["Priority"]);
+            Assert.AreEqual(expected.Metadata["Price"], metadata["Price"]);
+            Assert.AreEqual(expected.Metadata["DataApps"], metadata["DataApps"]);
+            Assert.AreEqual(expected.Metadata["DataFlows"], metadata["DataFlows"]);
+
+            var status = await identityGraph.DeleteLicenseAccessToken(mainEnt.EnterpriseLookup, username, expected.Lookup);
+
+            Assert.IsNotNull(status);
+            Assert.IsTrue(status);
         }
 
         [TestMethod]
@@ -180,6 +223,29 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
             };
         }
 
+        protected virtual AccessCard createAccessCard(string entId)
+        {
+            return new AccessCard()
+            {
+                AccessConfigurationType = accessConfigType,
+                ExcludeAccessRights = new List<string>().ToArray(),
+                IncludeAccessRights = new List<string>().ToArray(),
+                ID = Guid.NewGuid(),
+                Registry = entId,
+                EnterpriseLookup = entId,
+            };
+        }
+
+        protected virtual RelyingParty createRelyingParty(string entId)
+        {
+            return new RelyingParty()
+            {
+                EnterpriseLookup = entId,
+                Registry = entId,
+                ID = Guid.NewGuid(),
+                DefaultAccessConfigurationType = accessConfigType
+            };
+        }
         #endregion
     }
 }
