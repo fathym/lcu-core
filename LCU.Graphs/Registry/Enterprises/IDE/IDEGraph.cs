@@ -56,7 +56,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
         public virtual async Task<Status> DeleteActivity(string entLookup, string container, string activityLookup)
         {
-            var act = await GetActivity(activityLookup, entLookup, container);
+            var act = await GetActivity(entLookup, container, activityLookup);
 
             if (act != null)
             {
@@ -72,9 +72,9 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
             }
         }
 
-        public virtual async Task<Status> DeleteLCUSetup(string lcuLookup, string entLookup, string container)
+        public virtual async Task<Status> DeleteLCU(string entLookup, string container, string lcuLookup)
         {
-            var lcu = await GetLCU(lcuLookup, entLookup, container);
+            var lcu = await GetLCU(entLookup, container, lcuLookup);
 
             if (lcu != null)
             {
@@ -92,7 +92,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
         public virtual async Task<Status> DeleteSectionAction(string entLookup, string container, string activityLookup, string section, string action, string group)
         {
-            var secAct = await GetSectionAction(activityLookup, section, action, group, entLookup, container);
+            var secAct = await GetSectionAction(entLookup, container, activityLookup, section, action, group);
 
             if (secAct != null)
             {
@@ -168,6 +168,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
         public virtual async Task<IDEActivity> GetActivity(string entLookup, string container, string activityLookup)
         {
+            var registry = $"{entLookup}|{container}";
+
             return await g.V<IDEContainer>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
@@ -175,13 +177,15 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
                 .Out<Consumes>()
                 .OfType<IDEActivity>()
                 .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Registry == registry)
                 .Where(e => e.Lookup == activityLookup)
                 .FirstOrDefaultAsync();
         }
 
         public virtual async Task<LCUConfig> GetLCU(string entLookup, string container, string lcuLookup)
         {
+            var registry = $"{entLookup}|{container}";
+
             return await g.V<IDEContainer>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
@@ -189,13 +193,15 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
                 .Out<Manages>()
                 .OfType<LCUConfig>()
                 .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Registry == registry)
                 .Where(e => e.Lookup == lcuLookup)
                 .FirstOrDefaultAsync();
         }
 
         public virtual async Task<SectionAction> GetSectionAction(string entLookup, string container, string activityLookup, string section, string action, string group)
         {
+            var registry = $"{entLookup}|{container}";
+
             return await g.V<IDEContainer>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
@@ -203,12 +209,12 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
                 .Out<Consumes>()
                 .OfType<IDEActivity>()
                 .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Registry == registry)
                 .Where(e => e.Lookup == activityLookup)
                 .Out<Consumes>()
                 .OfType<SectionAction>()
                 .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Registry == registry)
                 .Where(e => e.Section == section)
                 .Where(e => e.Group == group)
                 .Where(e => e.Action == action)
@@ -217,6 +223,8 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
         public virtual async Task<List<IDEActivity>> ListActivities(string entLookup, string container)
         {
+            var registry = $"{entLookup}|{container}";
+
             return await g.V<IDEContainer>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
@@ -224,12 +232,14 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
                 .Out<Consumes>()
                 .OfType<IDEActivity>()
                 .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Registry == registry)
                 .ToListAsync();
         }
 
         public virtual async Task<List<LCUConfig>> ListLCUs(string entLookup, string container)
         {
+            var registry = $"{entLookup}|{container}";
+
             return await g.V<IDEContainer>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
@@ -237,12 +247,14 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
                 .Out<Manages>()
                 .OfType<LCUConfig>()
                 .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Registry == registry)
                 .ToListAsync();
         }
 
         public virtual async Task<List<SectionAction>> ListSectionActions(string entLookup, string container, string activityLookup, string section)
         {
+            var registry = $"{entLookup}|{container}";
+
             return await g.V<IDEContainer>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
@@ -250,12 +262,12 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
                 .Out<Consumes>()
                 .OfType<IDEActivity>()
                 .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Registry == registry)
                 .Where(e => e.Lookup == activityLookup)
                 .Out<Consumes>()
                 .OfType<SectionAction>()
                 .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Registry == registry)
                 .Where(e => e.Section == section)
                 .ToListAsync();
         }
@@ -280,7 +292,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
         public virtual async Task<IDEActivity> SaveActivity(string entLookup, string container, IDEActivity activity)
         {
-            var existingAct = await GetActivity(activity.Lookup, entLookup, container);
+            var existingAct = await GetActivity(entLookup, container, activity.Lookup);
 
             activity.EnterpriseLookup = entLookup;
 
@@ -319,7 +331,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
         public virtual async Task<LCUConfig> SaveLCU(string entLookup, string container, LCUConfig lcu)
         {
-            var existingLCU = await GetLCU(lcu.Lookup, entLookup, container);
+            var existingLCU = await GetLCU(entLookup, container, lcu.Lookup);
 
             lcu.EnterpriseLookup = entLookup;
 
@@ -358,7 +370,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
         public virtual async Task<SectionAction> SaveSectionAction(string entLookup, string container, string activityLookup, SectionAction action)
         {
-            var existingAct = await GetSectionAction(activityLookup, action.Section, action.Action, action.Group, entLookup, container);
+            var existingAct = await GetSectionAction(entLookup, container, activityLookup, action.Section, action.Action, action.Group);
 
             action.EnterpriseLookup = entLookup;
 
