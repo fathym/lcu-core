@@ -10,6 +10,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 
 namespace LCU.Graphs.Tests.Registry.Enterprises.Provisioning
@@ -19,6 +20,14 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Provisioning
     {
         #region Fields
         protected readonly string testActivity = "qatest";
+
+        protected readonly string testLookup = "test-lookup-int";
+
+        protected readonly string testEnvLookup = "env-test-lookup-int";
+
+        protected readonly string testOrgLookup = "org-test-lookup-int";
+
+        protected readonly string testRepo = "inf-repo-test";
 
         protected readonly ProvisioningGraph prvGraph;
         #endregion
@@ -105,27 +114,63 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Provisioning
         #endregion
 
         #region Helpers
-        protected virtual LCUEnvironment createEnvironment()
+        protected virtual LCUEnvironment createEnvironment(string entId)
         {
             return new LCUEnvironment()
             {
-
+                EnterpriseLookup = entId,
+                ID = Guid.NewGuid(),
+                Label = "Environment",
+                Lookup = $"{testLookup}",
+                Registry = entId,
+                Metadata = new Dictionary<string, JToken>()
+                        {
+                            { "Name", "Test Lookup Int" }
+                        }
             };
         }
 
-        protected virtual LCUEnvironmentSettings createEnvironmentSettings()
+        protected virtual LCUEnvironmentSettings createEnvironmentSettings(string entId)
         {
+
             return new LCUEnvironmentSettings()
             {
-
+                EnterpriseLookup = entId,
+                ID = Guid.NewGuid(),
+                Label = "EnvironmentSettings",
+                Registry = entId,
+                Settings = new MetadataModel()
+                {
+                    Metadata = new Dictionary<string, JToken>()
+                        {
+                            { "Registry", entId },
+                            { "EnterpriseAPIKey", entId },
+                            { "AzureTenantID", Guid.NewGuid() },
+                            { "AzureSubID", Guid.NewGuid() },
+                            { "AzureAppID", Guid.NewGuid() },
+                            { "AzureAppAuthkey", String.Empty },
+                            { "EnvironmentLookup", testEnvLookup },
+                            { "OrganizationLookup", testOrgLookup },
+                            { "InfrastructureRepoName", "infra-repo" },
+                            { "AzureRegion", "westus" },
+                            { "AzureLocation", "West US" }
+                        }
+                }
             };
         }
 
-        protected virtual SourceControl createSourceControl()
+        // TODO: Cannot find a real SourceControl vertex, do we still use this?
+        protected virtual SourceControl createSourceControl(string entId)
         {
             return new SourceControl()
             {
-
+                EnterpriseLookup = entId,
+                ID = Guid.NewGuid(),
+                Label = "SourceControl",
+                Name = "Test Repo Inf",
+                Organization = testOrgLookup,
+                Registry = entId,
+                Repository = testRepo
             };
         }
         #endregion
