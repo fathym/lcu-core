@@ -317,10 +317,10 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
         {
             var account = await GetAccount(email);
 
-            var registry = email.Split('@')[1];
+            var accRegistry = email.Split('@')[1];
 
             IVertexGremlinQueryBase tpiQuery = g.V<Account>(account.ID)
-                .Where(e => e.Registry == registry)
+                .Where(e => e.Registry == accRegistry)
                 .Where(e => e.Email == email);
 
             if (!entLookup.IsNullOrEmpty())
@@ -329,7 +329,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                     .Out<Carries>()
                     .OfType<Passport>()
                     .Where(e => e.EnterpriseLookup == entLookup)
-                    .Where(e => e.Registry == $"{entLookup}|{registry}");
+                    .Where(e => e.Registry == $"{entLookup}|{accRegistry}");
             }
 
             var tpi = await tpiQuery
@@ -349,7 +349,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                 {
                     ID = Guid.NewGuid(),
                     EnterpriseLookup = entLookup,
-                    Registry = $"{entLookup}|{registry}",
+                    Registry = email,
                     Encrypt = !tokenEncodingKey.IsNullOrEmpty(),
                     Key = key,
                     Token = token

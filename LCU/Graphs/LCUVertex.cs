@@ -20,25 +20,6 @@ namespace LCU.Graphs
         public virtual Guid ID { get; set; }
 
         [DataMember]
-        //[JsonExtensionData]
-        public virtual IDictionary<string, JToken> Metadata { get; set; }
-
-        //[DataMember(Name = "Metadata")]
-        ////[JsonIgnore]
-        //public virtual string MetadataProxy
-        //{
-        //    get
-        //    {
-        //        return Metadata.ToJSON();
-        //    }
-
-        //    set
-        //    {
-        //        Metadata = value.FromJSON<IDictionary<string, JToken>>();
-        //    }
-        //}
-
-        [DataMember]
         public virtual string Label { get; set; }
 
         [DataMember]

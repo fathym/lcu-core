@@ -180,7 +180,6 @@ namespace LCU.Testing.Graphs
                     var relyingParty = await idGraph.SaveRelyingParty(defaultRelyingParty, mainEnt.EnterpriseLookup);
 
                     Assert.IsNotNull(relyingParty);
-                    Assert.IsNotNull(mainEnv);
 
                     var defaultAccessCard = await loadDefaultAccessCard(relyingParty);
 

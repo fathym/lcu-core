@@ -1,4 +1,5 @@
-﻿using LCU.Graphs.Registry.Enterprises;
+﻿using Fathym;
+using LCU.Graphs.Registry.Enterprises;
 using LCU.Graphs.Registry.Enterprises.Identity;
 using LCU.Testing.Graphs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -53,6 +54,8 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
         public virtual async Task Initialize()
         {
             await setupMainEnt(entGraph, null, null, identityGraph);
+
+            await identityGraph.Register(mainEnt.EnterpriseLookup, username, mainEnt.EnterpriseLookup, mainEnt.EnterpriseLookup);
         }
         #endregion
 
@@ -62,12 +65,12 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
         {
             var expected = createThirdPartyToken(mainEnt.EnterpriseLookup, username);
 
-            var status = await identityGraph.SetThirdPartyAccessToken(mainEnt.EnterpriseLookup, username, expected.Key, expected.Token);
+            var status = await identityGraph.SetThirdPartyAccessToken(null, username, expected.Key, expected.Token);
 
             Assert.IsNotNull(status);
             Assert.IsTrue(status);
 
-            var actual = await identityGraph.RetrieveThirdPartyAccessToken(mainEnt.EnterpriseLookup, username, expected.Key);
+            var actual = await identityGraph.RetrieveThirdPartyAccessToken(null, username, expected.Key);
 
             Assert.IsNotNull(actual);
             Assert.AreEqual(expected.Token, actual);
@@ -120,24 +123,19 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
 
             // TODO: Use reflection to write an object equivalency checker and add it to LCU.Testing
             Assert.IsNotNull(actual);
-            Assert.AreEqual(expected.EnterpriseLookup, actual.EnterpriseLookup);
-            Assert.AreEqual(expected.Registry, actual.Registry);
             Assert.AreEqual(expected.IsLocked, actual.IsLocked);
             Assert.AreEqual(expected.IsReset, actual.IsReset);
-            Assert.AreEqual(expected.Label, actual.Label);
             Assert.AreEqual(expected.Lookup, actual.Lookup);
             Assert.AreEqual(expected.TrialPeriodDays, actual.TrialPeriodDays);
-            Assert.AreEqual(expected.AccessStartDate, actual.AccessStartDate);
-            Assert.AreEqual(expected.ExpirationDate, actual.ExpirationDate);
+            Assert.AreEqual(expected.AccessStartDate.ToString("yyyy/MM/dd HH:mm:ss"), actual.AccessStartDate.ToString("yyyy/MM/dd HH:mm:ss"));
+            Assert.AreEqual(expected.ExpirationDate.ToString("yyyy/MM/dd HH:mm:ss"), actual.ExpirationDate.ToString("yyyy/MM/dd HH:mm:ss"));
 
-            var metadata = actual.Metadata?.JSONConvert<Dictionary<string, JToken>>();
-
-            Assert.IsNotNull(metadata);
-            Assert.AreEqual(expected.Metadata["PlanGroup"], metadata["PlanGroup"]);
-            Assert.AreEqual(expected.Metadata["Priority"], metadata["Priority"]);
-            Assert.AreEqual(expected.Metadata["Price"], metadata["Price"]);
-            Assert.AreEqual(expected.Metadata["DataApps"], metadata["DataApps"]);
-            Assert.AreEqual(expected.Metadata["DataFlows"], metadata["DataFlows"]);
+            Assert.IsNotNull(actual.Details);
+            Assert.AreEqual(expected.Details.Metadata["PlanGroup"].ToString(), actual.Details.Metadata["PlanGroup"].ToString());
+            Assert.AreEqual(expected.Details.Metadata["Priority"].ToString(), actual.Details.Metadata["Priority"].ToString());
+            Assert.AreEqual(expected.Details.Metadata["Price"].ToString(), actual.Details.Metadata["Price"].ToString());
+            Assert.AreEqual(expected.Details.Metadata["DataApps"].ToString(), actual.Details.Metadata["DataApps"].ToString());
+            Assert.AreEqual(expected.Details.Metadata["DataFlows"].ToString(), actual.Details.Metadata["DataFlows"].ToString());
 
             var status = await identityGraph.DeleteLicenseAccessToken(mainEnt.EnterpriseLookup, username, expected.Lookup);
 
@@ -145,11 +143,11 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
             Assert.IsTrue(status);
         }
 
-        [TestMethod]
-        public async Task TestAuthorization()
-        {
-            throw new NotImplementedException("Not implemented");
-        }
+        //[TestMethod]
+        //public async Task TestAuthorization()
+        //{
+        //    throw new NotImplementedException("Not implemented");
+        //}
         #endregion
 
         //TODO: this content can be encapsulated in a snapshot we append as a json/resource file
@@ -158,11 +156,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
         {
             return new Passport()
             {
-                EnterpriseLookup = entId,
                 IsActive = true,
-                ID = Guid.NewGuid(),
-                Label = "Passport",
-                Registry = $"{entId}|{domain}",
                 PasswordHash = password.ToMD5Hash(),
                 ProviderID = Guid.NewGuid().ToString()
             };
@@ -170,29 +164,25 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
 
         protected virtual LicenseAccessToken createLicenseAccessToken(string entId, string username)
         {
-            var now = System.DateTime.Now;
+            var now = System.DateTime.UtcNow;
 
             return new LicenseAccessToken()
             {
-                EnterpriseLookup = entId,
                 Username = username,
                 AccessStartDate = now,
                 ExpirationDate = now.AddDays(7.0),
-                ID = Guid.NewGuid(),
                 IsLocked = false,
                 IsReset = false,
-                Label = "LicenseAccessToken",
                 Lookup = license,
-                Registry = $"{entId}|{username}",
                 TrialPeriodDays = 7,
-                Metadata = new Dictionary<string, JToken>()
-                        {
-                            { "PlanGroup", "trial" },
-                            { "Priority", "20" },
-                            { "Price", "0" },
-                            { "DataApps", "5" },
-                            { "DataFlows", "5" }
-                        }
+                Details = new
+                {
+                    PlanGroup = "trial",
+                    Priority = 20,
+                    Price = 0,
+                    DataApps = 5,
+                    DataFlows = 5
+                }.JSONConvert<MetadataModel>()
 
             };
         }
@@ -201,10 +191,6 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
         {
             return new ThirdPartyToken()
             {
-                EnterpriseLookup = entId,
-                ID = Guid.NewGuid(),
-                Label = "ThirdPartyToken",
-                Registry = username,
                 Key = tokenKey,
                 Encrypt = false,
                 Token = tokenValue
@@ -215,11 +201,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
         {
             return new Account()
             {
-                EnterpriseLookup = entId,
                 Email = username,
-                ID = Guid.NewGuid(),
-                Label = "Account",
-                Registry = $"{domain}"
             };
         }
 
@@ -229,10 +211,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
             {
                 AccessConfigurationType = accessConfigType,
                 ExcludeAccessRights = new List<string>().ToArray(),
-                IncludeAccessRights = new List<string>().ToArray(),
-                ID = Guid.NewGuid(),
-                Registry = entId,
-                EnterpriseLookup = entId,
+                IncludeAccessRights = new List<string>().ToArray()
             };
         }
 
@@ -240,9 +219,6 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
         {
             return new RelyingParty()
             {
-                EnterpriseLookup = entId,
-                Registry = entId,
-                ID = Guid.NewGuid(),
                 DefaultAccessConfigurationType = accessConfigType
             };
         }

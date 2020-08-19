@@ -25,7 +25,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 		public virtual Audit LastAccess { get; set; }
 
 		[DataMember]
-		public virtual Guid ProviderID { get; set; }
+		public virtual string ProviderID { get; set; }
 
 		[DataMember]
 		public virtual DateTime ValidEndDate { get; set; }
