@@ -392,10 +392,14 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
             accessCard.Registry = $"{entLookup}|{username}";
 
+            accessCard.LastAccess = buildAudit(by: username, description: $"Last accessed by {entLookup}");
+
             if (existingAccessCard == null)
             {
                 if (accessCard.ID.IsEmpty())
                     accessCard.ID = Guid.NewGuid();
+
+                accessCard.FirstAccess = buildAudit(by: username, description: $"First accessed by {entLookup}");
 
                 accessCard = await g.AddV(accessCard).FirstOrDefaultAsync();
 
