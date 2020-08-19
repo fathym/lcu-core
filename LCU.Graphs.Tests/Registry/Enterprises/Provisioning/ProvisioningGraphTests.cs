@@ -46,6 +46,23 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Provisioning
         #endregion
 
         #region API Methods
+        [TestMethod]
+        public async Task CreateEnvironmentRemove()
+        {
+            throw new NotImplementedException("Not implemented");
+        }
+
+        [TestMethod]
+        public async Task CreateEnvironmentSettingsRemove()
+        {
+            throw new NotImplementedException("Not implemented");
+        }
+
+        [TestMethod]
+        public async Task CreateSourceControlRemove()
+        {
+            throw new NotImplementedException("Not implemented");
+        }
         //[TestMethod]
         //public async Task SaveListRemoveActivity()
         //{
@@ -88,6 +105,29 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Provisioning
         #endregion
 
         #region Helpers
+        protected virtual LCUEnvironment createEnvironment()
+        {
+            return new LCUEnvironment()
+            {
+
+            };
+        }
+
+        protected virtual LCUEnvironmentSettings createEnvironmentSettings()
+        {
+            return new LCUEnvironmentSettings()
+            {
+
+            };
+        }
+
+        protected virtual SourceControl createSourceControl()
+        {
+            return new SourceControl()
+            {
+
+            };
+        }
         #endregion
     }
 }
