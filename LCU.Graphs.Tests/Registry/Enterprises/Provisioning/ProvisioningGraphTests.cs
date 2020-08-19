@@ -58,59 +58,80 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Provisioning
         [TestMethod]
         public async Task CreateEnvironmentRemove()
         {
-            throw new NotImplementedException("Not implemented");
+            var expected = createEnvironment(mainEnt.EnterpriseLookup);
+
+            var actual = await prvGraph.SaveEnvironment(mainEnt.EnterpriseLookup, expected);
+
+            Assert.IsNotNull(actual);
+            Assert.AreEqual(expected.EnterpriseLookup, actual.EnterpriseLookup);
+            Assert.AreEqual(expected.Label, actual.Label);
+            Assert.AreEqual(expected.Lookup, actual.Lookup);
+            Assert.AreEqual(expected.Registry, actual.Registry);
+            Assert.AreEqual(expected.Registry, actual.Registry);
+
+            var metadata = actual.Metadata?.JSONConvert< Dictionary<string, JToken>>();
+
+            Assert.IsNotNull(metadata);
+            Assert.AreEqual(expected.Metadata["Name"], metadata["Name"]);
+
+            var status = await prvGraph.RemoveEnvironment(mainEnt.EnterpriseLookup, expected.Lookup);
+
+            Assert.IsNotNull(status);
+            Assert.IsTrue(status);
+
         }
 
         [TestMethod]
         public async Task CreateEnvironmentSettingsRemove()
         {
-            throw new NotImplementedException("Not implemented");
+            var expected = createEnvironmentSettings(mainEnt.EnterpriseLookup);
+
+            var actual = await prvGraph.SaveEnvironmentSettings(mainEnt.EnterpriseLookup, testEnvLookup, expected);
+
+            Assert.IsNotNull(actual);
+            Assert.AreEqual(expected.EnterpriseLookup, actual.EnterpriseLookup);
+            Assert.AreEqual(expected.Label, actual.Label);
+            Assert.AreEqual(expected.Registry, actual.Registry);
+            
+            var metadata = actual.Settings?.JSONConvert<Dictionary<string, JToken>>();
+
+            Assert.IsNotNull(metadata);
+            Assert.AreEqual(expected.Metadata["Registry"], metadata["Registry"]);
+            Assert.AreEqual(expected.Metadata["EnterpriseAPIKey"], metadata["EnterpriseAPIKey"]);
+            Assert.AreEqual(expected.Metadata["AzureTenantID"], metadata["AzureTenantID"]);
+            Assert.AreEqual(expected.Metadata["AzureSubID"], metadata["AzureSubID"]);
+            Assert.AreEqual(expected.Metadata["AzureAppID"], metadata["AzureAppID"]);
+            Assert.AreEqual(expected.Metadata["AzureAppAuthkey"], metadata["AzureAppAuthkey"]);
+            Assert.AreEqual(expected.Metadata["EnvironmentLookup"], metadata["EnvironmentLookup"]);
+            Assert.AreEqual(expected.Metadata["OrganizationLookup"], metadata["OrganizationLookup"]);
+            Assert.AreEqual(expected.Metadata["InfrastructureRepoName"], metadata["InfrastructureRepoName"]);
+            Assert.AreEqual(expected.Metadata["AzureRegion"], metadata["AzureRegion"]);
+            Assert.AreEqual(expected.Metadata["AzureLocation"], metadata["AzureLocation"]);
+
+            var status = await prvGraph.RemoveEnvironmentSettings(mainEnt.EnterpriseLookup, expected.Metadata["EnvironmentLookup"].ToString());
+
+            Assert.IsNotNull(status);
+            Assert.IsTrue(status);
+
         }
 
-        [TestMethod]
+        // TODO: Not even sure about this one
+        [Ignore]
         public async Task CreateSourceControlRemove()
         {
-            throw new NotImplementedException("Not implemented");
+            var expected = createSourceControl(mainEnt.EnterpriseLookup);
+
+
+            var actual = await prvGraph.SaveSourceControl(mainEnt.EnterpriseLookup, testEnvLookup, expected);
+
+            Assert.IsNotNull(actual);
+            Assert.AreEqual(expected.EnterpriseLookup, actual.EnterpriseLookup);
+            Assert.AreEqual(expected.Label, actual.Label);
+            Assert.AreEqual(expected.Registry, actual.Registry);
+            Assert.AreEqual(expected.Repository, actual.Repository);
+            Assert.AreEqual(expected.Name, actual.Name);
+            Assert.AreEqual(expected.Organization, actual.Organization);
         }
-        //[TestMethod]
-        //public async Task SaveListRemoveActivity()
-        //{
-        //    var expected = new IDEActivity()
-        //    {
-        //        Icon = "dashboard",
-        //        Lookup = testActivity,
-        //        Sections = new[] { "first", "second" },
-        //        Title = "Dashboard"
-        //    };
-
-        //    var activity = await ideGraph.SaveActivity(mainEnt.EnterpriseLookup, mainEnt.EnterpriseLookup, expected);
-
-        //    Assert.IsNotNull(activity);
-        //    Assert.AreNotEqual(Guid.Empty, activity.ID);
-        //    Assert.AreEqual(expected.EnterpriseLookup, activity.EnterpriseLookup);
-        //    Assert.AreEqual(expected.Icon, activity.Icon);
-        //    Assert.AreEqual(expected.Lookup, activity.Lookup);
-        //    Assert.AreEqual(expected.Registry, activity.Registry);
-        //    Assert.AreEqual(expected.Title, activity.Title);
-        //    Assert.IsFalse(activity.Sections.IsNullOrEmpty());
-
-        //    var activities = await ideGraph.ListActivities(mainEnt.EnterpriseLookup, mainEnt.EnterpriseLookup);
-
-        //    Assert.IsNotNull(activities);
-        //    Assert.AreEqual(1, activities.Count);
-        //    Assert.IsTrue(activities.Any(a => a.ID == activity.ID));
-
-        //    var status = await ideGraph.DeleteActivity(mainEnt.EnterpriseLookup, mainEnt.EnterpriseLookup, activity.Lookup);
-
-        //    Assert.IsNotNull(status);
-        //    Assert.IsTrue(status);
-
-        //    activities = await ideGraph.ListActivities(mainEnt.EnterpriseLookup, mainEnt.EnterpriseLookup);
-
-        //    Assert.IsNotNull(activities);
-        //    Assert.AreEqual(0, activities.Count);
-        //    Assert.IsFalse(activities.Any(a => a.ID == activity.ID));
-        //}
         #endregion
 
         #region Helpers
