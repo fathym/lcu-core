@@ -12,148 +12,188 @@ using System.Threading.Tasks;
 
 namespace LCU.Testing.Graphs
 {
-	public class GenericGraphTests : GenericTests
-	{
-		#region Fields
-		protected readonly List<string> createdEntLookups;
+    public class GenericGraphTests : GenericTests
+    {
+        #region Fields
+        protected readonly List<string> createdEntLookups;
 
-		protected readonly EnterpriseGraph entGraph;
+        protected readonly EnterpriseGraph entGraph;
 
-		protected readonly LCUGraphConfig graphConfig;
+        protected readonly LCUGraphConfig graphConfig;
 
-		protected readonly string hostRoot;
+        protected readonly string hostRoot;
 
-		protected Enterprise mainEnt;
+        protected Enterprise mainEnt;
 
-		protected LCUEnvironment mainEnv;
+        protected LCUEnvironment mainEnv;
 
-		protected readonly string mainHost;
+        protected readonly string mainHost;
 
-		protected readonly string orgLookup;
+        protected readonly string orgLookup;
 
-		protected readonly string parentEntLookup;
+        protected readonly string parentEntLookup;
 
-		protected readonly string username;
-		#endregion
+        protected readonly string username;
+        #endregion
 
-		#region Constructors
-		public GenericGraphTests()
-		{
-			setupConfiguration();
-
-			graphConfig = new LCUGraphConfig()
-			{
-				APIKey = config["LCU-GRAPH-API-KEY"],
-				Database = config["LCU-GRAPH-DATABASE"],
-				Host = config["LCU-GRAPH-HOST"],
-				Graph = config["LCU-GRAPH"]
-			};
-
-			createdEntLookups = new List<string>();
-
-			entGraph = new EnterpriseGraph(graphConfig, createLogger<EnterpriseGraph>());
-
-			hostRoot = config["LCU-HOST-ROOT"];
-
-			orgLookup = config["LCU-ORG-LOOKUP"] + Guid.NewGuid().ToString().Substring(0, 16);
-
-			mainHost = $"{orgLookup}.{hostRoot}";
-
-			parentEntLookup = config["LCU-PARENT-ENT-LOOKUP"];
-
-			username = config["LCU-USERNAME"];
-		}
-		#endregion
-
-		#region Helpers
-		protected virtual void addEntForCleanup(string entLookup)
-		{
-			createdEntLookups.Add(entLookup);
-		}
-
-		protected virtual string buildEnvironmentLookup()
+        #region Constructors
+        public GenericGraphTests()
         {
-			return orgLookup;
+            setupConfiguration();
+
+            graphConfig = new LCUGraphConfig()
+            {
+                APIKey = config["LCU-GRAPH-API-KEY"],
+                Database = config["LCU-GRAPH-DATABASE"],
+                Host = config["LCU-GRAPH-HOST"],
+                Graph = config["LCU-GRAPH"]
+            };
+
+            createdEntLookups = new List<string>();
+
+            entGraph = new EnterpriseGraph(graphConfig, createLogger<EnterpriseGraph>());
+
+            hostRoot = config["LCU-HOST-ROOT"];
+
+            orgLookup = config["LCU-ORG-LOOKUP"] + Guid.NewGuid().ToString().Substring(0, 16);
+
+            mainHost = $"{orgLookup}.{hostRoot}";
+
+            parentEntLookup = config["LCU-PARENT-ENT-LOOKUP"];
+
+            username = config["LCU-USERNAME"];
+        }
+        #endregion
+
+        #region Helpers
+        protected virtual void addEntForCleanup(string entLookup)
+        {
+            createdEntLookups.Add(entLookup);
         }
 
-		protected virtual async Task cleanupEnterprises()
-		{
-			await createdEntLookups.Each(async entLookup =>
-			{
-				if (entLookup == "3ebd1c0d-22d0-489e-a46f-3260103c8cd7")
-					throw new Exception("This would blow up everything, so don't do it");
+        protected virtual string buildEnvironmentLookup()
+        {
+            return orgLookup;
+        }
 
-				await entGraph.DeleteEnterprise(entLookup);
-			});
-		}
+        protected virtual async Task cleanupEnterprises()
+        {
+            await createdEntLookups.Each(async entLookup =>
+            {
+                if (entLookup == "3ebd1c0d-22d0-489e-a46f-3260103c8cd7")
+                    throw new Exception("This would blow up everything, so don't do it");
 
-		protected virtual async Task setupMainEnt(EnterpriseGraph entGraph, ApplicationGraph appGraph = null, ProvisioningGraph prvGraph = null, IdentityGraph idGraph = null)//, AzureDevOpsRepoManager devOpsRepoMgr)
-		{
-			Assert.AreNotEqual("www.fathym-int.com", mainHost, "This would blow up everything, so don't do it");
-			Assert.AreNotEqual("www.fathym-it.com", mainHost, "This would blow up everything, so don't do it");
+                await entGraph.DeleteEnterprise(entLookup);
+            });
+        }
 
-			mainEnt = await entGraph.LoadByHost(mainHost);
+        protected virtual async Task<RelyingParty> loadDefaultRelyingParty(string parentEntLookup)
+        {
+            return new RelyingParty()
+            {
+                EnterpriseLookup = parentEntLookup,
+                Registry = parentEntLookup,
+                ID = Guid.NewGuid()
+            };
+        }
 
-			if (mainEnt == null)
-			{
-				mainEnt = await entGraph.Create(mainHost, mainHost, mainHost);
+        protected virtual async Task<AccessCard> loadDefaultAccessCard(RelyingParty relyingParty)
+        {
+            return new AccessCard()
+            {
+                AccessConfigurationType = relyingParty.DefaultAccessConfigurationType,
+                ExcludeAccessRights = new List<string>().ToArray(),
+                IncludeAccessRights = new List<string>().ToArray(),
+                ID = Guid.NewGuid(),
+                Registry = relyingParty.EnterpriseLookup,
+                EnterpriseLookup = relyingParty.EnterpriseLookup,
+            };
+        }
 
-				Assert.IsNotNull(mainEnt);
+        protected virtual async Task setupMainEnt(EnterpriseGraph entGraph, ApplicationGraph appGraph = null, ProvisioningGraph prvGraph = null, IdentityGraph idGraph = null)//, AzureDevOpsRepoManager devOpsRepoMgr)
+        {
+            Assert.AreNotEqual("www.fathym-int.com", mainHost, "This would blow up everything, so don't do it");
+            Assert.AreNotEqual("www.fathym-it.com", mainHost, "This would blow up everything, so don't do it");
 
-				addEntForCleanup(mainEnt.EnterpriseLookup);
+            mainEnt = await entGraph.LoadByHost(mainHost);
 
-				if (appGraph != null)
-				{
-					var status = await appGraph.SeedDefault(parentEntLookup, mainEnt.EnterpriseLookup);
+            if (mainEnt == null)
+            {
+                mainEnt = await entGraph.Create(mainHost, mainHost, mainHost);
 
-					Assert.IsNotNull(status);
-					Assert.IsTrue(status);
-				}
+                Assert.IsNotNull(mainEnt);
 
-				//var defaultRelyingParty = await loadDefaultRelyingParty(parententLookup);
+                addEntForCleanup(mainEnt.EnterpriseLookup);
 
-				//relyingParty = await idGraph.SaveRelyingParty(defaultRelyingParty, mainEnt.EnterpriseLookup);
+                if (appGraph != null)
+                {
+                    var status = await appGraph.SeedDefault(parentEntLookup, mainEnt.EnterpriseLookup);
 
-				//Assert.IsNotNull(relyingParty);
+                    Assert.IsNotNull(status);
+                    Assert.IsTrue(status);
+                }
 
-				//var accessCard = await idGraph.SaveAccessCard(new AccessCard()
-				//{
-				//	AccessConfigurationType = relyingParty.DefaultAccessConfigurationType,
-				//	ExcludeAccessRights = new List<string>(),
-				//	IncludeAccessRights = new List<string>()
-				//}, mainEnt.EnterpriseLookup, username);
+                //var defaultRelyingParty = await loadDefaultRelyingParty(parententLookup);
 
-				//Assert.IsNotNull(accessCard);
+                //relyingParty = await idGraph.SaveRelyingParty(defaultRelyingParty, mainEnt.EnterpriseLookup);
 
-				if (prvGraph != null)
-				{
+                //Assert.IsNotNull(relyingParty);
+
+                //var accessCard = await idGraph.SaveAccessCard(new AccessCard()
+                //{
+                //	AccessConfigurationType = relyingParty.DefaultAccessConfigurationType,
+                //	ExcludeAccessRights = new List<string>(),
+                //	IncludeAccessRights = new List<string>()
+                //}, mainEnt.EnterpriseLookup, username);
+
+                //Assert.IsNotNull(accessCard);
+
+                if (prvGraph != null)
+                {
                     mainEnv = await prvGraph.SaveEnvironment(mainEnt.EnterpriseLookup, new LCUEnvironment()
-					{
-						Lookup = buildEnvironmentLookup()
-					});
+                    {
+                        Lookup = buildEnvironmentLookup()
+                    });
 
                     Assert.IsNotNull(mainEnv);
 
-					var settings = new
-					{
-						AzureAppAuthKey = config["LCU-AZURE-APP-AUTH-KEY"],
-						AzureAppID = config["LCU-AZURE-APP-ID"],
-						AzureLocation = config["LCU-AZURE-LOCATION"],
-						AzureRegion = config["LCU-AZURE-REGION"],
-						AzureSubID = config["LCU-AZURE-SUB-ID"],
-						AzureTenantID = config["LCU-AZURE-TENANT-ID"]
-					}.JSONConvert<MetadataModel>();
+                    var settings = new
+                    {
+                        AzureAppAuthKey = config["LCU-AZURE-APP-AUTH-KEY"],
+                        AzureAppID = config["LCU-AZURE-APP-ID"],
+                        AzureLocation = config["LCU-AZURE-LOCATION"],
+                        AzureRegion = config["LCU-AZURE-REGION"],
+                        AzureSubID = config["LCU-AZURE-SUB-ID"],
+                        AzureTenantID = config["LCU-AZURE-TENANT-ID"]
+                    }.JSONConvert<MetadataModel>();
 
-					var envSettings = await prvGraph.SaveEnvironmentSettings(mainEnt.EnterpriseLookup, mainEnv.Lookup, new LCUEnvironmentSettings()
-					{
-						Settings = settings
-					});
-				}
-			}
+                    var envSettings = await prvGraph.SaveEnvironmentSettings(mainEnt.EnterpriseLookup, mainEnv.Lookup, new LCUEnvironmentSettings()
+                    {
+                        Settings = settings
+                    });
+                }
 
-			Assert.AreNotEqual("3ebd1c0d-22d0-489e-a46f-3260103c8cd7", mainEnt.EnterpriseLookup, "This would blow up everything, so don't do it");
-		}
+                if (idGraph != null)
+                {
+                    var defaultRelyingParty = await loadDefaultRelyingParty(parentEntLookup);
 
-		#endregion
-	}
+                    var relyingParty = await idGraph.SaveRelyingParty(defaultRelyingParty, mainEnt.EnterpriseLookup);
+
+                    Assert.IsNotNull(relyingParty);
+                    Assert.IsNotNull(mainEnv);
+
+                    var defaultAccessCard = await loadDefaultAccessCard(relyingParty);
+
+                    var accessCard = await idGraph.SaveAccessCard(defaultAccessCard, mainEnt.EnterpriseLookup, username);
+
+                    Assert.IsNotNull(accessCard);
+
+                }
+            }
+
+            Assert.AreNotEqual("3ebd1c0d-22d0-489e-a46f-3260103c8cd7", mainEnt.EnterpriseLookup, "This would blow up everything, so don't do it");
+        }
+
+        #endregion
+    }
 }

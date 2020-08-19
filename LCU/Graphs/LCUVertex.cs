@@ -19,9 +19,9 @@ namespace LCU.Graphs
         [DataMember]
         public virtual Guid ID { get; set; }
 
-        //[DataMember]
-        ////[JsonExtensionData]
-        //public virtual IDictionary<string, JToken> Metadata { get; set; }
+        [DataMember]
+        //[JsonExtensionData]
+        public virtual IDictionary<string, JToken> Metadata { get; set; }
 
         //[DataMember(Name = "Metadata")]
         ////[JsonIgnore]
