@@ -11,5 +11,8 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 	{
 		[DataMember]
 		public virtual string Lookup { get; set; }
+
+		[DataMember]
+		public virtual string Name { get; set; }
 	}
 }
