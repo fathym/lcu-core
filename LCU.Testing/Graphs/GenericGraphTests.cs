@@ -83,17 +83,50 @@ namespace LCU.Testing.Graphs
                 if (entLookup == "3ebd1c0d-22d0-489e-a46f-3260103c8cd7")
                     throw new Exception("This would blow up everything, so don't do it");
 
-                await entGraph.DeleteEnterprise(entLookup);
+                await cleanupEnterprise(entLookup);
             });
         }
 
-        protected virtual async Task<RelyingParty> loadDefaultRelyingParty(string parentEntLookup)
+        protected virtual async Task cleanupEnterprise(string entLookup)
         {
+            await entGraph.DeleteEnterprise(entLookup);
+        }
+
+        protected virtual async Task<RelyingParty> loadDefaultRelyingParty(string entApiKey)
+        {
+            //	TODO:  How to power this by open source repo config, and enable white labeling users to define their own fork
+            var nideAccessRight = new AccessRight()
+            {
+                Lookup = "LCU.NapkinIDE.AllAccess",
+                Name = "LCU Napkin IDE - All Access",
+                Description = "Represents complete access to the enterprise Napkin IDE instance."
+            };
+
+            var nideStakeHolderAccessRight = new AccessRight()
+            {
+                Lookup = "LCU.NapkinIDE.StakeHolder",
+                Name = "LCU Napkin IDE - Stake Holder",
+                Description = "Represents stake holder access to the enterprise Napkin IDE instance."
+            };
+
+            var initialAccessConfig = new AccessConfiguration()
+            {
+                Type = "LCU",
+                AcceptedProviderIDs = Array.Empty<Guid>(),
+                AccessRights = new string[]
+                {
+                    nideAccessRight.Lookup,
+                    nideStakeHolderAccessRight.Lookup
+                }
+            };
+
             return new RelyingParty()
             {
-                EnterpriseLookup = parentEntLookup,
-                Registry = parentEntLookup,
-                ID = Guid.NewGuid()
+                AccessConfigurations = new AccessConfiguration[] { initialAccessConfig },
+                AccessRights = new AccessRight[] { nideAccessRight, nideStakeHolderAccessRight },
+                DefaultAccessConfigurationType = "LCU",
+                Providers = Array.Empty<Provider>(),
+                //	TODO:  Implement providers concept throughout... not needed for MVP, let's craft a story
             };
         }
 
@@ -133,21 +166,6 @@ namespace LCU.Testing.Graphs
                     Assert.IsTrue(status);
                 }
 
-                //var defaultRelyingParty = await loadDefaultRelyingParty(parententLookup);
-
-                //relyingParty = await idGraph.SaveRelyingParty(defaultRelyingParty, mainEnt.EnterpriseLookup);
-
-                //Assert.IsNotNull(relyingParty);
-
-                //var accessCard = await idGraph.SaveAccessCard(new AccessCard()
-                //{
-                //	AccessConfigurationType = relyingParty.DefaultAccessConfigurationType,
-                //	ExcludeAccessRights = new List<string>(),
-                //	IncludeAccessRights = new List<string>()
-                //}, mainEnt.EnterpriseLookup, username);
-
-                //Assert.IsNotNull(accessCard);
-
                 if (prvGraph != null)
                 {
                     mainEnv = await prvGraph.SaveEnvironment(mainEnt.EnterpriseLookup, new LCUEnvironment()
@@ -181,18 +199,21 @@ namespace LCU.Testing.Graphs
 
                     Assert.IsNotNull(relyingParty);
 
+                    var status = await idGraph.Register(mainEnt.EnterpriseLookup, username, username.ToMD5Hash(), GetType().FullName);
+
+                    Assert.IsNotNull(status);
+                    Assert.IsTrue(status);
+
                     var defaultAccessCard = await loadDefaultAccessCard(relyingParty);
 
                     var accessCard = await idGraph.SaveAccessCard(defaultAccessCard, mainEnt.EnterpriseLookup, username);
 
                     Assert.IsNotNull(accessCard);
-
                 }
             }
 
             Assert.AreNotEqual("3ebd1c0d-22d0-489e-a46f-3260103c8cd7", mainEnt.EnterpriseLookup, "This would blow up everything, so don't do it");
         }
-
         #endregion
     }
 }

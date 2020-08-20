@@ -7,6 +7,7 @@ using LCU.Graphs.Registry.Enterprises;
 using LCU.Graphs.Registry.Enterprises.Apps;
 using LCU.Graphs.Registry.Enterprises.DataFlows;
 using LCU.Graphs.Registry.Enterprises.IDE;
+using LCU.Graphs.Registry.Enterprises.Identity;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -61,6 +62,12 @@ namespace LCU.Graphs
                                 cs.Add(new GenericGraphElementPropertySerializer<ModulePackSetup>());
 
                                 cs.Add(new GenericGraphElementPropertySerializer<IdeSettingsConfigSolution[]>());
+
+                                cs.Add(new GenericGraphElementPropertySerializer<AccessConfiguration[]>());
+
+                                cs.Add(new GenericGraphElementPropertySerializer<AccessRight[]>());
+
+                                cs.Add(new GenericGraphElementPropertySerializer<Provider[]>());
 
                                 return cs;
                             });

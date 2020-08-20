@@ -54,8 +54,6 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
         public virtual async Task Initialize()
         {
             await setupMainEnt(entGraph, null, null, identityGraph);
-
-            await identityGraph.Register(mainEnt.EnterpriseLookup, username, mainEnt.EnterpriseLookup, mainEnt.EnterpriseLookup);
         }
         #endregion
 
@@ -217,9 +215,39 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
 
         protected virtual RelyingParty createRelyingParty(string entId)
         {
+            //	TODO:  How to power this by open source repo config, and enable white labeling users to define their own fork
+            var nideAccessRight = new AccessRight()
+            {
+                Lookup = "LCU.NapkinIDE.AllAccess",
+                Name = "LCU Napkin IDE - All Access",
+                Description = "Represents complete access to the enterprise Napkin IDE instance."
+            };
+
+            var nideStakeHolderAccessRight = new AccessRight()
+            {
+                Lookup = "LCU.NapkinIDE.StakeHolder",
+                Name = "LCU Napkin IDE - Stake Holder",
+                Description = "Represents stake holder access to the enterprise Napkin IDE instance."
+            };
+
+            var initialAccessConfig = new AccessConfiguration()
+            {
+                Type = "LCU",
+                AcceptedProviderIDs = Array.Empty<Guid>(),
+                AccessRights = new string[]
+                {
+                    nideAccessRight.Lookup,
+                    nideStakeHolderAccessRight.Lookup
+                }
+            };
+
             return new RelyingParty()
             {
-                DefaultAccessConfigurationType = accessConfigType
+                AccessConfigurations = new AccessConfiguration[] { initialAccessConfig },
+                AccessRights = new AccessRight[] { nideAccessRight, nideStakeHolderAccessRight },
+                DefaultAccessConfigurationType = "LCU",
+                Providers = Array.Empty<Provider>(),
+                //	TODO:  Implement providers concept throughout... not needed for MVP, let's craft a story
             };
         }
         #endregion
