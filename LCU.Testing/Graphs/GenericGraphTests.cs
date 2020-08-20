@@ -27,6 +27,8 @@ namespace LCU.Testing.Graphs
 
         protected LCUEnvironment mainEnv;
 
+        protected LCUEnvironmentSettings mainEnvSettings;
+
         protected readonly string mainHost;
 
         protected readonly string orgLookup;
@@ -185,7 +187,7 @@ namespace LCU.Testing.Graphs
                         AzureTenantID = config["LCU-AZURE-TENANT-ID"]
                     }.JSONConvert<MetadataModel>();
 
-                    var envSettings = await prvGraph.SaveEnvironmentSettings(mainEnt.EnterpriseLookup, mainEnv.Lookup, new LCUEnvironmentSettings()
+                    mainEnvSettings = await prvGraph.SaveEnvironmentSettings(mainEnt.EnterpriseLookup, mainEnv.Lookup, new LCUEnvironmentSettings()
                     {
                         Settings = settings
                     });
