@@ -36,13 +36,13 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Provisioning
 
         #region Life Cycle
         [TestCleanup]
-        public virtual async Task Cleanup()
+        public override async Task Cleanup()
         {
-            await cleanupEnterprises();
+            await base.Cleanup();
         }
 
         [TestInitialize]
-        public virtual async Task Initialize()
+        public override async Task Initialize()
         {
             await setupMainEnt(entGraph, appGraph: null, prvGraph: prvGraph);
         }

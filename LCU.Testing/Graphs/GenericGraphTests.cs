@@ -67,6 +67,18 @@ namespace LCU.Testing.Graphs
         }
         #endregion
 
+        #region Life Cycle
+        [TestCleanup]
+        public virtual async Task Cleanup()
+        {
+            await cleanupEnterprises();
+        }
+
+        [TestInitialize]
+        public virtual async Task Initialize()
+        { }
+        #endregion
+
         #region Helpers
         protected virtual void addEntForCleanup(string entLookup)
         {
