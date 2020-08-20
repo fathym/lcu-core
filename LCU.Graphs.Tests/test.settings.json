@@ -1,4 +1,10 @@
 {
+	"LCU-AZURE-APP-AUTH-KEY": "vmsw9m~yG9b3X_-if-uf5N6m6DiOR3K6b~",
+	"LCU-AZURE-APP-ID": "f529c0ea-5e34-4a8e-befd-408bea58fbb5",
+	"LCU-AZURE-LOCATION": "West US 2",
+	"LCU-AZURE-REGION": "westus2",
+	"LCU-AZURE-SUB-ID": "32271d36-d77b-485b-b7b2-0c990d2abf56",
+	"LCU-AZURE-TENANT-ID": "6dcbebd0-f8d0-4a9d-89e5-5873e8146b0a",
 	"LCU-HOST-ROOT": "fathym-int.com",
 	"LCU-ORG-LOOKUP": "qalccr",
 	"LCU-PARENT-ENT-LOOKUP": "3ebd1c0d-22d0-489e-a46f-3260103c8cd7",

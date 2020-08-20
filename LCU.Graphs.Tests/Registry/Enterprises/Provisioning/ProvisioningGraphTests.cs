@@ -69,21 +69,24 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Provisioning
         [TestMethod]
         public async Task CreateEnvironmentSettingsRemove()
         {
-            var expected = createEnvironmentSettings();
-
-            var actual = await prvGraph.SaveEnvironmentSettings(mainEnt.EnterpriseLookup, mainEnv.Lookup, expected);
+            var actual = await prvGraph.GetEnvironmentSettings(mainEnt.EnterpriseLookup, mainEnv.Lookup);
 
             Assert.IsNotNull(actual);
             Assert.IsNotNull(actual.Settings);
-            Assert.AreEqual(expected.Settings.Metadata["AzureTenantID"].ToString(), actual.Settings.Metadata["AzureTenantID"].ToString());
-            Assert.AreEqual(expected.Settings.Metadata["AzureSubID"].ToString(), actual.Settings.Metadata["AzureSubID"].ToString());
-            Assert.AreEqual(expected.Settings.Metadata["AzureAppID"].ToString(), actual.Settings.Metadata["AzureAppID"].ToString());
-            Assert.AreEqual(expected.Settings.Metadata["AzureAppAuthkey"].ToString(), actual.Settings.Metadata["AzureAppAuthkey"].ToString());
-            Assert.AreEqual(expected.Settings.Metadata["EnvironmentLookup"].ToString(), actual.Settings.Metadata["EnvironmentLookup"].ToString());
-            Assert.AreEqual(expected.Settings.Metadata["OrganizationLookup"].ToString(), actual.Settings.Metadata["OrganizationLookup"].ToString());
-            Assert.AreEqual(expected.Settings.Metadata["InfrastructureRepoName"].ToString(), actual.Settings.Metadata["InfrastructureRepoName"].ToString());
-            Assert.AreEqual(expected.Settings.Metadata["AzureRegion"].ToString(), actual.Settings.Metadata["AzureRegion"].ToString());
-            Assert.AreEqual(expected.Settings.Metadata["AzureLocation"].ToString(), actual.Settings.Metadata["AzureLocation"].ToString());
+            Assert.IsFalse(actual.Settings.Metadata["AzureTenantID"].ToString().IsNullOrEmpty());
+            Assert.IsFalse(actual.Settings.Metadata["AzureSubID"].ToString().IsNullOrEmpty());
+
+            actual.Settings.Metadata["NewValue"] = mainEnt.EnterpriseLookup;
+
+            actual = await prvGraph.SaveEnvironmentSettings(mainEnt.EnterpriseLookup, mainEnv.Lookup, new LCUEnvironmentSettings() { Settings = actual.Settings });
+
+            actual = await prvGraph.GetEnvironmentSettings(mainEnt.EnterpriseLookup, mainEnv.Lookup);
+
+            Assert.IsNotNull(actual);
+            Assert.IsNotNull(actual.Settings);
+            Assert.IsFalse(actual.Settings.Metadata["AzureTenantID"].ToString().IsNullOrEmpty());
+            Assert.IsFalse(actual.Settings.Metadata["AzureSubID"].ToString().IsNullOrEmpty());
+            Assert.AreEqual(mainEnt.EnterpriseLookup, actual.Settings.Metadata["NewValue"].ToString());
 
             var status = await prvGraph.RemoveEnvironmentSettings(mainEnt.EnterpriseLookup, mainEnv.Lookup);
 
@@ -113,29 +116,6 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Provisioning
             return new LCUEnvironment()
             {
                 Lookup = $"{testLookup}"
-            };
-        }
-
-        protected virtual LCUEnvironmentSettings createEnvironmentSettings()
-        {
-
-            return new LCUEnvironmentSettings()
-            {
-                Settings = new MetadataModel()
-                {
-                    Metadata = new Dictionary<string, JToken>()
-                    {
-                        { "AzureTenantID", Guid.NewGuid() },
-                        { "AzureSubID", Guid.NewGuid() },
-                        { "AzureAppID", Guid.NewGuid() },
-                        { "AzureAppAuthkey", String.Empty },
-                        { "EnvironmentLookup", mainEnv.Lookup },
-                        { "OrganizationLookup", orgLookup },
-                        { "InfrastructureRepoName", "infra-repo" },
-                        { "AzureRegion", "westus" },
-                        { "AzureLocation", "West US" }
-                    }
-                }
             };
         }
 
