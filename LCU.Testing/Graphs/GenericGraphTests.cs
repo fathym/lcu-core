@@ -106,7 +106,7 @@ namespace LCU.Testing.Graphs
             await entGraph.DeleteEnterprise(entLookup);
         }
 
-        protected virtual async Task<RelyingParty> loadDefaultRelyingParty(string entApiKey)
+        protected virtual async Task<RelyingParty> loadDefaultRelyingParty()
         {
             //	TODO:  How to power this by open source repo config, and enable white labeling users to define their own fork
             var nideAccessRight = new AccessRight()
@@ -208,7 +208,7 @@ namespace LCU.Testing.Graphs
 
                 if (idGraph != null)
                 {
-                    var defaultRelyingParty = await loadDefaultRelyingParty(parentEntLookup);
+                    var defaultRelyingParty = await loadDefaultRelyingParty();
 
                     var relyingParty = await idGraph.SaveRelyingParty(defaultRelyingParty, mainEnt.EnterpriseLookup);
 

@@ -46,11 +46,11 @@
 
 //                var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
 //                    .Has(EntGraphConstants.RegistryName, entLookup)
-//                    .Has("PrimaryAPIKey", entLookup)
+//                    .Has("EnterpriseLookup", entLookup)
 //                    .Out(EntGraphConstants.ConsumesEdgeName)
 //                    .HasLabel(EntGraphConstants.EnvironmentVertexName)
 //                    .Has(EntGraphConstants.RegistryName, entLookup)
-//                    .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+//                    .Has(EntGraphConstants.EnterpriseLookupName, entLookup)
 //                    .Has("Lookup", envLookup)
 //                    .Out(EntGraphConstants.UsesEdgeName)
 //                    .HasLabel(EntGraphConstants.SemanticProfileVertexName)
@@ -73,11 +73,11 @@
 
 //                var envQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
 //                    .Has(EntGraphConstants.RegistryName, entLookup)
-//                    .Has("PrimaryAPIKey", entLookup)
+//                    .Has("EnterpriseLookup", entLookup)
 //                    .Out(EntGraphConstants.OwnsEdgeName)
 //                    .HasLabel(EntGraphConstants.EnvironmentVertexName)
 //                    .Has(EntGraphConstants.RegistryName, entLookup)
-//                    .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+//                    .Has(EntGraphConstants.EnterpriseLookupName, entLookup)
 //                    .Has("Lookup", envLookup);
 
 //                var envResult = await SubmitFirst<LCUEnvironment>(envQuery);
@@ -98,7 +98,7 @@
 //                var query = existingResult == null ?
 //                    g.AddV(EntGraphConstants.JSONSchemaMapVertexName)
 //                    .Property(EntGraphConstants.RegistryName, registry)
-//                    .Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup) : existingQuery;
+//                    .Property(EntGraphConstants.EnterpriseLookupName, entLookup) : existingQuery;
 
 //                query = query
 //                    .Property("Name", name ?? "")

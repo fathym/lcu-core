@@ -46,7 +46,7 @@
 
 //                var existingQuery = g.V()
 //                    .HasLabel(EntGraphConstants.TypeDefinitionVertexName)
-//                    .Has(EntGraphConstants.EnterpriseAPIKeyName, entLookup)
+//                    .Has(EntGraphConstants.EnterpriseLookupName, entLookup)
 //                    .Has(EntGraphConstants.RegistryName, registry)
 //                    .Has("Lookup", typeDefinition.Lookup);
 
@@ -55,7 +55,7 @@
 //                var query = existingResult == null ?
 //                    g.AddV(EntGraphConstants.TypeDefinitionVertexName)
 //                    .Property(EntGraphConstants.RegistryName, registry)
-//                    .Property(EntGraphConstants.EnterpriseAPIKeyName, entLookup) : existingQuery;
+//                    .Property(EntGraphConstants.EnterpriseLookupName, entLookup) : existingQuery;
 
 //                query = query
 //                    .Property("Active", typeDefinition.Active)

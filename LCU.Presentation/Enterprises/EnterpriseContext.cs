@@ -21,7 +21,7 @@ namespace LCU.Presentation.Enterprises
 
         public virtual bool IsDevEnv { get; set; }
 
-		public virtual string PrimaryAPIKey { get; set; }
+		public virtual string EnterpriseLookup { get; set; }
 
 		public virtual bool PreventDefaultApplications { get; set; }
 	}
