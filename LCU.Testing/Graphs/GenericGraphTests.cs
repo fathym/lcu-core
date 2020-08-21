@@ -196,7 +196,8 @@ namespace LCU.Testing.Graphs
                         AzureLocation = config["LCU-AZURE-LOCATION"],
                         AzureRegion = config["LCU-AZURE-REGION"],
                         AzureSubID = config["LCU-AZURE-SUB-ID"],
-                        AzureTenantID = config["LCU-AZURE-TENANT-ID"]
+                        AzureTenantID = config["LCU-AZURE-TENANT-ID"],
+                        EnvironmentLookup = mainEnv.Lookup
                     }.JSONConvert<MetadataModel>();
 
                     mainEnvSettings = await prvGraph.SaveEnvironmentSettings(mainEnt.EnterpriseLookup, mainEnv.Lookup, new LCUEnvironmentSettings()

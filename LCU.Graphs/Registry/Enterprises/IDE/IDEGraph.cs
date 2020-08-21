@@ -156,9 +156,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
             }
             else
             {
-                container.ID = existingContainer.ID;
-
-                container = await g.V<IDEContainer>(container.ID)
+                container = await g.V<IDEContainer>(existingContainer.ID)
                     .Update(container)
                     .FirstOrDefaultAsync();
             }
@@ -319,9 +317,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
             }
             else
             {
-                activity.ID = existingAct.ID;
-
-                activity = await g.V<IDEActivity>()
+                activity = await g.V<IDEActivity>(existingAct.ID)
                     .Update(activity)
                     .FirstOrDefaultAsync();
             }
@@ -358,9 +354,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
             }
             else
             {
-                lcu.ID = existingLCU.ID;
-
-                lcu = await g.V<LCUConfig>()
+                lcu = await g.V<LCUConfig>(existingLCU.ID)
                     .Update(lcu)
                     .FirstOrDefaultAsync();
             }
@@ -397,9 +391,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
             }
             else
             {
-                action.ID = existingAct.ID;
-
-                action = await g.V<SectionAction>()
+                action = await g.V<SectionAction>(existingAct.ID)
                     .Update(action)
                     .FirstOrDefaultAsync();
             }

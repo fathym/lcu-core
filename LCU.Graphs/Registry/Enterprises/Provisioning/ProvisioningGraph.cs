@@ -143,9 +143,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
             }
             else
             {
-                env.ID = existingEnv.ID;
-
-                env = await g.V<LCUEnvironment>()
+                env = await g.V<LCUEnvironment>(existingEnv.ID)
                     .Update(env)
                     .FirstOrDefaultAsync();
             }
@@ -178,9 +176,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
             }
             else
             {
-                settings.ID = existingSettings.ID;
-
-                settings = await g.V<LCUEnvironmentSettings>()
+                settings = await g.V<LCUEnvironmentSettings>(existingSettings.ID)
                     .Update(settings)
                     .FirstOrDefaultAsync();
             }
@@ -215,9 +211,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
             }
             else
             {
-                sc.ID = existingSC.ID;
-
-                sc = await g.V<SourceControl>()
+                sc = await g.V<SourceControl>(existingSC.ID)
                     .Update(sc)
                     .FirstOrDefaultAsync();
             }

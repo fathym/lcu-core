@@ -81,7 +81,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Provisioning
             actual = await prvGraph.SaveEnvironmentSettings(mainEnt.EnterpriseLookup, mainEnv.Lookup, new LCUEnvironmentSettings() { Settings = actual.Settings });
 
             actual = await prvGraph.GetEnvironmentSettings(mainEnt.EnterpriseLookup, mainEnv.Lookup);
-
+            
             Assert.IsNotNull(actual);
             Assert.IsNotNull(actual.Settings);
             Assert.IsFalse(actual.Settings.Metadata["AzureTenantID"].ToString().IsNullOrEmpty());

@@ -407,9 +407,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             }
             else
             {
-                accessCard.ID = existingAccessCard.ID;
-
-                accessCard = await g.V<AccessCard>(accessCard.ID)
+                accessCard = await g.V<AccessCard>(existingAccessCard.ID)
                     .Update(accessCard)
                     .FirstOrDefaultAsync();
             }
@@ -453,9 +451,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             }
             else
             {
-                relyingParty.ID = existingRP.ID;
-
-                relyingParty = await g.V<RelyingParty>(relyingParty.ID)
+                relyingParty = await g.V<RelyingParty>(existingRP.ID)
                     .Update(relyingParty)
                     .FirstOrDefaultAsync();
             }
@@ -491,9 +487,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             }
             else
             {
-                token.ID = existingLAT.ID;
-
-                token = await g.V<LicenseAccessToken>(token.ID)
+                token = await g.V<LicenseAccessToken>(existingLAT.ID)
                     .Update(token)
                     .FirstOrDefaultAsync();
             }
