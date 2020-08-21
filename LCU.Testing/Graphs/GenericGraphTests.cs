@@ -104,7 +104,7 @@ namespace LCU.Testing.Graphs
         protected virtual async Task cleanupEnterprise(string entLookup)
         {
             await entGraph.DeleteEnterprise(entLookup);
-        }
+        } 
 
         protected virtual async Task<RelyingParty> loadDefaultRelyingParty()
         {
