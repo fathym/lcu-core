@@ -109,7 +109,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
             Assert.AreEqual(expected.Priority, dafApp.Priority);
             Assert.AreEqual(expected.Registry, dafApp.Registry);
 
-            var viewDetails = dafApp.Details?.JSONConvert<DAFViewApplication>();
+            var viewDetails = dafApp.Details?.JSONConvert<DAFViewApplicationDetails>();
 
             Assert.IsNotNull(viewDetails);
             Assert.AreEqual("world", viewDetails.StateConfig.Metadata["hello"].ToString());
@@ -151,7 +151,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
                 EnterpriseLookup = mainEnt.EnterpriseLookup,
                 Lookup = "something",
                 Priority = 100,
-                Details = new DAFViewApplication()
+                Details = new DAFViewApplicationDetails()
                 {
                     BaseHref = "/something/",
                     NPMPackage = "@habistack/lcu-fathym-forecast-lcu",

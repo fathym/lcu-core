@@ -7,7 +7,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 {
 	[Serializable]
 	[DataContract]
-	public class DAFRedirectApplication : MetadataModel
+	public class DAFRedirectApplicationDetails : MetadataModel
 	{
 		[DataMember]
 		public virtual string Redirect { get; set; }

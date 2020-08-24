@@ -11,18 +11,12 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 {
     [Serializable]
     [DataContract]
-    public class DAFViewApplication : MetadataModel
+    public class DAFAppPointerApplicationDetails : MetadataModel
     {
         [DataMember]
-        public virtual string BaseHref { get; set; }
+        public virtual string DAFApplicationID { get; set; }
 
         [DataMember]
-        public virtual string NPMPackage { get; set; }
-
-        [DataMember]
-        public virtual string PackageVersion { get; set; }
-
-        [DataMember]
-        public virtual MetadataModel StateConfig { get; set; }
+        public virtual string DAFApplicationRoot { get; set; }
     }
 }

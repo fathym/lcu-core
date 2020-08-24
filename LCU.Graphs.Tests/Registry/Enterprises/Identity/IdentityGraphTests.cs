@@ -59,6 +59,16 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
 
         #region API Methods
         [TestMethod]
+        public async Task AccountTests()
+        {
+            var actual = await identityGraph.Register(mainEnt.EnterpriseLookup, username, "some-token", null);
+
+            // TODO: Use reflection to write an object equivalency checker and add it to LCU.Testing
+            Assert.IsNotNull(actual);
+            Assert.IsTrue(actual);
+        }
+
+        [TestMethod]
         public async Task CreateThirdPartyTokenRemove()
         {
             var expected = createThirdPartyToken(mainEnt.EnterpriseLookup, username);
