@@ -16,7 +16,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Fathym.Presentation" Version="1.202.20224.3" />
+		<PackageReference Include="Fathym.Presentation" Version="1.203.20240.3" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.OAuth" Version="2.2.0" />
 		<PackageReference Include="Microsoft.Azure.SignalR" Version="1.5.0" />

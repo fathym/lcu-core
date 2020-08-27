@@ -10,7 +10,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="ExRam.Gremlinq.Providers.CosmosDb.AspNet" Version="8.0.0-preview-0909" />
-		<PackageReference Include="Fathym.API" Version="1.202.20224.3" />
+		<PackageReference Include="Fathym.API" Version="1.203.20240.3" />
 		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
 		<PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.2.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Session" Version="2.2.0" />
