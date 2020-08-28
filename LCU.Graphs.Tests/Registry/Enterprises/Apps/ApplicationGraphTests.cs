@@ -71,11 +71,18 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
             Assert.IsTrue(app.Licenses.Contains(license));
             Assert.AreEqual(1, app.Licenses.Length);
 
+            expected = createTestApplication();
+
+            expected.Priority += expected.Priority;
+
+            app = await appGraph.Save(expected);
+
             var apps = await appGraph.ListApplications(mainEnt.EnterpriseLookup);
 
             Assert.IsNotNull(apps);
-            Assert.AreEqual(1, apps.Count);
+            Assert.AreEqual(2, apps.Count);
             Assert.IsTrue(apps.Any(a => a.ID == app.ID));
+            Assert.IsTrue(apps.First().Priority > apps.Last().Priority);
 
             var status = await appGraph.RemoveApplication(app.ID);
 
@@ -85,7 +92,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
             apps = await appGraph.ListApplications(mainEnt.EnterpriseLookup);
 
             Assert.IsNotNull(apps);
-            Assert.AreEqual(0, apps.Count);
+            Assert.AreEqual(1, apps.Count);
             Assert.IsFalse(apps.Any(a => a.ID == app.ID));
         }
 
@@ -113,6 +120,30 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
 
             Assert.IsNotNull(viewDetails);
             Assert.AreEqual("world", viewDetails.StateConfig.Metadata["hello"].ToString());
+
+            expected = createTestDAFApplication(app.ID);
+
+            expected.Priority += expected.Priority;
+
+            dafApp = await appGraph.SaveDAFApplication(mainEnt.EnterpriseLookup, expected);
+
+            var dafApps = await appGraph.ListDAFApplications(mainEnt.EnterpriseLookup, app.ID);
+
+            Assert.IsNotNull(dafApps);
+            Assert.AreEqual(2, dafApps.Count);
+            Assert.IsTrue(dafApps.Any(a => a.ID == dafApp.ID));
+            Assert.IsTrue(dafApps.First().Priority > dafApps.Last().Priority);
+
+            var status = await appGraph.RemoveDAFApplication(dafApp.ID);
+
+            Assert.IsNotNull(status);
+            Assert.IsTrue(status);
+
+            dafApps = await appGraph.ListDAFApplications(mainEnt.EnterpriseLookup, app.ID);
+
+            Assert.IsNotNull(dafApps);
+            Assert.AreEqual(1, dafApps.Count);
+            Assert.IsFalse(dafApps.Any(a => a.ID == dafApp.ID));
         }
         #endregion
 
@@ -147,8 +178,6 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
             return new DAFApplication()
             {
                 ApplicationID = appId.ToString(),
-                Registry = appId.ToString(),
-                EnterpriseLookup = mainEnt.EnterpriseLookup,
                 Lookup = "something",
                 Priority = 100,
                 Details = new DAFViewApplicationDetails()

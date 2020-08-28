@@ -116,7 +116,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
                 .Where(e => e.Registry == entLookup)
                 .Out<Consumes>()
                 .OfType<Application>()
-                .Order(_ => _.By(a => a.Priority))
+                .Order(_ => _.ByDescending(a => a.Priority))
                 .ToListAsync();
 
             return apps;
@@ -131,7 +131,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
                 .OfType<DAFApplication>()
                 .Where(da => da.Registry == $"{entLookup}|{appId}")
                 .Where(da => da.ApplicationID == appId.ToString())
-                .Order(_ => _.By(da => da.Priority))
+                .Order(_ => _.ByDescending(da => da.Priority))
                 .ToListAsync();
 
             return dafApps;
@@ -151,7 +151,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
             //	appsQuery = appsQuery.Where(a => a.Container == container);
 
             var apps = await appsQuery
-                .Order(_ => _.By(a => a.Priority))
+                .Order(_ => _.ByDescending(a => a.Priority))
                 .ToListAsync();
 
             return apps;
@@ -166,7 +166,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
                 .OfType<DefaultApplications>()
                 .Out<Consumes>()
                 .OfType<Application>()
-                .Order(_ => _.By(da => da.Priority))
+                .Order(_ => _.ByDescending(da => da.Priority))
                 .ToListAsync();
 
             return defApps;
@@ -179,16 +179,10 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
             return Status.Success;
         }
 
-        public virtual async Task<Status> RemoveDAFApplication(string entLookup, DAFApplication config)
+        public virtual async Task<Status> RemoveDAFApplication(Guid dafAppId)
         {
-            var dropQuery = g.V<DAFApplication>(config.ID)
-                    .Where(da => da.Registry == $"{entLookup}|{config.ApplicationID}")
-                    .Where(da => da.ApplicationID == config.ApplicationID);
-
-            if (!config.Lookup.IsNullOrEmpty())
-                dropQuery = dropQuery.Where(da => da.Lookup == config.Lookup);
-
-            var existingResult = await dropQuery.Drop();
+            var existingResult = await g.V<DAFApplication>(dafAppId)
+                .Drop();
 
             return Status.Success;
         }
@@ -269,6 +263,10 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
                     .Where(da => da.Registry == $"{entLookup}|{dafApp.ApplicationID}")
                     .Where(da => da.ApplicationID == dafApp.ApplicationID)
                     .FirstOrDefaultAsync();
+
+                dafApp.EnterpriseLookup = entLookup;
+
+                dafApp.Registry = $"{entLookup}|{dafApp.ApplicationID}";
 
                 if (existingDafApp == null)
                 {
