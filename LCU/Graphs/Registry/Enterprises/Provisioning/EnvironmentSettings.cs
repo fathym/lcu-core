@@ -8,7 +8,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 {
 	[Serializable]
 	[DataContract]
-	public class LCUEnvironmentSettings : LCUVertex
+	public class EnvironmentSettings : LCUVertex
 	{
 		[DataMember]
 		public virtual MetadataModel Settings { get; set; }

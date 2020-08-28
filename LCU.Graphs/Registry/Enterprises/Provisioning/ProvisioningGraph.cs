@@ -23,29 +23,29 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
         #endregion
 
         #region API Methods
-        public virtual async Task<LCUEnvironment> GetEnvironment(string entLookup, string lookup)
+        public virtual async Task<Environment> GetEnvironment(string entLookup, string lookup)
         {
             return await g.V<Enterprise>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
                 .Out<Consumes>()
-                .OfType<LCUEnvironment>()
+                .OfType<Environment>()
                 .Where(e => e.Lookup == lookup)
                 .FirstOrDefaultAsync();
         }
 
-        public virtual async Task<LCUEnvironmentSettings> GetEnvironmentSettings(string entLookup, string envLookup)
+        public virtual async Task<EnvironmentSettings> GetEnvironmentSettings(string entLookup, string envLookup)
         {
             return await g.V<Enterprise>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
                 .Out<Consumes>()
-                .OfType<LCUEnvironment>()
+                .OfType<Environment>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
                 .Where(e => e.Lookup == envLookup)
                 .Out<Consumes>()
-                .OfType<LCUEnvironmentSettings>()
+                .OfType<EnvironmentSettings>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
                 .FirstOrDefaultAsync();
@@ -59,7 +59,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
                 .Out<Owns>()
-                .OfType<LCUEnvironment>()
+                .OfType<Environment>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
                 .Where(e => e.Lookup == envLookup)
@@ -70,13 +70,13 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
                 .FirstOrDefaultAsync();
         }
 
-        public virtual async Task<List<LCUEnvironment>> ListEnvironments(string entLookup)
+        public virtual async Task<List<Environment>> ListEnvironments(string entLookup)
         {
             return await g.V<Enterprise>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
                 .Out<Owns>()
-                .OfType<LCUEnvironment>()
+                .OfType<Environment>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
                 .ToListAsync();
@@ -88,7 +88,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
                 .Out<Owns>()
-                .OfType<LCUEnvironment>()
+                .OfType<Environment>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
                 .Where(e => e.Lookup == envLookup)
@@ -103,11 +103,11 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
                 .Out<Owns>()
-                .OfType<LCUEnvironment>()
+                .OfType<Environment>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
                 .Where(e => e.Lookup == envLookup)
-                .OfType<LCUEnvironmentSettings>()
+                .OfType<EnvironmentSettings>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
                 .Drop();
@@ -115,7 +115,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
             return Status.Success;
         }
 
-        public virtual async Task<LCUEnvironment> SaveEnvironment(string entLookup, LCUEnvironment env)
+        public virtual async Task<Environment> SaveEnvironment(string entLookup, Environment env)
         {
             var existingEnv = await GetEnvironment(entLookup, env.Lookup);
 
@@ -143,7 +143,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
             }
             else
             {
-                env = await g.V<LCUEnvironment>(existingEnv.ID)
+                env = await g.V<Environment>(existingEnv.ID)
                     .Update(env)
                     .FirstOrDefaultAsync();
             }
@@ -151,7 +151,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
             return env;
         }
 
-        public virtual async Task<LCUEnvironmentSettings> SaveEnvironmentSettings(string entLookup, string envLookup, LCUEnvironmentSettings settings)
+        public virtual async Task<EnvironmentSettings> SaveEnvironmentSettings(string entLookup, string envLookup, EnvironmentSettings settings)
         {
             var existingSettings = await GetEnvironmentSettings(entLookup, envLookup);
 
@@ -176,7 +176,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
             }
             else
             {
-                settings = await g.V<LCUEnvironmentSettings>(existingSettings.ID)
+                settings = await g.V<EnvironmentSettings>(existingSettings.ID)
                     .Update(settings)
                     .FirstOrDefaultAsync();
             }

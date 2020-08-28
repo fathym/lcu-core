@@ -7,7 +7,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 {
 	[Serializable]
 	[DataContract]
-	public class LCUEnvironment : LCUVertex
+	public class Environment : LCUVertex
 	{
 		[DataMember]
 		public virtual string Lookup { get; set; }

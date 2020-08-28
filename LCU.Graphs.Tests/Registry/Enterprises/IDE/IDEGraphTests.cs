@@ -58,7 +58,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.IDE
         [TestMethod]
         public async Task SaveListRemoveActivity()
         {
-            var expected = new IDEActivity()
+            var expected = new Activity()
             {
                 Icon = "dashboard",
                 Lookup = testActivity,

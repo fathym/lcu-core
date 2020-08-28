@@ -25,9 +25,9 @@ namespace LCU.Testing.Graphs
 
         protected Enterprise mainEnt;
 
-        protected LCUEnvironment mainEnv;
+        protected LCU.Graphs.Registry.Enterprises.Provisioning.Environment mainEnv;
 
-        protected LCUEnvironmentSettings mainEnvSettings;
+        protected EnvironmentSettings mainEnvSettings;
 
         protected readonly string mainHost;
 
@@ -182,7 +182,7 @@ namespace LCU.Testing.Graphs
 
                 if (prvGraph != null)
                 {
-                    mainEnv = await prvGraph.SaveEnvironment(mainEnt.EnterpriseLookup, new LCUEnvironment()
+                    mainEnv = await prvGraph.SaveEnvironment(mainEnt.EnterpriseLookup, new LCU.Graphs.Registry.Enterprises.Provisioning.Environment()
                     {
                         Lookup = buildEnvironmentLookup()
                     });
@@ -200,7 +200,7 @@ namespace LCU.Testing.Graphs
                         EnvironmentLookup = mainEnv.Lookup
                     }.JSONConvert<MetadataModel>();
 
-                    mainEnvSettings = await prvGraph.SaveEnvironmentSettings(mainEnt.EnterpriseLookup, mainEnv.Lookup, new LCUEnvironmentSettings()
+                    mainEnvSettings = await prvGraph.SaveEnvironmentSettings(mainEnt.EnterpriseLookup, mainEnv.Lookup, new EnvironmentSettings()
                     {
                         Settings = settings
                     });

@@ -127,8 +127,10 @@ namespace LCU.Graphs.Tests.Registry.Enterprises
             //	Update all DAF Applications so that extra details are on the .Details property
 
             //	Copy objects with Labels to new labels:
-            //		- Activity => IDEActivity
-            //		- 
+            //		- ModuleOption??
+            //		- ModuleDisplay??
+
+            //  Maybe don't need this now
         }
         #endregion
     }

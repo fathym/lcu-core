@@ -78,7 +78,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Provisioning
 
             actual.Settings.Metadata["NewValue"] = mainEnt.EnterpriseLookup;
 
-            actual = await prvGraph.SaveEnvironmentSettings(mainEnt.EnterpriseLookup, mainEnv.Lookup, new LCUEnvironmentSettings() { Settings = actual.Settings });
+            actual = await prvGraph.SaveEnvironmentSettings(mainEnt.EnterpriseLookup, mainEnv.Lookup, new EnvironmentSettings() { Settings = actual.Settings });
 
             actual = await prvGraph.GetEnvironmentSettings(mainEnt.EnterpriseLookup, mainEnv.Lookup);
             
@@ -111,9 +111,9 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Provisioning
         #endregion
 
         #region Helpers
-        protected virtual LCUEnvironment createEnvironment()
+        protected virtual Graphs.Registry.Enterprises.Provisioning.Environment createEnvironment()
         {
-            return new LCUEnvironment()
+            return new Graphs.Registry.Enterprises.Provisioning.Environment()
             {
                 Lookup = $"{testLookup}"
             };

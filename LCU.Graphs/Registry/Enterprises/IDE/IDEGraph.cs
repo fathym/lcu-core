@@ -36,7 +36,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
                 .Where(e => e.Registry == entLookup)
                 .Where(e => e.Container == container)
                 .Out<Consumes>()
-                .OfType<IDEActivity>()
+                .OfType<Activity>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == registry)
                 .Where(e => e.Lookup == activityLookup)
@@ -46,7 +46,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
             {
                 activity.Sections = activity.Sections.AddItem(section).Distinct().ToArray();
 
-                activity = await g.V<IDEActivity>(activity.ID)
+                activity = await g.V<Activity>(activity.ID)
                     .Update(activity)
                     .FirstOrDefaultAsync();
             }
@@ -60,7 +60,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
             if (act != null)
             {
-                await g.V<IDEActivity>(act.ID)
+                await g.V<Activity>(act.ID)
                     .Where(e => e.EnterpriseLookup == entLookup)
                     .Drop();
 
@@ -117,7 +117,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
                 .Where(e => e.Registry == entLookup)
                 .Where(e => e.Container == container)
                 .Out<Consumes>()
-                .OfType<IDEActivity>()
+                .OfType<Activity>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == registry)
                 .Where(e => e.Lookup == activityLookup)
@@ -127,7 +127,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
             {
                 activity.Sections = activity.Sections.RemoveItem(section).Distinct().ToArray();
 
-                activity = await g.V<IDEActivity>(activity.ID)
+                activity = await g.V<Activity>(activity.ID)
                     .Update(activity)
                     .FirstOrDefaultAsync();
             }
@@ -164,7 +164,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
             return container;
         }
 
-        public virtual async Task<IDEActivity> GetActivity(string entLookup, string container, string activityLookup)
+        public virtual async Task<Activity> GetActivity(string entLookup, string container, string activityLookup)
         {
             var registry = $"{entLookup}|{container}";
 
@@ -173,7 +173,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
                 .Where(e => e.Registry == entLookup)
                 .Where(e => e.Container == container)
                 .Out<Consumes>()
-                .OfType<IDEActivity>()
+                .OfType<Activity>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == registry)
                 .Where(e => e.Lookup == activityLookup)
@@ -205,7 +205,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
                 .Where(e => e.Registry == entLookup)
                 .Where(e => e.Container == container)
                 .Out<Consumes>()
-                .OfType<IDEActivity>()
+                .OfType<Activity>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == registry)
                 .Where(e => e.Lookup == activityLookup)
@@ -219,7 +219,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
                 .FirstOrDefaultAsync();
         }
 
-        public virtual async Task<List<IDEActivity>> ListActivities(string entLookup, string container)
+        public virtual async Task<List<Activity>> ListActivities(string entLookup, string container)
         {
             var registry = $"{entLookup}|{container}";
 
@@ -228,7 +228,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
                 .Where(e => e.Registry == entLookup)
                 .Where(e => e.Container == container)
                 .Out<Consumes>()
-                .OfType<IDEActivity>()
+                .OfType<Activity>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == registry)
                 .ToListAsync();
@@ -258,7 +258,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
                 .Where(e => e.Registry == entLookup)
                 .Where(e => e.Container == container)
                 .Out<Consumes>()
-                .OfType<IDEActivity>()
+                .OfType<Activity>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == registry)
                 .Where(e => e.Lookup == activityLookup)
@@ -279,7 +279,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
                 .Where(e => e.Registry == entLookup)
                 .Where(e => e.Container == container)
                 .Out<Consumes>()
-                .OfType<IDEActivity>()
+                .OfType<Activity>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == registry)
                 .Where(e => e.Lookup == activityLookup)
@@ -288,7 +288,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
             return activity?.Sections.ToList();
         }
 
-        public virtual async Task<IDEActivity> SaveActivity(string entLookup, string container, IDEActivity activity)
+        public virtual async Task<Activity> SaveActivity(string entLookup, string container, Activity activity)
         {
             var existingAct = await GetActivity(entLookup, container, activity.Lookup);
 
@@ -317,7 +317,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
             }
             else
             {
-                activity = await g.V<IDEActivity>(existingAct.ID)
+                activity = await g.V<Activity>(existingAct.ID)
                     .Update(activity)
                     .FirstOrDefaultAsync();
             }
