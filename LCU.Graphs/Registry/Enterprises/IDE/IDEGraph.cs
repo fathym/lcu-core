@@ -377,17 +377,13 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
                 action = await g.AddV(action).FirstOrDefaultAsync();
 
-                var ide = await g.V<IDEContainer>()
-                    .Where(e => e.EnterpriseLookup == entLookup)
-                    .Where(e => e.Registry == entLookup)
-                    .Where(e => e.Container == container)
-                    .FirstOrDefaultAsync();
+                var activity = await GetActivity(entLookup, container, activityLookup);
 
-                await ensureEdgeRelationship<Consumes>(ide.ID, action.ID);
+                await ensureEdgeRelationship<Consumes>(activity.ID, action.ID);
 
-                await ensureEdgeRelationship<Manages>(ide.ID, action.ID);
+                await ensureEdgeRelationship<Manages>(activity.ID, action.ID);
 
-                await ensureEdgeRelationship<Owns>(ide.ID, action.ID);
+                await ensureEdgeRelationship<Owns>(activity.ID, action.ID);
             }
             else
             {

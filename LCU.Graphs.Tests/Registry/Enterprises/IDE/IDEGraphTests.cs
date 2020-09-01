@@ -56,6 +56,127 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.IDE
 
         #region API Methods
         [TestMethod]
+        public async Task ListParentSections()
+        {
+            var sections = await ideGraph.ListSideBarSections(parentEntLookup, "Default", "core");
+
+            Assert.IsNotNull(sections);
+            Assert.AreNotEqual(0, sections.Count);
+
+            var actions = await ideGraph.ListSectionActions(parentEntLookup, "Default", "core", sections.First());
+
+            Assert.IsNotNull(actions);
+            Assert.AreNotEqual(0, actions.Count);
+        }
+
+        [TestMethod]
+        public async Task ManageSectionActions()
+        {
+            var expected = new Activity()
+            {
+                Icon = "dashboard",
+                Lookup = testActivity,
+                Sections = Array.Empty<string>(),
+                Title = "Dashboard"
+            };
+
+            var activity = await ideGraph.SaveActivity(mainEnt.EnterpriseLookup, mainEnt.EnterpriseLookup, expected);
+
+            Assert.IsNotNull(activity);
+            Assert.AreNotEqual(Guid.Empty, activity.ID);
+            Assert.AreEqual(expected.EnterpriseLookup, activity.EnterpriseLookup);
+            Assert.AreEqual(expected.Icon, activity.Icon);
+            Assert.AreEqual(expected.Lookup, activity.Lookup);
+            Assert.AreEqual(expected.Registry, activity.Registry);
+            Assert.AreEqual(expected.Title, activity.Title);
+            Assert.IsTrue(activity.Sections.IsNullOrEmpty());
+
+            var status = await ideGraph.AddSideBarSection(mainEnt.EnterpriseLookup, mainEnt.EnterpriseLookup, activity.Lookup, "NewSection");
+
+            Assert.IsNotNull(status);
+            Assert.IsTrue(status);
+
+            status = await ideGraph.AddSideBarSection(mainEnt.EnterpriseLookup, mainEnt.EnterpriseLookup, activity.Lookup, "NewSection2");
+
+            Assert.IsNotNull(status);
+            Assert.IsTrue(status);
+
+            var sections = await ideGraph.ListSideBarSections(mainEnt.EnterpriseLookup, mainEnt.EnterpriseLookup, activity.Lookup);
+
+            Assert.IsNotNull(sections);
+            Assert.AreEqual(2, sections.Count);
+            Assert.IsTrue(sections.Any(sec => sec == "NewSection2"));
+
+            status = await ideGraph.DeleteSideBarSection(mainEnt.EnterpriseLookup, mainEnt.EnterpriseLookup, activity.Lookup, "NewSection2");
+
+            Assert.IsNotNull(status);
+            Assert.IsTrue(status);
+
+            sections = await ideGraph.ListSideBarSections(mainEnt.EnterpriseLookup, mainEnt.EnterpriseLookup, activity.Lookup);
+
+            Assert.IsNotNull(sections);
+            Assert.AreEqual(1, sections.Count);
+            Assert.IsTrue(sections.Any(sec => sec == "NewSection"));
+
+            var expectedSecAct = new SectionAction()
+            {
+                Action = "Action",
+                Group = "Group",
+                Section = sections.First(),
+                Title = "Title",
+            };
+
+            var secAct = await ideGraph.SaveSectionAction(mainEnt.EnterpriseLookup, mainEnt.EnterpriseLookup, activity.Lookup, expectedSecAct);
+
+            Assert.IsNotNull(secAct);
+            Assert.AreEqual(expectedSecAct.Action, secAct.Action);
+            Assert.AreEqual(expectedSecAct.Group, secAct.Group);
+            Assert.AreEqual(expectedSecAct.Section, sections.First());
+            Assert.AreEqual(expectedSecAct.Title, secAct.Title);
+
+            var expectedSecAct2 = new SectionAction()
+            {
+                Action = "Action2",
+                Group = "Group2",
+                Section = sections.First(),
+                Title = "Title2",
+            };
+
+            secAct = await ideGraph.SaveSectionAction(mainEnt.EnterpriseLookup, mainEnt.EnterpriseLookup, activity.Lookup, expectedSecAct2);
+
+            Assert.IsNotNull(secAct);
+            Assert.AreEqual(expectedSecAct2.Action, secAct.Action);
+            Assert.AreEqual(expectedSecAct2.Group, secAct.Group);
+            Assert.AreEqual(expectedSecAct2.Section, sections.First());
+            Assert.AreEqual(expectedSecAct2.Title, secAct.Title);
+
+            var secActs = await ideGraph.ListSectionActions(mainEnt.EnterpriseLookup, mainEnt.EnterpriseLookup, activity.Lookup, sections.First());
+
+            Assert.IsNotNull(secActs);
+            Assert.AreEqual(2, secActs.Count);
+
+            status = await ideGraph.DeleteSectionAction(mainEnt.EnterpriseLookup, mainEnt.EnterpriseLookup, activity.Lookup, sections.First(),
+                secAct.Action, secAct.Group);
+
+            Assert.IsNotNull(status);
+            Assert.IsTrue(status);
+
+            secActs = await ideGraph.ListSectionActions(mainEnt.EnterpriseLookup, mainEnt.EnterpriseLookup, activity.Lookup, sections.First());
+
+            Assert.IsNotNull(secActs);
+            Assert.AreEqual(1, secActs.Count);
+
+            secAct = await ideGraph.GetSectionAction(mainEnt.EnterpriseLookup, mainEnt.EnterpriseLookup, activity.Lookup, sections.First(),
+                expectedSecAct.Action, expectedSecAct.Group);
+
+            Assert.IsNotNull(secAct);
+            Assert.AreEqual(expectedSecAct.Action, secAct.Action);
+            Assert.AreEqual(expectedSecAct.Group, secAct.Group);
+            Assert.AreEqual(expectedSecAct.Section, sections.First());
+            Assert.AreEqual(expectedSecAct.Title, secAct.Title);
+        }
+
+        [TestMethod]
         public async Task SaveListRemoveActivity()
         {
             var expected = new Activity()

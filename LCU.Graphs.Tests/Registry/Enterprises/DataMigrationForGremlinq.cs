@@ -1,6 +1,7 @@
 using ExRam.Gremlinq.Core;
 using LCU.Graphs.Registry.Enterprises;
 using LCU.Graphs.Registry.Enterprises.Apps;
+using LCU.Graphs.Registry.Enterprises.IDE;
 using LCU.Testing.Graphs;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -43,6 +44,23 @@ namespace LCU.Graphs.Tests.Registry.Enterprises
         #endregion
 
         #region API Methods
+        //[TestMethod]
+        public async Task MigrateActivity()
+        {
+            //	Update all Activities so that .Section becomes .Sections
+
+            var activities = await entGraph.g.V<Activity>().ToListAsync();
+
+            await activities.Each(async act =>
+            {
+                act.Sections = act.Section;
+
+                await entGraph.g.V<Activity>(act.ID)
+                    .Update(act)
+                    .FirstOrDefaultAsync();
+            });
+        }
+
         //[TestMethod]
         public async Task MigrateEntLookupValues()
         {
@@ -129,6 +147,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises
             //	Copy objects with Labels to new labels:
             //		- ModuleOption??
             //		- ModuleDisplay??
+            //      - SectionAction
 
             //  Maybe don't need this now
         }

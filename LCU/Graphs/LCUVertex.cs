@@ -79,5 +79,9 @@ namespace LCU.Graphs
         [Obsolete]
         [DataMember]
         public virtual string Redirect { get; set; }
+
+        [Obsolete]
+        [DataMember]
+        public virtual string[] Section { get; set; }
     }
 }
