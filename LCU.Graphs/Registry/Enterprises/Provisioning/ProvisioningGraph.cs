@@ -36,7 +36,7 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 
         public virtual async Task<EnvironmentSettings> GetEnvironmentSettings(string entLookup, string envLookup)
         {
-            return await g.V<Enterprise>()
+            var envSettings = await g.V<Enterprise>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
                 .Out<Consumes>()
@@ -49,6 +49,10 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
                 .FirstOrDefaultAsync();
+
+            envSettings.Settings.Metadata["EnvironmentLookup"] = envLookup;
+
+            return envSettings;
         }
 
         public virtual async Task<SourceControl> GetSourceControl(string entLookup, string envLookup)

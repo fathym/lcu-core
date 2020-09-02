@@ -1,7 +1,9 @@
 using ExRam.Gremlinq.Core;
+using Fathym;
 using LCU.Graphs.Registry.Enterprises;
 using LCU.Graphs.Registry.Enterprises.Apps;
 using LCU.Graphs.Registry.Enterprises.IDE;
+using LCU.Graphs.Registry.Enterprises.Provisioning;
 using LCU.Testing.Graphs;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -53,7 +55,10 @@ namespace LCU.Graphs.Tests.Registry.Enterprises
 
             await activities.Each(async act =>
             {
-                act.Sections = act.Section;
+                if (!act.Section.IsNullOrEmpty())
+                    act.Sections = act.Section;
+
+                act.Sections = act.Sections.Distinct().ToArray();
 
                 await entGraph.g.V<Activity>(act.ID)
                     .Update(act)
@@ -135,6 +140,38 @@ namespace LCU.Graphs.Tests.Registry.Enterprises
 
                 await entGraph.g.V<DAFApplication>(dafApp.ID)
                     .Update(dafApp)
+                    .FirstOrDefaultAsync();
+            });
+        }
+
+        //[TestMethod]
+        public async Task MigrateEnvironmentSettings()
+        {
+            //	Update all DAF Applications so that extra details are on the .Details property
+
+            var envSettings = await entGraph.g.V<EnvironmentSettings>().ToListAsync();
+
+            await envSettings.Each(async envSetting =>
+            {
+                envSetting.Settings = new
+                {
+                    AzureAppAuthKey = envSetting.AzureAppAuthKey,
+                    AzureAppID = envSetting.AzureAppID,
+                    AzureDevOpsProjectID = envSetting.AzureDevOpsProjectID,
+                    AzureFeedID = envSetting.AzureFeedID,
+                    AzureInfrastructureServiceEndpointID = envSetting.AzureInfrastructureServiceEndpointID,
+                    AzureLocation = envSetting.AzureLocation,
+                    AzureRegion = envSetting.AzureRegion,
+                    AzureSubID = envSetting.AzureSubID,
+                    AzureTenantID = envSetting.AzureTenantID,
+                    EnvironmentInfrastructureTemplate = envSetting.EnvironmentInfrastructureTemplate,
+                    EnvironmentLookup = envSetting.EnvironmentLookup,
+                    InfrastructureRepoName = envSetting.InfrastructureRepoName,
+                    OrganizationLookup = envSetting.OrganizationLookup
+                }.JSONConvert<MetadataModel>();
+
+                await entGraph.g.V<EnvironmentSettings>(envSetting.ID)
+                    .Update(envSetting)
                     .FirstOrDefaultAsync();
             });
         }

@@ -23,5 +23,14 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 		[DataMember]
 		public virtual string Title { get; set; }
+
+
+
+
+
+		// Migration properties
+		[Obsolete]
+		[DataMember]
+		public virtual string[] Section { get; set; }
 	}
 }
