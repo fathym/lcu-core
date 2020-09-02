@@ -163,6 +163,8 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 
             settings.Registry = entLookup;
 
+            settings.Settings.Metadata["EnvironmentLookup"] = envLookup;
+
             if (existingSettings == null)
             {
                 if (settings.ID.IsEmpty())
