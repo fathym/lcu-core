@@ -201,12 +201,16 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
             return Status.Success;
         }
 
-        public virtual async Task<Application> Save(Application application)
+        public virtual async Task<Application> Save(string entLookup, Application application)
         {
             var existingApp = await g.V<Application>(application.ID)
-                .Where(e => e.EnterpriseLookup == application.EnterpriseLookup)
-                .Where(e => e.Registry == application.EnterpriseLookup)
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
                 .FirstOrDefaultAsync();
+
+            application.EnterpriseLookup = entLookup;
+
+            application.Registry = entLookup;
 
             if (existingApp == null)
             {
@@ -216,27 +220,6 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
                 application = await g.AddV(application).FirstOrDefaultAsync();
             }
             else
-                //if (existingAppResult != null)
-                //{
-                //	var dropAccessRightsQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
-                //		.HasId(existingAppResult.ID)
-                //		.Properties<Vertex>("AccessRights").Drop();
-
-                //	await Submit(dropAccessRightsQuery);
-
-                //	var dropHostsQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
-                //		.HasId(existingAppResult.ID)
-                //		.Properties<Vertex>("Hosts").Drop();
-
-                //	await Submit(dropHostsQuery);
-
-                //	var dropLicensesQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
-                //		.HasId(existingAppResult.ID)
-                //		.Properties<Vertex>("Licenses").Drop();
-
-                //	await Submit(dropLicensesQuery);
-                //}
-
                 application = await g.V<Application>(existingApp.ID)
                         .Update(application)
                         .FirstOrDefaultAsync();

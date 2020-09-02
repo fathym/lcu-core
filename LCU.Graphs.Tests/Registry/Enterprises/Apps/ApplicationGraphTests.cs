@@ -49,7 +49,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
         {
             var expected = createTestApplication();
 
-            var app = await appGraph.Save(expected);
+            var app = await appGraph.Save(mainEnt.EnterpriseLookup, expected);
 
             Assert.IsNotNull(app);
             Assert.AreNotEqual(Guid.Empty, app.ID);
@@ -75,7 +75,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
 
             expected.Priority += expected.Priority;
 
-            app = await appGraph.Save(expected);
+            app = await appGraph.Save(mainEnt.EnterpriseLookup, expected);
 
             var apps = await appGraph.ListApplications(mainEnt.EnterpriseLookup);
 
@@ -99,7 +99,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
         [TestMethod]
         public async Task SaveListRemoveDAFApplication()
         {
-            var app = await appGraph.Save(createTestApplication());
+            var app = await appGraph.Save(mainEnt.EnterpriseLookup, createTestApplication());
 
             Assert.IsNotNull(app);
             Assert.AreNotEqual(Guid.Empty, app.ID);
@@ -162,9 +162,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
                 PathRegex = "*",
                 Priority = 100,
                 QueryRegex = "*",
-                Registry = mainEnt.EnterpriseLookup,
                 UserAgentRegex = "*",
-                EnterpriseLookup = mainEnt.EnterpriseLookup,
                 AccessRights = new string[] { accessRight },
                 Hosts = new string[] { mainHost },
                 Licenses = new string[] { license }
