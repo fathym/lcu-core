@@ -50,7 +50,8 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
                 .Where(e => e.Registry == entLookup)
                 .FirstOrDefaultAsync();
 
-            envSettings.Settings.Metadata["EnvironmentLookup"] = envLookup;
+            if (envSettings != null)
+                envSettings.Settings.Metadata["EnvironmentLookup"] = envLookup;
 
             return envSettings;
         }
