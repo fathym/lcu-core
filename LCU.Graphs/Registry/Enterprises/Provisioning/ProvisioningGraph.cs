@@ -1,6 +1,9 @@
-﻿using Fathym;
+﻿using ExRam.Gremlinq.Core;
+using Fathym;
 using Fathym.Business.Models;
 using Gremlin.Net.Process.Traversal;
+using LCU.Graphs.Registry.Enterprises.Edges;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,272 +11,223 @@ using System.Threading.Tasks;
 
 namespace LCU.Graphs.Registry.Enterprises.Provisioning
 {
-	public class ProvisioningGraph : LCUGraph, IProvisioningGraph
-	{
-		#region Properties
-		#endregion
+    public class ProvisioningGraph : LCUGraph
+    {
+        #region Properties
+        #endregion
 
-		#region Constructors
-		public ProvisioningGraph(GremlinClientPoolManager clientPool)
-			: base(clientPool)
-		{
-			ListProperties.Add("Hosts");
-		}
-		#endregion
+        #region Constructors
+        public ProvisioningGraph(LCUGraphConfig graphConfig, ILogger<ProvisioningGraph> logger)
+            : base(graphConfig, logger)
+        { }
+        #endregion
 
-		#region API Methods
-		public virtual async Task<LCUEnvironment> GetEnvironment(string apiKey, string lookup)
-		{
-			return await withG(async (client, g) =>
-			{
-				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Has("Lookup", lookup);
+        #region API Methods
+        public virtual async Task<Environment> GetEnvironment(string entLookup, string lookup)
+        {
+            return await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Out<Consumes>()
+                .OfType<Environment>()
+                .Where(e => e.Lookup == lookup)
+                .FirstOrDefaultAsync();
+        }
 
-				var result = await SubmitFirst<LCUEnvironment>(query);
+        public virtual async Task<EnvironmentSettings> GetEnvironmentSettings(string entLookup, string envLookup)
+        {
+            var envSettings = await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Out<Consumes>()
+                .OfType<Environment>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Lookup == envLookup)
+                .Out<Consumes>()
+                .OfType<EnvironmentSettings>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .FirstOrDefaultAsync();
 
-				return result;
-			}, apiKey);
-		}
+            if (envSettings != null)
+                envSettings.Settings.Metadata["EnvironmentLookup"] = envLookup;
 
-		public virtual async Task<MetadataModel> GetEnvironmentSettings(string apiKey, string envLookup)
-		{
-			return await withG(async (client, g) =>
-			{
-				var query = g.V().HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
-					.Has("Lookup", envLookup)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.EnvironmentVertexName + "Settings")
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey);
+            return envSettings;
+        }
 
-				var result = await SubmitFirst<MetadataModel>(query);
+        public virtual async Task<SourceControl> GetSourceControl(string entLookup, string envLookup)
+        {
+            var registry = $"{entLookup}|{envLookup}";
 
-				if (result != null)
-				{
-					if (result.Metadata.ContainsKey("Registry"))
-						result.Metadata.Remove("Registry");
+            return await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Out<Owns>()
+                .OfType<Environment>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Lookup == envLookup)
+                .Out<Owns>()
+                .OfType<SourceControl>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == registry)
+                .FirstOrDefaultAsync();
+        }
 
-					if (result.Metadata.ContainsKey("EnterpriseAPIKey"))
-						result.Metadata.Remove("EnterpriseAPIKey");
+        public virtual async Task<List<Environment>> ListEnvironments(string entLookup)
+        {
+            return await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Out<Owns>()
+                .OfType<Environment>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .ToListAsync();
+        }
 
-					if (result.Metadata.ContainsKey("id"))
-						result.Metadata.Remove("id");
-				}
+        public virtual async Task<Status> RemoveEnvironment(string entLookup, string envLookup)
+        {
+            await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Out<Owns>()
+                .OfType<Environment>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Lookup == envLookup)
+                .Drop();
 
-				return result;
-			}, apiKey);
-		}
+            return Status.Success;
+        }
 
-		public virtual async Task<SourceControl> GetSourceControl(string apiKey, string envLookup)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = $"{apiKey}|{envLookup}";
+        public virtual async Task<Status> RemoveEnvironmentSettings(string entLookup, string envLookup)
+        {
+            await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Out<Owns>()
+                .OfType<Environment>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Lookup == envLookup)
+                .OfType<EnvironmentSettings>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Drop();
 
-				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
-					.Out(EntGraphConstants.OwnsEdgeName)
-					.HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Has("Lookup", envLookup)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Out(EntGraphConstants.OwnsEdgeName)
-					.HasLabel(EntGraphConstants.SourceControlVertexName)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
-					.Has(EntGraphConstants.RegistryName, registry);
+            return Status.Success;
+        }
 
-				var result = await SubmitFirst<SourceControl>(query);
+        public virtual async Task<Environment> SaveEnvironment(string entLookup, Environment env)
+        {
+            var existingEnv = await GetEnvironment(entLookup, env.Lookup);
 
-				return result;
-			}, apiKey);
-		}
+            env.EnterpriseLookup = entLookup;
 
-		public virtual async Task<List<LCUEnvironment>> ListEnvironments(string apiKey)
-		{
-			return await withG(async (client, g) =>
-			{
-				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Order().By("Priority", Order.Decr);
+            env.Registry = entLookup;
 
-				var results = await Submit<LCUEnvironment>(query);
+            if (existingEnv == null)
+            {
+                if (env.ID.IsEmpty())
+                    env.ID = Guid.NewGuid();
 
-				return results.ToList();
-			}, apiKey);
-		}
+                env = await g.AddV(env).FirstOrDefaultAsync();
 
-		public virtual async Task<Status> RemoveEnvironment(string entApiKey, string envLookup)
-		{
-			return await withG(async (client, g) =>
-			{
-				var dropQuery = g.V().HasLabel(EntGraphConstants.EnvironmentVertexName)
-						.Has(EntGraphConstants.RegistryName, entApiKey)
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-						.Has("Lookup", envLookup)
-						.Drop();
+                var ent = await g.V<Enterprise>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == entLookup)
+                    .FirstOrDefaultAsync();
 
-				await Submit(dropQuery);
+                await ensureEdgeRelationship<Consumes>(ent.ID, env.ID);
 
-				return Status.Success;
-			});
-		}
+                await ensureEdgeRelationship<Manages>(ent.ID, env.ID);
 
-		public virtual async Task<Status> RemoveEnvironmentSettings(string apiKey, string envLookup)
-		{
-			return await withG(async (client, g) =>
-			{
-				var dropQuery = g.V().HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
-					.Has("Lookup", envLookup)
-					.Out(EntGraphConstants.OwnsEdgeName)
-					.HasLabel(EntGraphConstants.EnvironmentVertexName + "Settings")
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
-					.Drop();
+                await ensureEdgeRelationship<Owns>(ent.ID, env.ID);
+            }
+            else
+            {
+                env = await g.V<Environment>(existingEnv.ID)
+                    .Update(env)
+                    .FirstOrDefaultAsync();
+            }
 
-				await Submit(dropQuery);
+            return env;
+        }
 
-				return Status.Success;
-			}, apiKey);
-		}
+        public virtual async Task<EnvironmentSettings> SaveEnvironmentSettings(string entLookup, string envLookup, EnvironmentSettings settings)
+        {
+            var existingSettings = await GetEnvironmentSettings(entLookup, envLookup);
 
-		public virtual async Task<LCUEnvironment> SaveEnvironment(LCUEnvironment env)
-		{
-			return await withG(async (client, g) =>
-			{
-				var existingQuery = g.V().HasLabel(EntGraphConstants.EnvironmentVertexName)
-						.Has(EntGraphConstants.RegistryName, env.EnterpriseAPIKey)
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, env.EnterpriseAPIKey)
-						.Has("Lookup", env.Lookup);
+            settings.EnterpriseLookup = entLookup;
 
-				var existingEnvResult = await SubmitFirst<LCUEnvironment>(existingQuery);
+            settings.Registry = entLookup;
 
-				var query = existingEnvResult == null ?
-					g.AddV(EntGraphConstants.EnvironmentVertexName)
-					.Property(EntGraphConstants.RegistryName, env.EnterpriseAPIKey)
-					.Property(EntGraphConstants.EnterpriseAPIKeyName, env.EnterpriseAPIKey) : existingQuery;
+            settings.Settings.Metadata["EnvironmentLookup"] = envLookup;
 
-				query = query
-					.Property("Lookup", env.Lookup ?? "")
-					.Property("Name", env.Name ?? "");
+            if (existingSettings == null)
+            {
+                if (settings.ID.IsEmpty())
+                    settings.ID = Guid.NewGuid();
 
-				var envResult = await SubmitFirst<LCUEnvironment>(query);
+                settings = await g.AddV(settings).FirstOrDefaultAsync();
 
-				var entQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, env.EnterpriseAPIKey)
-					.Has("PrimaryAPIKey", env.EnterpriseAPIKey);
+                var env = await GetEnvironment(entLookup, envLookup);
 
-				var entResult = await SubmitFirst<Enterprise>(entQuery);
+                await ensureEdgeRelationship<Consumes>(env.ID, settings.ID);
 
-				await ensureEdgeRelationships(g, entResult.ID, envResult.ID);
+                await ensureEdgeRelationship<Manages>(env.ID, settings.ID);
 
-				return envResult;
-			});
-		}
+                await ensureEdgeRelationship<Owns>(env.ID, settings.ID);
+            }
+            else
+            {
+                settings = await g.V<EnvironmentSettings>(existingSettings.ID)
+                    .Update(settings)
+                    .FirstOrDefaultAsync();
+            }
 
-		public virtual async Task<MetadataModel> SaveEnvironmentSettings(string apiKey, string envLookup, MetadataModel settings)
-		{
-			return await withG(async (client, g) =>
-			{
-				var existingQuery = g.V().HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Has("Registry", apiKey)
-					.Has("EnterpriseAPIKey", apiKey)
-					.Has("Lookup", envLookup)
-					.Out(EntGraphConstants.OwnsEdgeName)
-					.HasLabel(EntGraphConstants.EnvironmentVertexName + "Settings")
-					.Has("Registry", apiKey)
-					.Has("EnterpriseAPIKey", apiKey);
+            return settings;
+        }
 
-				var existingEnvSetResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
+        public virtual async Task<SourceControl> SaveSourceControl(string entLookup, string envLookup, SourceControl sc)
+        {
+            var registry = $"{entLookup}|{envLookup}";
 
-				var query = existingEnvSetResult == null ?
-					g.AddV(EntGraphConstants.EnvironmentVertexName + "Settings")
-					.Property("EnterpriseAPIKey", apiKey)
-					.Property("Registry", apiKey) : existingQuery;
+            var existingSC = await GetSourceControl(entLookup, envLookup);
 
-				settings.Metadata.Each(md =>
-				{
-					query = query.Property(md.Key, md.Value?.ToString() ?? "");
-				});
+            sc.EnterpriseLookup = entLookup;
 
-				var envSetResult = await SubmitFirst<BusinessModel<Guid>>(query);
+            sc.Registry = entLookup;
 
-				var envQuery = g.V().HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Has("Registry", apiKey)
-					.Has("EnterpriseAPIKey", apiKey)
-					.Has("Lookup", envLookup);
+            if (existingSC == null)
+            {
+                if (sc.ID.IsEmpty())
+                    sc.ID = Guid.NewGuid();
 
-				var envResult = await SubmitFirst<LCUEnvironment>(envQuery);
+                sc = await g.AddV(sc).FirstOrDefaultAsync();
 
-				await ensureEdgeRelationships(g, envResult.ID, envSetResult.ID);
+                var env = await GetEnvironment(entLookup, envLookup);
 
-				return envSetResult;
-			}, apiKey);
-		}
+                await ensureEdgeRelationship<Consumes>(env.ID, sc.ID);
 
-		public virtual async Task<SourceControl> SaveSourceControl(string apiKey, string envLookup, SourceControl sc)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = $"{apiKey}|{envLookup}";
+                await ensureEdgeRelationship<Manages>(env.ID, sc.ID);
 
-				var existingQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
-					.Out(EntGraphConstants.OwnsEdgeName)
-					.HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Has("Lookup", envLookup)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Out(EntGraphConstants.OwnsEdgeName)
-					.HasLabel(EntGraphConstants.SourceControlVertexName)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
-					.Has(EntGraphConstants.RegistryName, registry);
+                await ensureEdgeRelationship<Owns>(env.ID, sc.ID);
+            }
+            else
+            {
+                sc = await g.V<SourceControl>(existingSC.ID)
+                    .Update(sc)
+                    .FirstOrDefaultAsync();
+            }
 
-				var existingSCResult = await SubmitFirst<SourceControl>(existingQuery);
+            return sc;
+        }
+        #endregion
 
-				var query = existingSCResult == null ?
-					g.AddV(EntGraphConstants.SourceControlVertexName)
-					.Property(EntGraphConstants.RegistryName, registry)
-					.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey) : existingQuery;
-
-				query = query
-					.Property("Name", sc.Name ?? "")
-					.Property("Organization", sc.Organization ?? "")
-					.Property("Repository", sc.Repository ?? "");
-
-				var scResult = await SubmitFirst<SourceControl>(query);
-
-				var envQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
-					.Out(EntGraphConstants.OwnsEdgeName)
-					.HasLabel(EntGraphConstants.EnvironmentVertexName)
-					.Has("Lookup", envLookup)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
-					.Has(EntGraphConstants.RegistryName, apiKey);
-
-				var envResult = await SubmitFirst<LCUEnvironment>(envQuery);
-
-				await ensureEdgeRelationships(g, envResult.ID, scResult.ID);
-
-				return scResult;
-			}, apiKey);
-		}
-		#endregion
-
-		#region Helpers
-		#endregion
-	}
+        #region Helpers
+        #endregion
+    }
 }

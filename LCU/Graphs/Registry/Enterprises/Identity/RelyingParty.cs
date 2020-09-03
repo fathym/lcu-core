@@ -9,18 +9,18 @@ using System.Threading.Tasks;
 namespace LCU.Graphs.Registry.Enterprises.Identity
 {
 	[DataContract]
-	public class RelyingParty : BusinessModel<Guid>
+	public class RelyingParty : LCUVertex //BusinessModel<Guid>
 	{
 		[DataMember]
-		public virtual List<AccessRight> AccessRights { get; set; }
+		public virtual AccessRight[] AccessRights { get; set; }
 
 		[DataMember]
-		public virtual List<AccessConfiguration> AccessConfigurations { get; set; }
+		public virtual AccessConfiguration[] AccessConfigurations { get; set; }
 
 		[DataMember]
 		public virtual string DefaultAccessConfigurationType { get; set; }
 
 		[DataMember]
-		public virtual List<Provider> Providers { get; set; }
+		public virtual Provider[] Providers { get; set; }
 	}
 }

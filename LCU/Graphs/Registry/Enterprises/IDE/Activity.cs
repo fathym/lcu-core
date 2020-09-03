@@ -7,7 +7,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 {
 	[Serializable]
 	[DataContract]
-	public class IDEActivity
+	public class Activity : LCUVertex
 	{
 		[DataMember]
 		public virtual string Icon { get; set; }
@@ -19,6 +19,18 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 		public virtual string Lookup { get; set; }
 
 		[DataMember]
+		public virtual string[] Sections { get; set; }
+
+		[DataMember]
 		public virtual string Title { get; set; }
+
+
+
+
+
+		// Migration properties
+		[Obsolete]
+		[DataMember]
+		public virtual string[] Section { get; set; }
 	}
 }

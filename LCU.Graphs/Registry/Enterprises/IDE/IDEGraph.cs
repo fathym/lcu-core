@@ -1,7 +1,9 @@
-﻿using Fathym;
+﻿using ExRam.Gremlinq.Core;
+using Fathym;
 using Fathym.Business.Models;
 using Gremlin.Net.Process.Traversal;
 using LCU.Graphs.Registry.Enterprises.DataFlows;
+using LCU.Graphs.Registry.Enterprises.Edges;
 using LCU.Logging;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
@@ -13,573 +15,388 @@ using System.Threading.Tasks;
 
 namespace LCU.Graphs.Registry.Enterprises.IDE
 {
-	public class IDEGraph : LCUGraph, IIDEGraph
-	{
-		#region Properties
-		protected readonly ILogger<IDEGraph> logger;
-		#endregion
-
-		#region Constructors
-		public IDEGraph(GremlinClientPoolManager clientPool, ILogger<IDEGraph> logger)
-			: base(clientPool)
-		{
-			ListProperties.Add("Hosts");
-
-			this.logger = logger;
-		}
-		#endregion
-
-		#region API Methods
-		public virtual async Task<Status> AddSideBarSection(string activityLookup, string section, string entApiKey, string container)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = $"{entApiKey}|{container}";
-
-				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.ActivityVertexName)
-					.Has("Lookup", activityLookup)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Property(Cardinality.List, "Section", section);
-
-				await Submit(query);
-
-				return Status.Success;
-			}, entApiKey);
-		}
-
-		public virtual async Task<Status> DeleteActivity(string activityLookup, string entApiKey, string container)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = $"{entApiKey}|{container}";
-
-				var dropActivityQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Out(EntGraphConstants.ManagesEdgeName)
-					.HasLabel(EntGraphConstants.ActivityVertexName)
-					.Has("Lookup", activityLookup)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Drop();
-
-				await Submit(dropActivityQuery);
-
-				return Status.Success;
-			}, entApiKey);
-		}
-
-		public virtual async Task<Status> DeleteLCU(string lcuLookup, string entApiKey, string container)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = $"{entApiKey}|{container}";
-
-				var dropActivityQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Out(EntGraphConstants.ManagesEdgeName)
-					.HasLabel(EntGraphConstants.LCUConfigVertexName)
-					.Has("Lookup", lcuLookup)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Drop();
-
-				await Submit(dropActivityQuery);
-
-				return Status.Success;
-			}, entApiKey);
-		}
-
-		public virtual async Task<Status> DeleteSectionAction(string activityLookup, string section, string action, string group, string entApiKey, string container)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = $"{entApiKey}|{container}";
-
-				var dropActivityQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Out(EntGraphConstants.ManagesEdgeName)
-					.HasLabel(EntGraphConstants.ActivityVertexName)
-					.Has("Lookup", activityLookup)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Out(EntGraphConstants.ManagesEdgeName)
-					.HasLabel(EntGraphConstants.SectionActionVertexName)
-					.Has("Action", action)
-					.Has("Group", group)
-					.Has("Section", section)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Drop();
-
-				await Submit(dropActivityQuery);
-
-				return Status.Success;
-			}, entApiKey);
-		}
-
-		public virtual async Task<Status> DeleteSideBarSection(string activityLookup, string section, string entApiKey, string container)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = $"{entApiKey}|{container}";
-
-				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.ActivityVertexName)
-					.Has("Lookup", activityLookup)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Properties<string>("Section")
-					.HasValue(section)
-					.Drop();
-
-				await Submit(query);
-
-				return Status.Success;
-			}, entApiKey);
-		}
-
-		public virtual async Task<IDEContainerSettings> EnsureIDESettings(IDEContainerSettings settings)
-		{
-			return await withG(async (client, g) =>
-			{
-				var existingIdeQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", settings.Container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, settings.EnterpriseAPIKey)
-					.Has(EntGraphConstants.RegistryName, settings.EnterpriseAPIKey);
-
-				var ideResult = await SubmitFirst<IDEContainerSettings>(existingIdeQuery);
-
-				if (ideResult == null)
-				{
-					var ideQuery = g.AddV(EntGraphConstants.IDEContainerVertexName)
-						.Property("Container", settings.Container)
-						.Property(EntGraphConstants.RegistryName, settings.EnterpriseAPIKey)
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, settings.EnterpriseAPIKey);
-
-					ideResult = await SubmitFirst<IDEContainerSettings>(ideQuery);
-				}
-
-				return ideResult;
-			});
-		}
-
-		public virtual async Task<IDEActivity> GetActivity(string activityLookup, string entApiKey, string container)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = $"{entApiKey}|{container}";
-
-				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.ActivityVertexName)
-					.Has("Lookup", activityLookup)
-					.Has(EntGraphConstants.RegistryName, registry);
-
-				var result = await SubmitFirst<IDEActivity>(query);
-
-				return result;
-			}, entApiKey);
-		}
-
-		public virtual async Task<LowCodeUnitSetupConfig> GetLCU(string lcuLookup, string entApiKey, string container)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = $"{entApiKey}|{container}";
-
-				var dropActivityQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Out(EntGraphConstants.ManagesEdgeName)
-					.HasLabel(EntGraphConstants.LCUConfigVertexName)
-					.Has("Lookup", lcuLookup)
-					.Has(EntGraphConstants.RegistryName, registry);
-
-				var lcu = await SubmitFirst<LowCodeUnitSetupConfig>(dropActivityQuery);
-
-				return lcu;
-			}, entApiKey);
-		}
-
-		public virtual async Task<ModulePackSetup> GetModulePackSetup(string lcuLookup, string entApiKey, string container)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = $"{entApiKey}|{container}";
-
-				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.LCUConfigVertexName)
-					.Has("Lookup", lcuLookup)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Values<string>("Modules");
-
-				var results = await Submit<string>(query);
-
-				var mps = results?.FirstOrDefault()?.FromJSON<ModulePackSetup>();
-
-				return mps?.Pack != null ? mps : null;
-			}, entApiKey);
-		}
-
-		public virtual async Task<IdeSettingsConfigSolution> GetLCUSolution(string lcuLookup, string solution, string entApiKey, string container)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = $"{entApiKey}|{container}";
-
-				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.LCUConfigVertexName)
-					.Has("Lookup", lcuLookup)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Values<string>("Solutions");
-
-				var results = await Submit<string>(query);
-
-				var slnCfgs = results?.FirstOrDefault()?.FromJSON<List<IdeSettingsConfigSolution>>();
-
-				return slnCfgs.FirstOrDefault(sc => sc.Name == solution);
-			}, entApiKey);
-		}
-
-		public virtual async Task<IDESideBarAction> GetSectionAction(string activityLookup, string section, string action, string group, string entApiKey, string container)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = $"{entApiKey}|{container}";
-
-				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.ActivityVertexName)
-					.Has("Lookup", activityLookup)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.SectionActionVertexName)
-					.Has("Section", section)
-					.Has("Action", action)
-					.Has("Group", group)
-					.Has(EntGraphConstants.RegistryName, registry);
-
-				var result = await SubmitFirst<IDESideBarAction>(query);
-
-				return result;
-			}, entApiKey);
-		}
-
-		public virtual async Task<List<IDEActivity>> ListActivities(string entApiKey, string container)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = $"{entApiKey}|{container}";
-
-				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.ActivityVertexName);
-
-				var results = await Submit<IDEActivity>(query);
-
-				return results?.ToList();
-			}, entApiKey);
-		}
-
-		public virtual async Task<List<ModulePackSetup>> ListModulePackSetups(string entApiKey, string container)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = $"{entApiKey}|{container}";
-
-				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.LCUConfigVertexName)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Values<string>("Modules");
-
-				var results = await Submit<string>(query);
-
-				return results?.Select(r => r.FromJSON<ModulePackSetup>()).Where(mps => mps.Pack != null).ToList();
-			}, entApiKey);
-		}
-
-		public virtual async Task<List<IdeSettingsConfigSolution>> ListLCUSolutions(string lcuLookup, string entApiKey, string container)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = $"{entApiKey}|{container}";
-
-				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.LCUConfigVertexName)
-					.Has("Lookup", lcuLookup)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Values<string>("Solutions");
-
-				var results = await Submit<string>(query);
-
-				return results?.FirstOrDefault()?.FromJSON<List<IdeSettingsConfigSolution>>();
-			}, entApiKey);
-		}
-
-		public virtual async Task<List<LowCodeUnitSetupConfig>> ListLCUs(string entApiKey, string container)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = $"{entApiKey}|{container}";
-
-				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.LCUConfigVertexName);
-
-				var results = await Submit<LowCodeUnitSetupConfig>(query);
-
-				return results?.ToList();
-			}, entApiKey);
-		}
-
-		public virtual async Task<List<IDESideBarAction>> ListSectionActions(string activityLookup, string section, string entApiKey, string container)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = $"{entApiKey}|{container}";
-
-				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.ActivityVertexName)
-					.Has("Lookup", activityLookup)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.SectionActionVertexName)
-					.Has("Section", section)
-					.Has(EntGraphConstants.RegistryName, registry);
-
-				var results = await Submit<IDESideBarAction>(query);
-
-				return results?.ToList();
-			}, entApiKey);
-		}
-
-		public virtual async Task<List<string>> ListSideBarSections(string activityLookup, string entApiKey, string container)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = $"{entApiKey}|{container}";
-
-				var query = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.ActivityVertexName)
-					.Has("Lookup", activityLookup)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Values<string>("Section")
-					.Dedup();
-
-				var results = await Submit<string>(query);
-
-				return results.ToList();
-
-				// var results = await Submit<BusinessModel<Guid>>(query);
-
-				// var result = results.FirstOrDefault();
-
-				// var sections = result?.Metadata?["Section"];
-
-				// return sections is JArray ? sections.ToObject<List<string>>() : sections != null ? new List<string>() { sections.ToObject<string>() } : null;
-			}, entApiKey);
-		}
-
-		public virtual async Task<IDEActivity> SaveActivity(IDEActivity activity, string entApiKey, string container)
-		{
-			return await withG(async (client, g) =>
-			{
-				var ideQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey);
-
-				var ideResult = await SubmitFirst<IDEContainerSettings>(ideQuery);
-
-				var registry = $"{entApiKey}|{container}";
-
-				var existingActivityQuery = g.V(ideResult.ID)
-						.Out(EntGraphConstants.ConsumesEdgeName)
-						.HasLabel(EntGraphConstants.ActivityVertexName)
-						.Has("Lookup", activity.Lookup)
-						.Has(EntGraphConstants.RegistryName, registry);
-
-				var existingActivityResult = await SubmitFirst<BusinessModel<Guid>>(existingActivityQuery);
-
-				var saveQuery = existingActivityResult != null ? g.V(existingActivityResult.ID) :
-					g.AddV(EntGraphConstants.ActivityVertexName)
-						.Property("Lookup", activity.Lookup)
-						.Property(EntGraphConstants.RegistryName, registry)
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
-
-				saveQuery = saveQuery
-					.Property("Title", activity.Title)
-					.Property("Icon", activity.Icon)
-					.Property("IconSet", activity.IconSet ?? "");
-
-				var activityResult = await SubmitFirst<BusinessModel<Guid>>(saveQuery);
-
-				await ensureEdgeRelationships(g, ideResult.ID, activityResult.ID);
-
-				return activityResult.JSONConvert<IDEActivity>();
-			}, entApiKey);
-		}
-
-		public virtual async Task<LowCodeUnitSetupConfig> SaveLCU(LowCodeUnitSetupConfig lcu, string entApiKey, string container)
-		{
-			return await withG(async (client, g) =>
-			{
-				var ideQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey);
-
-				var ideResult = await SubmitFirst<IDEContainerSettings>(ideQuery);
-
-				var registry = $"{entApiKey}|{container}";
-
-				var existingLCUQuery = g.V(ideResult.ID)
-						.Out(EntGraphConstants.ConsumesEdgeName)
-						.HasLabel(EntGraphConstants.LCUConfigVertexName)
-						.Has("Lookup", lcu.Lookup)
-						.Has(EntGraphConstants.RegistryName, registry)
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
-
-				var existingLCUResult = await SubmitFirst<BusinessModel<Guid>>(existingLCUQuery);
-
-				var saveQuery = existingLCUResult != null ? g.V(existingLCUResult.ID) :
-					g.AddV(EntGraphConstants.LCUConfigVertexName)
-						.Property("Lookup", lcu.Lookup)
-						.Property(EntGraphConstants.RegistryName, registry)
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
-
-				saveQuery = saveQuery
-					.Property("NPMPackage", lcu.NPMPackage)
-					.Property("PackageVersion", lcu.PackageVersion);
-
-				var lcuResult = await SubmitFirst<BusinessModel<Guid>>(saveQuery);
-
-				await ensureEdgeRelationships(g, ideResult.ID, lcuResult.ID);
-
-				return lcuResult.JSONConvert<LowCodeUnitSetupConfig>();
-			}, entApiKey);
-		}
-
-		public virtual async Task<Status> SaveLCUCapabilities(string lcuLookup, List<string> files, 
-			List<IdeSettingsConfigSolution> solutions, ModulePackSetup modules, string entApiKey, string container)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = $"{entApiKey}|{container}";
-
-				var saveQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.LCUConfigVertexName)
-					.Has("Lookup", lcuLookup)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Property("CapabilityFiles", files)
-					.Property("Modules", modules)
-					.Property("Solutions", solutions);
-
-				var lcuResult = await SubmitFirst<BusinessModel<Guid>>(saveQuery);
-
-				return Status.Success;
-			}, entApiKey);
-		}
-
-		public virtual async Task<IDESideBarAction> SaveSectionAction(string activityLookup, IDESideBarAction action, string entApiKey, string container)
-		{
-			return await base.withG((async (client, g) =>
-			{
-				var registry = $"{entApiKey}|{container}";
-
-				var activityQuery = g.V().HasLabel(EntGraphConstants.IDEContainerVertexName)
-					.Has("Container", container)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.ActivityVertexName)
-					.Has("Lookup", activityLookup)
-					.Has(EntGraphConstants.RegistryName, registry);
-
-				var activityResult = await SubmitFirst<BusinessModel<Guid>>(activityQuery);
-
-				var existingSecActQuery = g.V(activityResult.ID)
-						.Out(EntGraphConstants.ConsumesEdgeName)
-						.HasLabel(EntGraphConstants.SectionActionVertexName)
-						.Has("Action", action.Action)
-						.Has("Group", action.Group)
-						.Has("Section", action.Section)
-						.Has(EntGraphConstants.RegistryName, registry);
-
-				var existingSecActResult = await SubmitFirst<BusinessModel<Guid>>(existingSecActQuery);
-
-				var saveQuery = existingSecActResult != null ? g.V(existingSecActResult.ID) :
-					g.AddV(EntGraphConstants.SectionActionVertexName)
-						.Property("Action", (object)action.Action)
-						.Property("Group", (object)action.Group)
-						.Property("Section", action.Section)
-						.Property(EntGraphConstants.RegistryName, registry)
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
-
-				saveQuery = saveQuery
-					.Property("Title", action.Title);
-
-				var secActResult = await SubmitFirst<BusinessModel<Guid>>(saveQuery);
-
-				await ensureEdgeRelationships(g, activityResult.ID, secActResult.ID);
-
-				return secActResult.JSONConvert<IDESideBarAction>();
-			}), entApiKey);
-		}
-		#endregion
-
-		#region Helpers
-		#endregion
-	}
+    public class IDEGraph : LCUGraph
+    {
+        #region Properties
+        #endregion
+
+        #region Constructors
+        public IDEGraph(LCUGraphConfig graphConfig, ILogger<IDEGraph> logger)
+            : base(graphConfig, logger)
+        { }
+        #endregion
+
+        #region API Methods
+        public virtual async Task<Status> AddSideBarSection(string entLookup, string container, string activityLookup, string section)
+        {
+            var registry = $"{entLookup}|{container}";
+
+            var activity = await g.V<IDEContainer>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Container == container)
+                .Out<Consumes>()
+                .OfType<Activity>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == registry)
+                .Where(e => e.Lookup == activityLookup)
+                .FirstOrDefaultAsync();
+
+            if (activity != null)
+            {
+                activity.Sections = activity.Sections.AddItem(section).Distinct().ToArray();
+
+                activity = await g.V<Activity>(activity.ID)
+                    .Update(activity)
+                    .FirstOrDefaultAsync();
+            }
+
+            return activity != null;
+        }
+
+        public virtual async Task<Status> DeleteActivity(string entLookup, string container, string activityLookup)
+        {
+            var act = await GetActivity(entLookup, container, activityLookup);
+
+            if (act != null)
+            {
+                await g.V<Activity>(act.ID)
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Drop();
+
+                return Status.Success;
+            }
+            else
+            {
+                return Status.GeneralError.Clone("Unable to locate data flow by that enterprise lookup");
+            }
+        }
+
+        public virtual async Task<Status> DeleteLCU(string entLookup, string container, string lcuLookup)
+        {
+            var lcu = await GetLCU(entLookup, container, lcuLookup);
+
+            if (lcu != null)
+            {
+                await g.V<LCUConfig>(lcu.ID)
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Drop();
+
+                return Status.Success;
+            }
+            else
+            {
+                return Status.GeneralError.Clone("Unable to locate data flow by that enterprise lookup");
+            }
+        }
+
+        public virtual async Task<Status> DeleteSectionAction(string entLookup, string container, string activityLookup, string section, string action, string group)
+        {
+            var secAct = await GetSectionAction(entLookup, container, activityLookup, section, action, group);
+
+            if (secAct != null)
+            {
+                await g.V<SectionAction>(secAct.ID)
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Drop();
+
+                return Status.Success;
+            }
+            else
+            {
+                return Status.GeneralError.Clone("Unable to locate data flow by that enterprise lookup");
+            }
+        }
+
+        public virtual async Task<Status> DeleteSideBarSection(string entLookup, string container, string activityLookup, string section)
+        {
+            var registry = $"{entLookup}|{container}";
+
+            var activity = await g.V<IDEContainer>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Container == container)
+                .Out<Consumes>()
+                .OfType<Activity>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == registry)
+                .Where(e => e.Lookup == activityLookup)
+                .FirstOrDefaultAsync();
+
+            if (activity != null)
+            {
+                activity.Sections = activity.Sections.RemoveItem(section).Distinct().ToArray();
+
+                activity = await g.V<Activity>(activity.ID)
+                    .Update(activity)
+                    .FirstOrDefaultAsync();
+            }
+
+            return activity != null;
+        }
+
+        public virtual async Task<IDEContainer> EnsureIDESettings(string entLookup, IDEContainer container)
+        {
+            var existingContainer = await g.V<IDEContainer>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Container == container.Container)
+                .FirstOrDefaultAsync();
+
+            container.EnterpriseLookup = entLookup;
+
+            container.Registry = entLookup;
+
+            if (existingContainer == null)
+            {
+                if (container.ID.IsEmpty())
+                    container.ID = Guid.NewGuid();
+
+                container = await g.AddV(container).FirstOrDefaultAsync();
+            }
+            else
+            {
+                container = await g.V<IDEContainer>(existingContainer.ID)
+                    .Update(container)
+                    .FirstOrDefaultAsync();
+            }
+
+            return container;
+        }
+
+        public virtual async Task<Activity> GetActivity(string entLookup, string container, string activityLookup)
+        {
+            var registry = $"{entLookup}|{container}";
+
+            return await g.V<IDEContainer>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Container == container)
+                .Out<Consumes>()
+                .OfType<Activity>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == registry)
+                .Where(e => e.Lookup == activityLookup)
+                .FirstOrDefaultAsync();
+        }
+
+        public virtual async Task<LCUConfig> GetLCU(string entLookup, string container, string lcuLookup)
+        {
+            var registry = $"{entLookup}|{container}";
+
+            return await g.V<IDEContainer>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Container == container)
+                .Out<Manages>()
+                .OfType<LCUConfig>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == registry)
+                .Where(e => e.Lookup == lcuLookup)
+                .FirstOrDefaultAsync();
+        }
+
+        public virtual async Task<SectionAction> GetSectionAction(string entLookup, string container, string activityLookup, string section, string action, string group)
+        {
+            var registry = $"{entLookup}|{container}";
+
+            return await g.V<IDEContainer>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Container == container)
+                .Out<Consumes>()
+                .OfType<Activity>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == registry)
+                .Where(e => e.Lookup == activityLookup)
+                .Out<Consumes>()
+                .OfType<SectionAction>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == registry)
+                .Where(e => e.Section == section)
+                .Where(e => e.Group == group)
+                .Where(e => e.Action == action)
+                .FirstOrDefaultAsync();
+        }
+
+        public virtual async Task<List<Activity>> ListActivities(string entLookup, string container)
+        {
+            var registry = $"{entLookup}|{container}";
+
+            return await g.V<IDEContainer>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Container == container)
+                .Out<Consumes>()
+                .OfType<Activity>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == registry)
+                .ToListAsync();
+        }
+
+        public virtual async Task<List<LCUConfig>> ListLCUs(string entLookup, string container)
+        {
+            var registry = $"{entLookup}|{container}";
+
+            return await g.V<IDEContainer>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Container == container)
+                .Out<Manages>()
+                .OfType<LCUConfig>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == registry)
+                .ToListAsync();
+        }
+
+        public virtual async Task<List<SectionAction>> ListSectionActions(string entLookup, string container, string activityLookup, string section)
+        {
+            var registry = $"{entLookup}|{container}";
+
+            return await g.V<IDEContainer>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Container == container)
+                .Out<Consumes>()
+                .OfType<Activity>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == registry)
+                .Where(e => e.Lookup == activityLookup)
+                .Out<Consumes>()
+                .OfType<SectionAction>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == registry)
+                .Where(e => e.Section == section)
+                .ToListAsync();
+        }
+
+        public virtual async Task<List<string>> ListSideBarSections(string entLookup, string container, string activityLookup)
+        {
+            var registry = $"{entLookup}|{container}";
+
+            var activity = await g.V<IDEContainer>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Container == container)
+                .Out<Consumes>()
+                .OfType<Activity>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == registry)
+                .Where(e => e.Lookup == activityLookup)
+                .FirstOrDefaultAsync();
+
+            return activity?.Sections.ToList();
+        }
+
+        public virtual async Task<Activity> SaveActivity(string entLookup, string container, Activity activity)
+        {
+            var existingAct = await GetActivity(entLookup, container, activity.Lookup);
+
+            activity.EnterpriseLookup = entLookup;
+
+            activity.Registry = $"{entLookup}|{container}";
+
+            if (existingAct == null)
+            {
+                if (activity.ID.IsEmpty())
+                    activity.ID = Guid.NewGuid();
+
+                activity = await g.AddV(activity).FirstOrDefaultAsync();
+
+                var ide = await g.V<IDEContainer>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == entLookup)
+                    .Where(e => e.Container == container)
+                    .FirstOrDefaultAsync();
+
+                await ensureEdgeRelationship<Consumes>(ide.ID, activity.ID);
+
+                await ensureEdgeRelationship<Manages>(ide.ID, activity.ID);
+
+                await ensureEdgeRelationship<Owns>(ide.ID, activity.ID);
+            }
+            else
+            {
+                activity = await g.V<Activity>(existingAct.ID)
+                    .Update(activity)
+                    .FirstOrDefaultAsync();
+            }
+
+            return activity;
+        }
+
+        public virtual async Task<LCUConfig> SaveLCU(string entLookup, string container, LCUConfig lcu)
+        {
+            var existingLCU = await GetLCU(entLookup, container, lcu.Lookup);
+
+            lcu.EnterpriseLookup = entLookup;
+
+            lcu.Registry = $"{entLookup}|{container}";
+
+            if (existingLCU == null)
+            {
+                if (lcu.ID.IsEmpty())
+                    lcu.ID = Guid.NewGuid();
+
+                lcu = await g.AddV(lcu).FirstOrDefaultAsync();
+
+                var ide = await g.V<IDEContainer>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == entLookup)
+                    .Where(e => e.Container == container)
+                    .FirstOrDefaultAsync();
+
+                await ensureEdgeRelationship<Consumes>(ide.ID, lcu.ID);
+
+                await ensureEdgeRelationship<Manages>(ide.ID, lcu.ID);
+
+                await ensureEdgeRelationship<Owns>(ide.ID, lcu.ID);
+            }
+            else
+            {
+                lcu = await g.V<LCUConfig>(existingLCU.ID)
+                    .Update(lcu)
+                    .FirstOrDefaultAsync();
+            }
+
+            return lcu;
+        }
+
+        public virtual async Task<SectionAction> SaveSectionAction(string entLookup, string container, string activityLookup, SectionAction action)
+        {
+            var existingAct = await GetSectionAction(entLookup, container, activityLookup, action.Section, action.Action, action.Group);
+
+            action.EnterpriseLookup = entLookup;
+
+            action.Registry = $"{entLookup}|{container}";
+
+            if (existingAct == null)
+            {
+                if (action.ID.IsEmpty())
+                    action.ID = Guid.NewGuid();
+
+                action = await g.AddV(action).FirstOrDefaultAsync();
+
+                var activity = await GetActivity(entLookup, container, activityLookup);
+
+                await ensureEdgeRelationship<Consumes>(activity.ID, action.ID);
+
+                await ensureEdgeRelationship<Manages>(activity.ID, action.ID);
+
+                await ensureEdgeRelationship<Owns>(activity.ID, action.ID);
+            }
+            else
+            {
+                action = await g.V<SectionAction>(existingAct.ID)
+                    .Update(action)
+                    .FirstOrDefaultAsync();
+            }
+
+            return action;
+        }
+        #endregion
+
+        #region Helpers
+        #endregion
+    }
 }

@@ -1,4 +1,5 @@
-﻿using Fathym.Business.Models;
+﻿using Fathym;
+using Fathym.Business.Models;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -7,19 +8,19 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 {
     [Serializable]
     [DataContract]
-    public class LicenseAccessToken : BusinessModel<Guid>
+    public class LicenseAccessToken : LCUVertex  //BusinessModel<Guid>
     {
         [DataMember]
-        public DateTime AccessStartDate { get; set; }
+        public DateTimeOffset AccessStartDate { get; set; }
 
         [DataMember]
-        public DateTime ExpirationDate { get; set; }
+        public MetadataModel Details { get; set; }
 
         [DataMember]
-        public string EnterpriseAPIKey { get; set; }
+        public DateTimeOffset ExpirationDate { get; set; }
 
         [DataMember]
-        public Fathym.Status EnterpriseOverride { get; set; }
+        public bool EnterpriseOverride { get; set; }
 
         [DataMember]
         public bool IsLocked { get; set; }

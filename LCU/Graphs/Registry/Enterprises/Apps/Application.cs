@@ -7,10 +7,10 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 {
 	[Serializable]
 	[DataContract]
-	public class Application : BusinessModel<Guid>
+	public class Application : LCUVertex
 	{
 		[DataMember]
-		public virtual List<string> AccessRights { get; set; }
+		public virtual string[] AccessRights { get; set; }
 
 		[DataMember]
 		public virtual string Container { get; set; }
@@ -19,10 +19,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 		public virtual string Description { get; set; }
 
 		[DataMember]
-		public virtual string EnterpriseAPIKey { get; set; }
-
-		[DataMember]
-		public virtual List<string> Hosts { get; set; }
+		public virtual string[] Hosts { get; set; }
 
 		[DataMember]
 		public virtual bool IsPrivate { get; set; }
@@ -31,7 +28,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 		public virtual bool IsReadOnly { get; set; }
 
 		[DataMember]
-		public virtual List<string> Licenses { get; set; }
+		public virtual string[] Licenses { get; set; }
 
 		[DataMember]
 		public virtual string Name { get; set; }

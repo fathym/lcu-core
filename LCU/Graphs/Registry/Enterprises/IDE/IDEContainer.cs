@@ -8,12 +8,9 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 {
 	[Serializable]
 	[DataContract]
-	public class IDEContainerSettings : BusinessModel<Guid>
+	public class IDEContainer : LCUVertex  //BusinessModel<Guid>
 	{
 		[DataMember]
 		public virtual string Container { get; set; }
-
-		[DataMember]
-		public virtual string EnterpriseAPIKey { get; set; }
 	}
 }

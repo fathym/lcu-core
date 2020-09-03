@@ -1,10 +1,14 @@
-﻿using Gremlin.Net.CosmosDb;
-using Gremlin.Net.CosmosDb.Serialization;
-using Gremlin.Net.Driver;
-using Gremlin.Net.Driver.Remote;
-using Gremlin.Net.Process.Traversal;
-using Gremlin.Net.Structure.IO.GraphSON;
+﻿using ExRam.Gremlinq.Core;
+using ExRam.Gremlinq.Core.AspNet;
+using ExRam.Gremlinq.Providers.WebSocket;
+using Fathym;
+using Gremlin.Net.Structure;
 using LCU.Graphs.Registry.Enterprises;
+using LCU.Graphs.Registry.Enterprises.Apps;
+using LCU.Graphs.Registry.Enterprises.DataFlows;
+using LCU.Graphs.Registry.Enterprises.IDE;
+using LCU.Graphs.Registry.Enterprises.Identity;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -14,196 +18,109 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
+using static ExRam.Gremlinq.Core.GremlinQuerySource;
+
 namespace LCU.Graphs
 {
-	//	TODO:  Investigate shift to https://github.com/ExRam/ExRam.Gremlinq or another
-	public class LCUGraph : ILCUGraph
-	{
-		#region Fields
-		protected readonly GremlinClientPoolManager clientPool;
-		#endregion
+    public class LCUGraph
+    {
+        #region Fields
+        #endregion
 
-		#region Properties
-		public virtual List<string> ListProperties { get; set; }
-		#endregion
+        #region Properties
+        public virtual IGremlinQuerySource g { get; protected set; }
+        #endregion
 
-		#region Constructors
-		public LCUGraph(GremlinClientPoolManager clientPool)
-		{
-			ListProperties = new List<string>();
+        #region Constructors
+        public LCUGraph(LCUGraphConfig graphConfig, ILogger logger)
+        {
+            g = GremlinQuerySource.g.ConfigureEnvironment(env =>
+            {
+                var graphModel = GraphModel.FromBaseTypes<LCUVertex, LCUEdge>(lookup =>
+                {
+                    return lookup.IncludeAssembliesOfBaseTypes();
+                });
 
-			this.clientPool = clientPool;
-		}
-		#endregion
+                return env
+                    .UseLogger(logger)
+                    .UseModel(graphModel.ConfigureProperties(model =>
+                    {
+                        return model
+                            .ConfigureElement<LCUVertex>(conf =>
+                            {
+                                return conf
+                                    .IgnoreOnUpdate(x => x.Registry);
+                            })
+                            .ConfigureCustomSerializers(cs =>
+                            {
+                                cs.Add(new GenericGraphElementPropertySerializer<MetadataModel>());
 
-		#region API Methods
-		public virtual async Task Submit(ITraversal traversal)
-		{
-			await Submit<dynamic>(traversal);
-		}
+                                cs.Add(new GenericGraphElementPropertySerializer<Audit>());
 
-		public virtual async Task Submit(string script)
-		{
-			await Submit<dynamic>(script);
-		}
+                                cs.Add(new GenericGraphElementPropertySerializer<DataFlowOutput>());
 
-		public virtual async Task<ResultSet<T>> Submit<T>(ITraversal traversal)
-		{
-			return await Submit<T>(traversal.ToGremlinQuery());
-		}
+                                cs.Add(new GenericGraphElementPropertySerializer<ModulePackSetup>());
 
-		public virtual async Task<ResultSet<T>> Submit<T>(string script)
-		{
-			return await withClient(async (client) =>
-			{
-				var res = await client.SubmitAsync<JToken>(script);
+                                cs.Add(new GenericGraphElementPropertySerializer<IdeSettingsConfigSolution[]>());
 
-				var vals = res?.SelectMany(ta =>
-				{
-					var tokenArray = ta as JArray;
+                                cs.Add(new GenericGraphElementPropertySerializer<AccessConfiguration[]>());
 
-					return tokenArray.Select(token =>
-					{
-						if (token.Type == JTokenType.Object)
-						{
-							var newVal = mapGraphObjectProperties(token);
+                                cs.Add(new GenericGraphElementPropertySerializer<AccessRight[]>());
 
-							return newVal.JSONConvert<T>();
-						}
-						else
-						{
-							return token.ToObject<T>();
-						}
-					});
-				})?.ToList();
+                                cs.Add(new GenericGraphElementPropertySerializer<Provider[]>());
 
-				return new ResultSet<T>(vals, res.StatusAttributes);
-			});
-		}
+                                return cs;
+                            });
+                    }))
+                    .UseCosmosDb(builder =>
+                    {
+                        return builder
+                            .At(new Uri(graphConfig.Host), graphConfig.Database, graphConfig.Graph)
+                            .AuthenticateBy(graphConfig.APIKey)
+                            .ConfigureWebSocket(builder =>
+                            {
+                                return builder;
+                            });
+                    });
+            });
+        }
+        #endregion
 
-		public virtual async Task<T> SubmitFirst<T>(ITraversal traversal)
-			where T : class
-		{
-			var resSet = await Submit<T>(traversal.ToGremlinQuery());
+        #region API Methods
+        #endregion
 
-			return resSet?.FirstOrDefault();
-		}
-		#endregion
+        #region Helpers
+        protected virtual Audit buildAudit(string by = null, string description = null)
+        {
+            by = by ?? "LCU System";
 
-		#region Helpers
-		protected virtual GremlinServer createServer(LCUGraphConfig config, string username)
-		{
-			return new GremlinServer(config.Host, config.Port, config.EnableSSL, username, config.APIKey);
-		}
+            description = description ?? GetType().FullName;
 
-		protected virtual async Task ensureEdgeRelationships(Gremlin.Net.Process.Traversal.GraphTraversalSource g, 
-			Guid parentId, Guid childId, string edgeToCheckBuy = EntGraphConstants.OwnsEdgeName,
-			List<string> edgesToCreate = null)
-		{
-			if (edgesToCreate.IsNullOrEmpty())
-				edgesToCreate = new List<string>()
-				{
-					EntGraphConstants.ConsumesEdgeName,
-					EntGraphConstants.OwnsEdgeName,
-					EntGraphConstants.ManagesEdgeName
-				};
+            return new Audit()
+            {
+                By = by,
+                Description = description
+            };
+        }
 
-			var edgeResult = await SubmitFirst<dynamic>(g.V(parentId).Out(edgeToCheckBuy).HasId(childId));
+        protected virtual async Task ensureEdgeRelationship<TEdge>(Guid fromId, Guid toId)
+            where TEdge : new()
+        {
+            var outEdges = await g.V(fromId)
+                .Out<TEdge>()
+                .OfType<LCUVertex>()
+                .ToListAsync();
 
-			if (edgeResult == null)
-			{
-				var edgeQueries = edgesToCreate.Select(eq => g.V(parentId).AddE(eq).To(g.V(childId))).ToList();
+            var existing = outEdges.FirstOrDefault(oe => oe.ID == toId);
 
-				await edgeQueries.Each(async edgeQuery => await Submit(edgeQuery));
-			}
-		}
+            if (existing == null)
+                await g.V(fromId)
+                    .AddE<TEdge>()
+                    .To(__ => __.V(toId))
+                    .FirstOrDefaultAsync();
+        }
+        #endregion
+    }
 
-		protected virtual IDictionary<string, object> mapGraphObjectProperties(JToken token)
-		{
-			var val = token.JSONConvert<Dictionary<string, dynamic>>(serializer());
 
-			var newVal = new Dictionary<string, object>();
-
-			if (val.ContainsKey("properties"))
-			{
-				var props = ((object)val["properties"]).JSONConvert<Dictionary<string, JToken>>();
-
-				newVal.Add("id", val["id"]);
-
-				props.Each(prop =>
-				{
-					var propVals = prop.Value.ToObject<object[]>();
-
-					if (!ListProperties.Any(lp => lp == prop.Key) && propVals.Length == 1)
-						newVal.Add(prop.Key,
-							propVals[0].JSONConvert<Dictionary<string, dynamic>>()["value"]);
-					else if (ListProperties.Any(lp => lp == prop.Key) || propVals.Length > 1)
-						newVal.Add(prop.Key,
-							propVals.Select(pv => pv.JSONConvert<Dictionary<string, dynamic>>()["value"]).ToList());
-				});
-			}
-
-			return newVal;
-		}
-
-		protected virtual async Task withClient(Func<GremlinClient, Task> action)
-		{
-			await withClient<object>(async (client) =>
-			{
-				await action(client);
-
-				return null;
-			});
-		}
-
-		protected virtual async Task<T> withClient<T>(Func<GremlinClient, Task<T>> action, string clientId = null)
-		{
-			using (var client = clientPool.LoadClient(clientId))
-			{
-				return await action(client);
-			}
-		}
-
-		protected virtual async Task withG(Func<GremlinClient, Gremlin.Net.Process.Traversal.GraphTraversalSource, Task> action, string clientId = null)
-		{
-			await withG<object>(async (client, g) =>
-			{
-				await action(client, g);
-
-				return null;
-			}, clientId);
-		}
-
-		protected virtual async Task<T> withG<T>(Func<GremlinClient, Gremlin.Net.Process.Traversal.GraphTraversalSource, Task<T>> action, string clientId = null)
-		{
-			return await withClient<T>(async (client) =>
-			{
-				var g = new Gremlin.Net.CosmosDb.GraphTraversalSource(new DriverRemoteConnection(client));
-
-				return await action(client, g.G());
-			}, clientId);
-		}
-		#endregion
-
-		protected virtual JsonSerializerSettings serializer()
-		{
-			return new JsonSerializerSettings
-			{
-				Converters = new JsonConverter[]
-				{
-					new TreeJsonConverter(),
-					new IEdgeJsonConverter(),
-					new ElementJsonConverter(),
-					new IVertexJsonConverter(),
-					new IsoDateTimeConverter
-					{
-						DateTimeStyles = DateTimeStyles.AdjustToUniversal
-					}
-				},
-				DateFormatHandling = DateFormatHandling.IsoDateFormat,
-				DateParseHandling = DateParseHandling.DateTimeOffset,
-				DateTimeZoneHandling = DateTimeZoneHandling.Utc
-			};
-		}
-	}
 }

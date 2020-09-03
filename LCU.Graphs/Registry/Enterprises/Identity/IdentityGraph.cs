@@ -10,749 +10,503 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using LCU.Security;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using LCU.Graphs.Registry.Enterprises.Edges;
+using ExRam.Gremlinq.Core;
 
 namespace LCU.Graphs.Registry.Enterprises.Identity
 {
-	public class IdentityGraph : LCUGraph
-	{
-		#region Properties
-		#endregion
-
-		#region Constructors
-		public IdentityGraph(GremlinClientPoolManager clientPool)
-			: base(clientPool)
-		{ }
-
-		public object JwtClaimTypes { get; private set; }
-		#endregion
-
-		#region API Methods
-		public virtual async Task<Status> DeleteAccessCard(string entApiKey, string username, string accessConfigType)
-		{
-			return await withG(async (client, g) =>
-			{
-				var dropQuery = g.V()
-					.HasLabel(EntGraphConstants.AccessCardVertexName)
-					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has("AccessConfigurationType", accessConfigType)
-					.Drop();
-
-				await Submit(dropQuery);
-
-				return Status.Success;
-			}, entApiKey);
-		}
-
-		public virtual async Task<Status> DeleteRelyingParty(string entApiKey)
-		{
-			return await withG(async (client, g) =>
-			{
-				var dropQuery = g.V()
-					.HasLabel(EntGraphConstants.RelyingPartyVertexName)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Drop();
-
-				await Submit(dropQuery);
-
-				return Status.Success;
-			}, entApiKey);
-		}
-
-		public virtual async Task<Status> Exists(string email, string entApiKey = null)
-		{
-			return await withG(async (client, g) =>
-			{
-				var status = Status.Initialized;
-
-				var registry = email.Split('@')[1];
-
-				var existingQuery = g.V()
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Has("Email", email)
-					.Out(EntGraphConstants.CarriesEdgeName)
-					.HasLabel(EntGraphConstants.PassportVertexName)
-					.Has("IsActive", true);
-
-				if (!entApiKey.IsNullOrEmpty())
-					existingQuery = existingQuery.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
-
-				var accResult = await SubmitFirst<dynamic>(existingQuery);
-
-				if (accResult != null)
-					status = Status.Success;
-				else
-					status = Status.NotLocated;
-
-				return status;
-			}, entApiKey);
-		}
-
-		public virtual async Task<Account> Get(string email)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = email.Split('@')[1];
-
-				var existingQuery = g.V()
-					.HasLabel(EntGraphConstants.AccountVertexName)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Has("Email", email);
-
-				var accResult = await SubmitFirst<Account>(existingQuery);
-
-				return accResult;
-			});
-		}
-
-		public virtual async Task<Passport> GetPassport(string email, string entApiKey = null)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = email.Split('@')[1];
-
-				var existingQuery = g.V()
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Has("Email", email)
-					.Out(EntGraphConstants.CarriesEdgeName)
-					.HasLabel(EntGraphConstants.PassportVertexName)
-					.Has("IsActive", true);
-
-				if (!entApiKey.IsNullOrEmpty())
-					existingQuery = existingQuery.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
-
-				var passportResult = await SubmitFirst<Passport>(existingQuery);
-
-				return passportResult;
-			}, entApiKey);
-		}
-
-		public virtual async Task<IEnumerable<Claim>> GetClaims(string userId)
-		{
-			return new Claim[]
-			{
-				new Claim("user_id", userId ?? "")
-			};
-			//new Claim(JwtClaimTypes.Name, (!string.IsNullOrEmpty(user.Firstname) && !string.IsNullOrEmpty(user.Lastname)) ? (user.Firstname + " " + user.Lastname) : ""),
-			//new Claim(JwtClaimTypes.GivenName, user.Firstname  ?? ""),
-			//new Claim(JwtClaimTypes.FamilyName, user.Lastname  ?? ""),
-			//new Claim(JwtClaimTypes.Email, user.Email  ?? ""),
-			//new Claim("some_claim_you_want_to_see", user.Some_Data_From_User ?? ""),
-
-			//roles
-			//new Claim(JwtClaimTypes.Role, user.Role)
-		}
-
-		public virtual async Task<AccessCard> GetAccessCard(string entApiKey, string username, string accessConfigType)
-		{
-			return await withG(async (client, g) =>
-			{
-				var existingQuery = g.V()
-					.HasLabel(EntGraphConstants.AccessCardVertexName)
-					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has("AccessConfigurationType", accessConfigType);
-
-				var acResult = await SubmitFirst<AccessCard>(existingQuery);
-
-				return acResult;
-			}, entApiKey);
-		}
-
-		public virtual async Task<RelyingParty> GetRelyingParty(string entApiKey)
-		{
-			return await withG(async (client, g) =>
-			{
-				var existingQuery = g.V()
-					.HasLabel(EntGraphConstants.RelyingPartyVertexName)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
-
-				var rpResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
-
-				rpResult.Metadata["AccessConfigurations"] = rpResult.Metadata["AccessConfigurations"].ToString().FromJSON<JToken>();
-
-				rpResult.Metadata["AccessRights"] = rpResult.Metadata["AccessRights"].ToString().FromJSON<JToken>();
-
-				rpResult.Metadata["Providers"] = rpResult.Metadata["Providers"].ToString().FromJSON<JToken>();
-
-				var relyingParty = rpResult.JSONConvert<RelyingParty>();
-
-				return relyingParty;
-			}, entApiKey);
-		}
-
-		public virtual async Task<LicenseAccessToken> GetLicenseAccessToken(string entApiKey, string username, string lookup)
-		{
-			return await withG(async (client, g) =>
-			{
-
-				// Check for existing token
-				var existingQuery = g.V()
-				 .HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
-				 .Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-				 .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-				 .Has("Lookup", lookup);
-
-				var tokResult = await SubmitFirst<LicenseAccessToken>(existingQuery);
-
-				return tokResult;
-
-			}, entApiKey);
-		}
-
-		public virtual async Task<List<string>> ListAccountsByOrg(string entApiKey)
-		{
-			return await withG(async (client, g) =>
-			{
-
-				var query = g.V().HasLabel(EntGraphConstants.PassportVertexName)
-								.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-								.InE(EntGraphConstants.CarriesEdgeName)
-								.OutV()
-								.HasLabel(EntGraphConstants.AccountVertexName);
-
-				var results = await Submit<Account>(query);
-
-				var members = new List<string>();
-
-				foreach (var result in results)
-					members.Add(result.Email);
-
-				return members;
-			});
-		}
-
-		public virtual async Task<List<AccessCard>> ListAccessCards(string entApiKey, string username)
-		{
-			return await withG(async (client, g) =>
-			{
-				var existingQuery = g.V()
-					.HasLabel(EntGraphConstants.AccessCardVertexName)
-					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
-
-				var acResults = await Submit<AccessCard>(existingQuery);
-
-				return acResults?.ToList();
-			}, entApiKey);
-		}
-
-		public virtual async Task<List<string>> ListAdmins(string entApiKey)
-		{
-			return await ListMembersWithAccessConfigType(entApiKey, EntGraphConstants.AccessConfigurationRoleAdmin);
-		}
-
-		public virtual async Task<List<LicenseAccessToken>> ListLicenseAccessTokens(string entApiKey)
-		{
-			return await withG(async (client, g) =>
-			{
-				var tokenQuery = g.V()
-				 .HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
-				 .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
-
-				var tokResult = await Submit<LicenseAccessToken>(tokenQuery);
-
-				var tokResultList = tokResult?.ToList<LicenseAccessToken>();
-
-				return tokResultList;
-			}, entApiKey);
-		}
-
-		public virtual async Task<List<LicenseAccessToken>> ListLicenseAccessTokensByUser(string entApiKey, string username)
-		{
-			return await withG(async (client, g) =>
-			{
-
-				// Check for existing token
-				var existingQuery = g.V()
-				 .HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
-				 .Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-				 .Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
-
-				var tokResult = await Submit<LicenseAccessToken>(existingQuery);
-
-				return tokResult.ToList<LicenseAccessToken>();
-
-			}, entApiKey);
-		}
-
-		public virtual async Task<List<string>> ListMembersWithAccessConfigType(string entApiKey, string accessConfigType)
-		{
-			return await withG(async (client, g) =>
-			{
-				var members = new List<string>();
-
-				var query = g.V().HasLabel(EntGraphConstants.AccessCardVertexName)
-								.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-								.Has(EntGraphConstants.AccessConfigurationTypeName, accessConfigType);
-
-				var results = await Submit<AccessCard>(query);
-
-				foreach (var result in results)
-					if (result.Registry?.Split('|').Count() > 1)
-						members.Add(result.Registry.Split('|')[1]);
-
-				return members;
-			});
-		}
-
-		public virtual async Task<Status> Register(string entApiKey, string email, string password, string providerId)
-		{
-			return await withG(async (client, g) =>
-			{
-				var status = Status.Initialized;
-
-				var registry = email.Split('@')[1];
-
-				var existingQuery = g.V()
-					.HasLabel(EntGraphConstants.AccountVertexName)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Has("Email", email);
-
-				var existingAccResult = await SubmitFirst<Account>(existingQuery);
-
-				if (existingAccResult == null)
-				{
-					var query = g.AddV(EntGraphConstants.AccountVertexName)
-						.Property("Email", email)
-						.Property(EntGraphConstants.RegistryName, registry);
-
-					existingAccResult = await SubmitFirst<Account>(query);
-				}
-
-				var existingPassportQuery = g.V(existingAccResult.ID)
-						.Out(EntGraphConstants.CarriesEdgeName)
-						.HasLabel(EntGraphConstants.PassportVertexName)
-						.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
-
-				var existingPassportResult = await SubmitFirst<Passport>(existingPassportQuery);
-
-				if (existingPassportResult == null)
-				{
-					var passportQuery = g.AddV(EntGraphConstants.PassportVertexName)
-					.Property(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
-					.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Property("PasswordHash", password.ToMD5Hash())
-					.Property("ProviderID", providerId)
-					.Property("IsActive", true);
-
-					existingPassportResult = await SubmitFirst<Passport>(passportQuery);
-
-					await ensureEdgeRelationships(g, existingAccResult.ID, existingPassportResult.ID,
-						edgeToCheckBuy: EntGraphConstants.CarriesEdgeName, edgesToCreate: new List<string>()
-						{
-							EntGraphConstants.CarriesEdgeName
-						});
-
-					status = Status.Success;
-				}
-				else
-				{
-					var updatePassportQuery = g.V(existingPassportResult.ID)
-					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
-					.Property("PasswordHash", password.ToMD5Hash())
-					.Property("ProviderID", providerId);
-
-					existingPassportResult = await SubmitFirst<Passport>(updatePassportQuery);
-
-					status = Status.Success;
-				}
-
-				if (!status)
-					return Status.GeneralError.Clone("There was an issue registering the current account.");
-
-				return status;
-			}, entApiKey);
-		}
-
-		public virtual async Task<Status> RemoveLicenseAccessToken(string entApiKey, string username, string lookup)
-		{
-			return await withG(async (client, g) =>
-			{
-				var existingQuery = g.V()
-					.HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
-					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has("Lookup", lookup)
-					.Drop();
-
-				await Submit(existingQuery);
-
-				return Status.Success;
-
-			}, entApiKey);
-		}
-
-		public virtual async Task<string> RetrieveThirdPartyAccessToken(string entApiKey, string email, string key, string tokenEncodingKey)
-		{
-			return await withG(async (client, g) =>
-			{
-				bool isEncrypted = false;
-
-				string tokenResult = String.Empty;
-
-				var registry = email.Split('@')[1];
-
-				if (!entApiKey.IsNullOrEmpty())
-				{
-					var existingEntQuery = g.V()
-						.HasLabel(EntGraphConstants.AccountVertexName)
-						.Has(EntGraphConstants.RegistryName, registry)
-						.Has("Email", email)
-						.Out(EntGraphConstants.CarriesEdgeName)
-						.HasLabel(EntGraphConstants.PassportVertexName)
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-						.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
-						.Out(EntGraphConstants.OwnsEdgeName)
-						.HasLabel(EntGraphConstants.ThirdPartyTokenVertexName)
-						.Has(EntGraphConstants.RegistryName, email)
-						.Has("Key", key);
-
-					var entTptResult = await SubmitFirst<BusinessModel<Guid>>(existingEntQuery);
-
-					//return entTptResult?.Metadata["Token"].ToString();
-
-					if (entTptResult != null && entTptResult.Metadata.ContainsKey("Encrypt"))
-						isEncrypted = entTptResult.Metadata["Encrypt"].ToObject<bool>();
-
-					tokenResult = isEncrypted ?
-						Encryption.Decrypt(entTptResult?.Metadata["Token"].ToString(), tokenEncodingKey) :
-						entTptResult?.Metadata["Token"].ToString();
-
-				}
-				else
-				{
-					var existingAccQuery = g.V()
-						.HasLabel(EntGraphConstants.AccountVertexName)
-						.Has(EntGraphConstants.RegistryName, registry)
-						.Has("Email", email)
-						.Out(EntGraphConstants.OwnsEdgeName)
-						.HasLabel(EntGraphConstants.ThirdPartyTokenVertexName)
-						.Has(EntGraphConstants.RegistryName, email)
-						.Has("Key", key);
-
-					var accTptResult = await SubmitFirst<BusinessModel<Guid>>(existingAccQuery);
-
-					if (accTptResult != null && accTptResult.Metadata.ContainsKey("Encrypt"))
-						isEncrypted = accTptResult.Metadata["Encrypt"].ToObject<bool>();
-
-					tokenResult = isEncrypted ?
-						Encryption.Decrypt(accTptResult?.Metadata["Token"].ToString(), tokenEncodingKey) :
-						accTptResult?.Metadata["Token"].ToString();
-
-				}
-
-				return tokenResult;
-			}, entApiKey);
-		}
-
-		public virtual async Task<Status> SetThirdPartyAccessToken(string entApiKey, string email, string key, string token, bool encrypt = false)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = email.Split('@')[1];
-
-				var existingQuery = g.V()
-					.HasLabel(EntGraphConstants.AccountVertexName)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Has("Email", email);
-
-				if (!entApiKey.IsNullOrEmpty())
-				{
-					existingQuery = existingQuery
-					.Out(EntGraphConstants.CarriesEdgeName)
-					.HasLabel(EntGraphConstants.PassportVertexName)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}");
-				}
-
-				existingQuery = existingQuery
-					.Out(EntGraphConstants.OwnsEdgeName)
-					.HasLabel(EntGraphConstants.ThirdPartyTokenVertexName)
-					.Has(EntGraphConstants.RegistryName, email)
-					.Has("Key", key);
-
-				var tptResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
-
-				var setQuery = tptResult != null ? existingQuery :
-					g.AddV(EntGraphConstants.ThirdPartyTokenVertexName)
-						.Property(EntGraphConstants.RegistryName, email)
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-						.Property("Key", key);
-
-				setQuery = setQuery.Property("Token", token)
-					.Property("Encrypt", encrypt);
-
-				tptResult = await SubmitFirst<BusinessModel<Guid>>(setQuery);
-
-				if (!entApiKey.IsNullOrEmpty())
-				{
-					var passQuery = g.V().HasLabel(EntGraphConstants.AccountVertexName)
-						.Has(EntGraphConstants.RegistryName, registry)
-						.Has("Email", email)
-						.Out(EntGraphConstants.CarriesEdgeName)
-						.HasLabel(EntGraphConstants.PassportVertexName)
-						.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}")
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
-
-					var passResult = await SubmitFirst<Passport>(passQuery);
-
-					await ensureEdgeRelationships(g, passResult.ID, tptResult.ID,
-						edgeToCheckBuy: EntGraphConstants.OwnsEdgeName, edgesToCreate: new List<string>()
-						{
-								EntGraphConstants.OwnsEdgeName
-						});
-				}
-				else
-				{
-					var accQuery = g.V().HasLabel(EntGraphConstants.AccountVertexName)
-						.Has(EntGraphConstants.RegistryName, registry)
-						.Has("Email", email);
-
-					var accResult = await SubmitFirst<Passport>(accQuery);
-
-					await ensureEdgeRelationships(g, accResult.ID, tptResult.ID,
-						edgeToCheckBuy: EntGraphConstants.OwnsEdgeName, edgesToCreate: new List<string>()
-						{
-								EntGraphConstants.OwnsEdgeName
-						});
-				}
-
-				return Status.Success;
-			}, entApiKey);
-		}
-
-		public virtual async Task<AccessCard> SaveAccessCard(AccessCard accessCard, string entApiKey, string username)
-		{
-			return await withG(async (client, g) =>
-			{
-				var existingQuery = g.V()
-					.HasLabel(EntGraphConstants.AccessCardVertexName)
-					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-					.Has("AccessConfigurationType", accessCard.AccessConfigurationType);
-
-				var acResult = await SubmitFirst<AccessCard>(existingQuery);
-
-				var setQuery = acResult != null ? existingQuery :
-					g.AddV(EntGraphConstants.AccessCardVertexName)
-						.Property(EntGraphConstants.RegistryName, $"{entApiKey}|{username}")
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey)
-						.Property("AccessConfigurationType", accessCard.AccessConfigurationType);
-
-				setQuery = setQuery
-					.Property("ProviderID", accessCard.ProviderID);
-
-				accessCard.ExcludeAccessRights.Each(ear =>
-				{
-					if (ear == accessCard.ExcludeAccessRights.First())
-						setQuery = setQuery.Property("ExcludeAccessRights", ear);
-					else
-						setQuery = setQuery.Property(Cardinality.List, "ExcludeAccessRights", ear);
-				});
-
-				accessCard.IncludeAccessRights.Each(iar =>
-				{
-					if (iar == accessCard.IncludeAccessRights.First())
-						setQuery = setQuery.Property("IncludeAccessRights", iar);
-					else
-						setQuery = setQuery.Property(Cardinality.List, "IncludeAccessRights", iar);
-				});
-
-				acResult = await SubmitFirst<AccessCard>(setQuery);
-
-				if (acResult != null)
-				{
-					var rpQuery = g.V()
-						.HasLabel(EntGraphConstants.RelyingPartyVertexName)
-						.Has(EntGraphConstants.RegistryName, entApiKey)
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
-
-					var rpResult = await SubmitFirst<BusinessModel<Guid>>(rpQuery);
-
-					if (rpResult != null)
-					{
-						var registry = username.Split('@')[1];
-
-						var accQuery = g.V()
-							.HasLabel(EntGraphConstants.AccountVertexName)
-							.Has(EntGraphConstants.RegistryName, registry)
-							.Has("Email", username);
-
-						var accResult = await SubmitFirst<Account>(accQuery);
-
-						await ensureEdgeRelationships(g, rpResult.ID, acResult.ID,
-							edgeToCheckBuy: EntGraphConstants.ProvidesEdgeName, edgesToCreate: new List<string>()
-							{
-								EntGraphConstants.ProvidesEdgeName
-							});
-
-						await ensureEdgeRelationships(g, accResult.ID, acResult.ID,
-							edgeToCheckBuy: EntGraphConstants.ConsumesEdgeName, edgesToCreate: new List<string>()
-							{
-								EntGraphConstants.ConsumesEdgeName
-							});
-					}
-
-					accessCard = acResult;
-				}
-
-				return accessCard;
-			}, entApiKey);
-		}
-
-		public virtual async Task<RelyingParty> SaveRelyingParty(RelyingParty relyingParty, string entApiKey)
-		{
-			return await withG(async (client, g) =>
-			{
-				var existingQuery = g.V()
-					.HasLabel(EntGraphConstants.RelyingPartyVertexName)
-					.Has(EntGraphConstants.RegistryName, entApiKey)
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
-
-				var rpResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
-
-				var setQuery = rpResult != null ? existingQuery :
-					g.AddV(EntGraphConstants.RelyingPartyVertexName)
-						.Property(EntGraphConstants.RegistryName, entApiKey)
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, entApiKey);
-
-				setQuery = setQuery
-					.Property("AccessConfigurations", relyingParty.AccessConfigurations.ToJSON())
-					.Property("AccessRights", relyingParty.AccessRights.ToJSON())
-					.Property("DefaultAccessConfigurationType", relyingParty.DefaultAccessConfigurationType)
-					.Property("Providers", relyingParty.Providers.ToJSON());
-
-				rpResult = await SubmitFirst<BusinessModel<Guid>>(setQuery);
-
-				if (rpResult != null)
-				{
-					var entQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-						.Has(EntGraphConstants.RegistryName, entApiKey)
-						.Has("PrimaryAPIKey", entApiKey);
-
-					var entResult = await SubmitFirst<BusinessModel<Guid>>(entQuery);
-
-					await ensureEdgeRelationships(g, entResult.ID, rpResult.ID,
-						edgeToCheckBuy: EntGraphConstants.OwnsEdgeName, edgesToCreate: new List<string>()
-						{
-							EntGraphConstants.OwnsEdgeName
-						});
-
-					rpResult.Metadata["AccessConfigurations"] = rpResult.Metadata["AccessConfigurations"].ToString().FromJSON<JToken>();
-
-					rpResult.Metadata["AccessRights"] = rpResult.Metadata["AccessRights"].ToString().FromJSON<JToken>();
-
-					rpResult.Metadata["Providers"] = rpResult.Metadata["Providers"].ToString().FromJSON<JToken>();
-
-					relyingParty = rpResult.JSONConvert<RelyingParty>();
-				}
-
-				return relyingParty;
-			}, entApiKey);
-		}
-
-		public virtual async Task<LicenseAccessToken> SetLicenseAccessToken(LicenseAccessToken token)
-		{
-			return await withG(async (client, g) =>
-			{
-				// Check for existing token
-				var existingQuery = g.V()
-					.HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
-					.Has(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.Username}")
-					.Has(EntGraphConstants.EnterpriseAPIKeyName, token.EnterpriseAPIKey)
-					.Has("Lookup", token.Lookup);
-
-				var tokResult = await SubmitFirst<LicenseAccessToken>(existingQuery);
-
-				// If token already exists, apply updates to license properties 
-				if (tokResult != null)
-				{
-					var accDate = tokResult.AccessStartDate;
-					var expDate = tokResult.ExpirationDate;
-
-					if (token.IsLocked) expDate = System.DateTime.Now;
-
-					if (token.IsReset)
-					{
-						accDate = System.DateTime.Now;
-
-						if (token.TrialPeriodDays > 0)
-							expDate = DateTime.Now.AddDays(token.TrialPeriodDays);
-					}
-
-					var setQuery =
-						g.V().HasLabel(EntGraphConstants.LicenseAccessTokenVertexName)
-						.Has(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.Username}")
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, token.EnterpriseAPIKey)
-						.Property("AccessStartDate", accDate)
-						.Property("ExpirationDate", expDate)
-						.Property("Lookup", token.Lookup)
-						.Property("TrialPeriodDays", token.TrialPeriodDays)
-						.Property("Username", token.Username)
-						.AttachMetadataProperties<LicenseAccessToken>(token);
-
-					var updateResult = await SubmitFirst<BusinessModel<Guid>>(setQuery);
-
-					tokResult = updateResult.JSONConvert<LicenseAccessToken>();
-				}
-				else
-				{
-					var expDays = token.TrialPeriodDays > 0 ? token.TrialPeriodDays : 31;  //  Exp Should not be set without trial period days? 
-
-					// If not, create the license access token 
-					var setQuery =
-						g.AddV(EntGraphConstants.LicenseAccessTokenVertexName)
-							.Property(EntGraphConstants.RegistryName, $"{token.EnterpriseAPIKey}|{token.Username}")
-							.Property(EntGraphConstants.EnterpriseAPIKeyName, token.EnterpriseAPIKey)
-							.Property("AccessStartDate", DateTime.Now)
-							.Property("ExpirationDate", DateTime.Now.AddDays(expDays))
-							.Property("Lookup", token.Lookup)
-							.Property("TrialPeriodDays", token.TrialPeriodDays)
-							.Property("Username", token.Username)
-							.AttachMetadataProperties<LicenseAccessToken>(token);
-
-					tokResult = await SubmitFirst<LicenseAccessToken>(setQuery);
-
-				}
-				return tokResult;
-			}, token.EnterpriseAPIKey);
-		}
-
-		public virtual async Task<Status> Validate(string entApiKey, string email, string password)
-		{
-			return await withG(async (client, g) =>
-			{
-				var status = Status.Initialized;
-
-				var registry = email.Split('@')[1];
-
-				var existingQuery = g.V()
-					.HasLabel(EntGraphConstants.AccountVertexName)
-					.Has("Email", email)
-					.Has(EntGraphConstants.RegistryName, registry)
-					.Out(EntGraphConstants.CarriesEdgeName)
-					.HasLabel(EntGraphConstants.PassportVertexName)
-					.Has("IsActive", true)
-					.Has("PasswordHash", password.ToMD5Hash())
-					.Has(EntGraphConstants.RegistryName, $"{entApiKey}|{registry}");
-
-				var accResult = await SubmitFirst<Passport>(existingQuery);
-
-				if (accResult != null)
-					status = Status.Success;
-				else
-					status = Status.Unauthorized;
-
-				return status;
-			}, entApiKey);
-		}
-		#endregion
-
-		#region Helpers
-		#endregion
-	}
+    public class IdentityGraph : LCUGraph
+    {
+        #region Properties
+        public object JwtClaimTypes { get; private set; }
+        #endregion
+
+        #region Constructors
+        public IdentityGraph(LCUGraphConfig graphConfig, ILogger<IdentityGraph> logger)
+            : base(graphConfig, logger)
+        { }
+
+        #endregion
+
+        #region API Methods
+        public virtual async Task<Status> DeleteAccessCard(string entLookup, string username, string accessConfigType)
+        {
+            var ac = await GetAccessCard(entLookup, username, accessConfigType);
+
+            if (ac != null)
+            {
+                await g.V<AccessCard>(ac.ID)
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Drop();
+
+                return Status.Success;
+            }
+            else
+            {
+                return Status.GeneralError.Clone("Unable to locate access card");
+            }
+        }
+
+        public virtual async Task<Status> DeleteRelyingParty(string entLookup)
+        {
+            var rp = await GetRelyingParty(entLookup);
+
+            if (rp != null)
+            {
+                await g.V<RelyingParty>(rp.ID)
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Drop();
+
+                return Status.Success;
+            }
+            else
+            {
+                return Status.GeneralError.Clone("Unable to locate relying party");
+            }
+        }
+
+        public virtual async Task<Status> DeleteLicenseAccessToken(string entLookup, string username, string lookup)
+        {
+            var lat = await GetLicenseAccessToken(entLookup, username, lookup);
+
+            if (lat != null)
+            {
+                await g.V<LicenseAccessToken>(lat.ID)
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Drop();
+
+                return Status.Success;
+            }
+            else
+            {
+                return Status.GeneralError.Clone("Unable to locate license access token");
+            }
+        }
+
+        public virtual async Task<Status> Exists(string email, string entLookup = null)
+        {
+            var registry = email.Split('@')[1];
+
+            var existing = await GetPassport(email, entLookup);
+
+            if (existing != null)
+                return Status.Success;
+            else
+                return Status.NotLocated;
+        }
+
+        public virtual async Task<Account> GetAccount(string email)
+        {
+            var registry = email.Split('@')[1];
+
+            return await g.V<Account>()
+                  .Where(e => e.Registry == registry)
+                  .Where(e => e.Email == email)
+                  .FirstOrDefaultAsync();
+        }
+
+        public virtual async Task<Passport> GetPassport(string email, string entLookup = null)
+        {
+            var registry = email.Split('@')[1];
+
+            var passport = await g.V<Account>()
+                  .Where(e => e.Registry == registry)
+                  .Where(e => e.Email == email)
+                  .Out<Carries>()
+                  .OfType<Passport>()
+                  .Where(e => e.IsActive)
+                  .FirstOrDefaultAsync();
+
+            if (!entLookup.IsNullOrEmpty() && passport?.EnterpriseLookup != entLookup)
+                passport = null;
+
+            return passport;
+        }
+
+        public virtual async Task<IEnumerable<Claim>> GetClaims(string userId)
+        {
+            return new Claim[]
+            {
+                new Claim("user_id", userId ?? "")
+            };
+            //new Claim(JwtClaimTypes.Name, (!string.IsNullOrEmpty(user.Firstname) && !string.IsNullOrEmpty(user.Lastname)) ? (user.Firstname + " " + user.Lastname) : ""),
+            //new Claim(JwtClaimTypes.GivenName, user.Firstname  ?? ""),
+            //new Claim(JwtClaimTypes.FamilyName, user.Lastname  ?? ""),
+            //new Claim(JwtClaimTypes.Email, user.Email  ?? ""),
+            //new Claim("some_claim_you_want_to_see", user.Some_Data_From_User ?? ""),
+
+            //roles
+            //new Claim(JwtClaimTypes.Role, user.Role)
+        }
+
+        public virtual async Task<AccessCard> GetAccessCard(string entLookup, string username, string accessConfigType)
+        {
+            var registry = username.Split('@')[1];
+
+            var accessCard = await g.V<AccessCard>()
+                  .Where(e => e.EnterpriseLookup == entLookup)
+                  .Where(e => e.Registry == $"{entLookup}|{username}")
+                  .Where(e => e.AccessConfigurationType == accessConfigType)
+                  .FirstOrDefaultAsync();
+
+            return accessCard;
+        }
+
+        public virtual async Task<RelyingParty> GetRelyingParty(string entLookup)
+        {
+            var rp = await g.V<RelyingParty>()
+                  .Where(e => e.EnterpriseLookup == entLookup)
+                  .Where(e => e.Registry == entLookup)
+                  .FirstOrDefaultAsync();
+
+            return rp;
+        }
+
+        public virtual async Task<LicenseAccessToken> GetLicenseAccessToken(string entLookup, string username, string lookup)
+        {
+            var lat = await g.V<LicenseAccessToken>()
+                  .Where(e => e.EnterpriseLookup == entLookup)
+                  .Where(e => e.Registry == $"{entLookup}|{username}")
+                  .Where(e => e.Lookup == lookup)
+                  .FirstOrDefaultAsync();
+
+            return lat;
+        }
+
+        public virtual async Task<List<Account>> ListAccountsByOrg(string entLookup)
+        {
+            var accounts = await g.V<Passport>()
+                  .Where(e => e.EnterpriseLookup == entLookup)
+                  .InE<Carries>()
+                  .OutV<Account>()
+                  .ToListAsync();
+
+            return accounts;
+        }
+
+        public virtual async Task<List<AccessCard>> ListAccessCards(string entLookup, string username)
+        {
+            var accessCards = await g.V<AccessCard>()
+                  .Where(e => e.EnterpriseLookup == entLookup)
+                  .Where(e => e.Registry == $"{entLookup}|{username}")
+                  .ToListAsync();
+
+            return accessCards;
+        }
+
+        public virtual async Task<List<string>> ListAdmins(string entLookup)
+        {
+            return await ListMembersWithAccessConfigType(entLookup, "LCU");
+        }
+
+        public virtual async Task<List<LicenseAccessToken>> ListLicenseAccessTokens(string entLookup)
+        {
+            var lats = await g.V<LicenseAccessToken>()
+                  .Where(e => e.EnterpriseLookup == entLookup)
+                  .ToListAsync();
+
+            return lats;
+        }
+
+        public virtual async Task<List<LicenseAccessToken>> ListLicenseAccessTokensByUser(string entLookup, string username)
+        {
+            var lats = await g.V<LicenseAccessToken>()
+                  .Where(e => e.EnterpriseLookup == entLookup)
+                  .Where(e => e.Registry == $"{entLookup}|{username}")
+                  .ToListAsync();
+
+            return lats;
+        }
+
+        public virtual async Task<List<string>> ListMembersWithAccessConfigType(string entLookup, string accessConfigType)
+        {
+            var accessCards = await g.V<AccessCard>()
+                  .Where(e => e.EnterpriseLookup == entLookup)
+                  .Where(e => e.AccessConfigurationType == accessConfigType)
+                  .ToListAsync();
+
+            var members = new List<string>();
+
+            foreach (var result in accessCards)
+                if (result.Registry?.Split('|').Count() > 1)
+                    members.Add(result.Registry.Split('|')[1]);
+
+            return accessCards.Select(ac => ac.Registry.Split('|')[1]).Distinct().ToList();
+        }
+
+        public virtual async Task<Status> Register(string entLookup, string email, string password, string providerId)
+        {
+            var registry = email.Split('@')[1];
+
+            var account = await GetAccount(email);
+
+            if (account == null)
+                account = await g.AddV(new Account()
+                {
+                    ID = Guid.NewGuid(),
+                    Email = email,
+                    Registry = registry
+                }).FirstOrDefaultAsync();
+
+            var passport = await GetPassport(email, entLookup);
+
+            if (passport == null)
+            {
+                passport = new Passport()
+                {
+                    ID = Guid.NewGuid(),
+                    EnterpriseLookup = entLookup,
+                    Registry = $"{entLookup}|{registry}",
+                    PasswordHash = password.ToMD5Hash(),
+                    ProviderID = providerId,
+                    IsActive = true
+                };
+
+                passport = await g.AddV(passport).FirstOrDefaultAsync();
+
+                await ensureEdgeRelationship<Carries>(account.ID, passport.ID);
+            }
+            else
+            {
+                passport.PasswordHash = password.ToMD5Hash();
+
+                passport.ProviderID = providerId;
+
+                passport = await g.V<Passport>(passport.ID)
+                    .Update(passport)
+                    .FirstOrDefaultAsync();
+            }
+
+            return Status.Success;
+        }
+
+        public virtual async Task<string> RetrieveThirdPartyAccessToken(string entLookup, string email, string key, string tokenEncodingKey = null)
+        {
+            bool isEncrypted = false;
+
+            string tokenResult = String.Empty;
+
+            var registry = email.Split('@')[1];
+
+            IVertexGremlinQueryBase tpiQuery = g.V<Account>()
+                .Where(e => e.Registry == registry)
+                .Where(e => e.Email == email);
+
+            if (!entLookup.IsNullOrEmpty())
+                tpiQuery = tpiQuery
+                    .Out<Carries>()
+                    .OfType<Passport>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == $"{entLookup}|{registry}");
+
+            var tpi = await tpiQuery
+                .Out<Owns>()
+                .OfType<ThirdPartyToken>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == email)
+                .FirstOrDefaultAsync();
+
+            if (tpi != null)
+                isEncrypted = tpi.Encrypt;
+
+            return isEncrypted ? Encryption.Decrypt(tpi?.Token, tokenEncodingKey) : tpi?.Token;
+        }
+
+        public virtual async Task<Status> SetThirdPartyAccessToken(string entLookup, string email, string key, string token, string tokenEncodingKey = null)
+        {
+            var account = await GetAccount(email);
+
+            var accRegistry = email.Split('@')[1];
+
+            IVertexGremlinQueryBase tpiQuery = g.V<Account>(account.ID)
+                .Where(e => e.Registry == accRegistry)
+                .Where(e => e.Email == email);
+
+            if (!entLookup.IsNullOrEmpty())
+            {
+                tpiQuery = tpiQuery
+                    .Out<Carries>()
+                    .OfType<Passport>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == $"{entLookup}|{accRegistry}");
+            }
+
+            var tpi = await tpiQuery
+                .Out<Owns>()
+                .OfType<ThirdPartyToken>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == email)
+                .Where(e => e.Key == key)
+                .FirstOrDefaultAsync();
+
+            if (!tokenEncodingKey.IsNullOrEmpty())
+                token = Encryption.Encrypt(token, tokenEncodingKey);
+
+            if (tpi == null)
+            {
+                tpi = new ThirdPartyToken()
+                {
+                    ID = Guid.NewGuid(),
+                    EnterpriseLookup = entLookup,
+                    Registry = email,
+                    Encrypt = !tokenEncodingKey.IsNullOrEmpty(),
+                    Key = key,
+                    Token = token
+                };
+
+                tpi = await g.AddV(tpi).FirstOrDefaultAsync();
+
+                var parentId = account.ID;
+
+                if (!entLookup.IsNullOrEmpty())
+                {
+                    var passport = await GetPassport(email, entLookup);
+
+                    parentId = passport.ID;
+                }
+
+                await ensureEdgeRelationship<Owns>(parentId, tpi.ID);
+            }
+            else
+            {
+                tpi.Encrypt = !tokenEncodingKey.IsNullOrEmpty();
+
+                tpi.Token = token;
+
+                tpi = await g.V<ThirdPartyToken>(tpi.ID)
+                    .Update(tpi)
+                    .FirstOrDefaultAsync();
+            }
+
+            return Status.Success;
+        }
+
+        public virtual async Task<AccessCard> SaveAccessCard(AccessCard accessCard, string entLookup, string username)
+        {
+            var account = await GetAccount(username);
+
+            var existingAccessCard = await GetAccessCard(entLookup, username, accessCard.AccessConfigurationType);
+
+            accessCard.EnterpriseLookup = entLookup;
+
+            accessCard.Registry = $"{entLookup}|{username}";
+
+            accessCard.LastAccess = buildAudit(by: username, description: $"Last accessed by {entLookup}");
+
+            if (existingAccessCard == null)
+            {
+                if (accessCard.ID.IsEmpty())
+                    accessCard.ID = Guid.NewGuid();
+
+                accessCard.FirstAccess = buildAudit(by: username, description: $"First accessed by {entLookup}");
+
+                accessCard = await g.AddV(accessCard).FirstOrDefaultAsync();
+
+                await ensureEdgeRelationship<Carries>(account.ID, accessCard.ID);
+            }
+            else
+            {
+                accessCard = await g.V<AccessCard>(existingAccessCard.ID)
+                    .Update(accessCard)
+                    .FirstOrDefaultAsync();
+            }
+
+            if (accessCard != null)
+            {
+                var rp = await GetRelyingParty(entLookup);
+
+                if (rp != null)
+                {
+                    await ensureEdgeRelationship<Provides>(rp.ID, accessCard.ID);
+
+                    await ensureEdgeRelationship<Consumes>(account.ID, accessCard.ID);
+                }
+            }
+
+            return accessCard;
+        }
+
+        public virtual async Task<RelyingParty> SaveRelyingParty(RelyingParty relyingParty, string entLookup)
+        {
+            var existingRP = await GetRelyingParty(entLookup);
+
+            relyingParty.EnterpriseLookup = entLookup;
+
+            relyingParty.Registry = entLookup;
+
+            if (existingRP == null)
+            {
+                if (relyingParty.ID.IsEmpty())
+                    relyingParty.ID = Guid.NewGuid();
+
+                relyingParty = await g.AddV(relyingParty).FirstOrDefaultAsync();
+
+                var ent = await g.V<Enterprise>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == entLookup)
+                    .FirstOrDefaultAsync();
+
+                await ensureEdgeRelationship<Owns>(ent.ID, relyingParty.ID);
+            }
+            else
+            {
+                relyingParty = await g.V<RelyingParty>(existingRP.ID)
+                    .Update(relyingParty)
+                    .FirstOrDefaultAsync();
+            }
+
+            return relyingParty;
+        }
+
+        public virtual async Task<LicenseAccessToken> SetLicenseAccessToken(string entLookup, string username, LicenseAccessToken token)
+        {
+            var existingLAT = await GetLicenseAccessToken(entLookup, username, token.Lookup);
+
+            token.EnterpriseLookup = entLookup;
+
+            token.Registry = $"{entLookup}|{username}";
+
+            if (token.IsLocked) 
+                token.ExpirationDate = System.DateTime.Now;
+
+            if (token.IsReset)
+            {
+                token.AccessStartDate = System.DateTime.Now;
+
+                if (token.TrialPeriodDays > 0)
+                    token.ExpirationDate = DateTime.Now.AddDays(token.TrialPeriodDays);
+            }
+
+            if (existingLAT == null)
+            {
+                if (token.ID.IsEmpty())
+                    token.ID = Guid.NewGuid();
+
+                token = await g.AddV(token).FirstOrDefaultAsync();
+            }
+            else
+            {
+                token = await g.V<LicenseAccessToken>(existingLAT.ID)
+                    .Update(token)
+                    .FirstOrDefaultAsync();
+            }
+
+            return token;
+        }
+
+        public virtual async Task<Status> Validate(string entLookup, string email, string password)
+        {
+            var passport = await GetPassport(email, entLookup);
+
+            if (passport != null && passport.PasswordHash == password.ToMD5Hash())
+                return Status.Success;
+            else
+                return Status.Unauthorized;
+        }
+        #endregion
+
+        #region Helpers
+        #endregion
+    }
 }

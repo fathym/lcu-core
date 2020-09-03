@@ -654,14 +654,10 @@ namespace LCU.Presentation.OpenID
                 }
 
                 if (Options.SaveTokens)
-                {
                     SaveTokens(properties, tokenEndpointResponse ?? authorizationResponse);
-                }
 
                 if (Options.GetClaimsFromUserInfoEndpoint)
-                {
                     return await GetUserInformationAsync(tokenEndpointResponse ?? authorizationResponse, jwt, user, properties);
-                }
                 else
                 {
                     var identity = (ClaimsIdentity)user.Identity;

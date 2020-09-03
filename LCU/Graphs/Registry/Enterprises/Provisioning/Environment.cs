@@ -7,11 +7,8 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 {
 	[Serializable]
 	[DataContract]
-	public class LCUEnvironment : BusinessModel<Guid>
+	public class Environment : LCUVertex
 	{
-		[DataMember]
-		public virtual string EnterpriseAPIKey { get; set; }
-
 		[DataMember]
 		public virtual string Lookup { get; set; }
 

@@ -10,10 +10,10 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 	public class IDESideBar
 	{
 		[DataMember]
-		public virtual List<IDESideBarAction> Actions { get; set; }
+		public virtual List<SectionAction> Actions { get; set; }
 
 		[DataMember]
-		public virtual IDESideBarAction CurrentAction { get; set; }
+		public virtual SectionAction CurrentAction { get; set; }
 
 		[DataMember]
 		public virtual string Title { get; set; }
@@ -21,7 +21,7 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
 	[Serializable]
 	[DataContract]
-	public class IDESideBarAction
+	public class SectionAction : LCUVertex
 	{
 		[DataMember]
 		public virtual string Action { get; set; }

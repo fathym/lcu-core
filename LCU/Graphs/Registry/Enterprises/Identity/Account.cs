@@ -7,7 +7,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 {
 	[Serializable]
     [DataContract]
-	public class Account : BusinessModel<Guid>
+	public class Account : LCUVertex  //BusinessModel<Guid>
 	{
 		[DataMember]
 		public virtual string Email { get; set; }

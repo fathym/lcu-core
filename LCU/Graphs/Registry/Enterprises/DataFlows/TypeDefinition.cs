@@ -12,7 +12,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
         public virtual bool Active { get; set; }
 
         [DataMember]
-        public virtual IEnumerable<string> AllowedTypeNameConversions { get; set; }
+        public virtual string[] AllowedTypeNameConversions { get; set; }
 
         [DataMember]
         public virtual string ConversionMethod { get; set; }

@@ -1,7 +1,10 @@
-﻿using Fathym;
+﻿using ExRam.Gremlinq.Core;
+using Fathym;
 using Fathym.Business.Models;
 using Gremlin.Net.Process.Traversal;
 using Gremlin.Net.Structure;
+using LCU.Graphs.Registry.Enterprises.Edges;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,429 +12,343 @@ using System.Threading.Tasks;
 
 namespace LCU.Graphs.Registry.Enterprises.Apps
 {
-	public class ApplicationGraph : LCUGraph, IApplicationGraph
-	{
-		#region Properties
-		#endregion
-
-		#region Constructors
-		public ApplicationGraph(GremlinClientPoolManager clientPool)
-			: base(clientPool)
-		{
-			ListProperties.Add("AccessRights");
-
-			ListProperties.Add("Hosts");
-
-			ListProperties.Add("Licenses");
-		}
-		#endregion
-
-		#region API Methods
-		public virtual async Task<Status> AddDefaultApp(string apiKey, Guid appId)
-		{
-			return await withG(async (client, g) =>
-			{
-				var defAppsQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
-					.Out(EntGraphConstants.OffersEdgeName)
-					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey);
-
-				var defAppsResult = await SubmitFirst<BusinessModel<Guid>>(defAppsQuery);
-
-				await ensureEdgeRelationships(g, defAppsResult.ID, appId,
-					edgeToCheckBuy: EntGraphConstants.ConsumesEdgeName, edgesToCreate: new List<string>()
-					{
-						EntGraphConstants.ConsumesEdgeName
-					});
-
-				return Status.Success;
-			}, apiKey);
-		}
-
-		public virtual async Task<Status> CreateDefaultApps(string apiKey)
-		{
-			return await withG(async (client, g) =>
-			{
-				var entQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey);
-
-				var entResult = await SubmitFirst<Enterprise>(entQuery);
-
-				var dropDefaultsQuery = g.V(entResult.ID)
-					.Out(EntGraphConstants.OffersEdgeName)
-					.BothE().Where(__.OutV().HasLabel(EntGraphConstants.DefaultAppsVertexName))
-					.Drop();
-
-				await Submit(dropDefaultsQuery);
-
-				var defAppsQuery = g.AddV(EntGraphConstants.DefaultAppsVertexName)
-					.Property(EntGraphConstants.RegistryName, apiKey)
-					.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey);
-
-				var dafAppsResult = await SubmitFirst<BusinessModel<Guid>>(defAppsQuery);
-
-				await ensureEdgeRelationships(g, entResult.ID, dafAppsResult.ID);
-
-				return Status.Success;
-			}, apiKey);
-		}
-
-		public virtual async Task<Application> GetApplication(Guid appId)
-		{
-			return await withG(async (client, g) =>
-			{
-				var query = g.V().HasLabel(EntGraphConstants.AppVertexName)
-						.HasId(appId);
-
-				var appAppResult = await SubmitFirst<Application>(query);
-
-				return appAppResult;
-			}, appId.ToString());
-		}
-
-		public virtual async Task<DAFApplicationConfiguration> GetDAFApplication(Guid dafAppId)
-		{
-			return await withG(async (client, g) =>
-			{
-				var query = g.V(dafAppId);
-
-				var appAppResult = await SubmitFirst<DAFApplicationConfiguration>(query);
-
-				return appAppResult;
-			}, dafAppId.ToString());
-		}
-
-		public virtual async Task<Status> HasDefaultApps(string apiKey)
-		{
-			return await withG(async (client, g) =>
-			{
-				var defAppsQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
-					.Out(EntGraphConstants.OwnsEdgeName)
-					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey);
-
-				var defAppsResult = await SubmitFirst<BusinessModel<Guid>>(defAppsQuery);
-
-				return defAppsResult != null ? Status.Success : Status.NotLocated;
-			}, apiKey);
-		}
-
-		public virtual async Task<Status> IsDefaultApp(string apiKey, Guid appId)
-		{
-			return await withG(async (client, g) =>
-			{
-				var defAppsQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
-					.Out(EntGraphConstants.OwnsEdgeName)
-					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.AppVertexName)
-					.HasId(appId);
-
-				var appsResult = await SubmitFirst<Application>(defAppsQuery);
-
-				return appsResult != null ? Status.Success : Status.NotLocated;
-			}, apiKey);
-		}
-
-		public virtual async Task<List<Application>> ListApplications(string apiKey)
-		{
-			return await withG(async (client, g) =>
-			{
-				var
-				query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.AppVertexName)
-					.Order().By("Priority", Order.Decr);
-
-				var results = await Submit<Application>(query);
-
-				return results.ToList();
-			}, apiKey);
-		}
-
-		public virtual async Task<List<DAFApplicationConfiguration>> ListDAFApplications(string apiKey, Guid appId)
-		{
-			return await withG(async (client, g) =>
-			{
-				var query = g.V(appId)
-					.Out(EntGraphConstants.ProvidesEdgeName)
-					.HasLabel(EntGraphConstants.DAFAppVertexName)
-					.Has("ApplicationID", appId)
-					.Has(EntGraphConstants.RegistryName, $"{apiKey}|{appId}")
-					.Order().By("Priority", Order.Decr);
-
-				var appAppResults = await Submit<DAFApplicationConfiguration>(query);
-
-				return appAppResults.ToList();
-			}, apiKey);
-		}
-
-		public virtual async Task<List<Application>> LoadByEnterprise(string apiKey, string host, string container)
-		{
-			return await withG(async (client, g) =>
-			{
-				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.AppVertexName)
-					.Has("Hosts", host)
-					//.Has("Container", container)
-					.Order().By("Priority", Order.Decr);
-
-				var results = await Submit<Application>(query);
-
-				return results.ToList();
-			}, apiKey);
-		}
-
-		public virtual async Task<List<Application>> LoadDefaultApplications(string apiKey)
-		{
-			return await withG(async (client, g) =>
-			{
-				//	TODO:  Need to support attaching Enterprise to appropriate DefaultApplications node through some edge so this is pull not as a global default, but enterprise default
-
-				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
-					.Out(EntGraphConstants.OffersEdgeName)
-					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
-					.Out(EntGraphConstants.ConsumesEdgeName)
-					.HasLabel(EntGraphConstants.AppVertexName)
-					.Order().By("Priority", Order.Decr);
-
-				var results = await Submit<Application>(query);
-
-				return results.ToList();
-			}, apiKey);
-		}
-
-		public virtual async Task<Status> RemoveApplication(Guid appId)
-		{
-			return await withG(async (client, g) =>
-			{
-				var existingQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
-						.HasId(appId)
-						.Drop();
-
-				var existingResult = await SubmitFirst<DAFApplicationConfiguration>(existingQuery);
-
-				return Status.Success;
-			}, appId.ToString());
-		}
-
-		public virtual async Task<Status> RemoveDAFApplication(string apiKey, DAFApplicationConfiguration config)
-		{
-			return await withG(async (client, g) =>
-			{
-				var existingQuery = g.V().HasLabel(EntGraphConstants.DAFAppVertexName)
-						.HasId(config.ID)
-						.Has("ApplicationID", config.ApplicationID)
-						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}");
-
-				if (!config.Lookup.IsNullOrEmpty())
-					existingQuery = existingQuery.Has("Lookup", config.Lookup);
-
-				existingQuery = existingQuery.Drop();
-
-				var existingResult = await SubmitFirst<DAFApplicationConfiguration>(existingQuery);
-
-				return Status.Success;
-			}, apiKey);
-		}
-
-		public virtual async Task<Status> RemoveDefaultApp(string apiKey, Guid appId)
-		{
-			return await withG(async (client, g) =>
-			{
-				var dropQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
-					.Out(EntGraphConstants.OffersEdgeName)
-					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.BothE().Where(__.InV().HasId(appId))
-					.Drop();
-
-				await Submit(dropQuery);
-
-				return Status.Success;
-			}, apiKey);
-		}
-
-		public virtual async Task<Application> Save(Application application)
-		{
-			return await withG(async (client, g) =>
-			{
-				var existingQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
-						.HasId(application.ID)
-						.Has(EntGraphConstants.EnterpriseAPIKeyName, application.EnterpriseAPIKey)
-						.Has(EntGraphConstants.RegistryName, application.EnterpriseAPIKey);
-
-				var existingAppResult = await SubmitFirst<Application>(existingQuery);
-
-				if (existingAppResult != null)
-				{
-					var dropAccessRightsQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
-						.HasId(existingAppResult.ID)
-						.Properties<Vertex>("AccessRights").Drop();
-
-					await Submit(dropAccessRightsQuery);
-
-					var dropHostsQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
-						.HasId(existingAppResult.ID)
-						.Properties<Vertex>("Hosts").Drop();
-
-					await Submit(dropHostsQuery);
-
-					var dropLicensesQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
-						.HasId(existingAppResult.ID)
-						.Properties<Vertex>("Licenses").Drop();
-
-					await Submit(dropLicensesQuery);
-				}
-
-				var query = existingAppResult == null ?
-					g.AddV(EntGraphConstants.AppVertexName)
-						.Property(EntGraphConstants.RegistryName, application.EnterpriseAPIKey)
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, application.EnterpriseAPIKey) :
-					g.V().HasLabel(EntGraphConstants.AppVertexName)
-						.HasId(existingAppResult.ID);
-
-				query = query
-					.Property("Container", application.Container ?? "")
-					.Property("Description", application.Description ?? "")
-					.Property("IsPrivate", application.IsPrivate)
-					.Property("IsReadOnly", application.IsReadOnly)
-					.Property("Name", application.Name ?? "")
-					.Property("PathRegex", application.PathRegex ?? "")
-					.Property("QueryRegex", application.QueryRegex ?? "")
-					.Property("UserAgentRegex", application.UserAgentRegex ?? "")
-					.Property("Priority", application.Priority)
-					.AttachList("AccessRights", application.AccessRights)
-					.AttachList("Hosts", application.Hosts)
-					.AttachList("Licenses", application.Licenses);
-
-				var appResult = await SubmitFirst<Application>(query);
-
-				var entQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, application.EnterpriseAPIKey)
-					.Has("PrimaryAPIKey", application.EnterpriseAPIKey);
-
-				var entResult = await SubmitFirst<Enterprise>(entQuery);
-
-				await ensureEdgeRelationships(g, entResult.ID, appResult.ID);
-
-				return appResult;
-			}, application.ID.ToString());
-		}
-
-		public virtual async Task<DAFApplicationConfiguration> SaveDAFApplication(string apiKey, DAFApplicationConfiguration config)
-		{
-			return await withG(async (client, g) =>
-			{
-				var existingQuery = g.V().HasLabel(EntGraphConstants.DAFAppVertexName)
-						.HasId(config.ID)
-						.Has("ApplicationID", config.ApplicationID)
-						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}");
-
-				var existingAppResult = await SubmitFirst<DAFApplicationConfiguration>(existingQuery);
-
-				var query = existingAppResult == null ?
-					g.AddV(EntGraphConstants.DAFAppVertexName)
-						.Property("ApplicationID", config.ApplicationID)
-						.Property(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}")
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey) :
-					g.V().HasLabel(EntGraphConstants.DAFAppVertexName)
-						.HasId(existingAppResult.ID)
-						.Has("ApplicationID", config.ApplicationID)
-						.Has(EntGraphConstants.RegistryName, $"{apiKey}|{config.ApplicationID}");
-
-				query = query.Property("Lookup", config.Lookup ?? "");
-
-				query = query.Property("Priority", config.Priority);
-
-				if (config.Metadata.ContainsKey("BaseHref"))
-				{
-					query.Property("BaseHref", config.Metadata["BaseHref"])
-						.Property("NPMPackage", config.Metadata["NPMPackage"])
-						.Property("PackageVersion", config.Metadata["PackageVersion"])
-						.Property("StateConfig", config.Metadata.ContainsKey("StateConfig") ? config.Metadata["StateConfig"] : "");
-				}
-				else if (config.Metadata.ContainsKey("APIRoot"))
-				{
-					query.Property("APIRoot", config.Metadata["APIRoot"])
-						.Property("InboundPath", config.Metadata["InboundPath"])
-						.Property("Methods", config.Metadata["Methods"])
-						.Property("Security", config.Metadata["Security"]);
-				}
-				else if (config.Metadata.ContainsKey("Redirect"))
-				{
-					query.Property("Redirect", config.Metadata["Redirect"]);
-				}
-				else if (config.Metadata.ContainsKey("DAFApplicationID"))
-				{
-					query.Property("DAFApplicationID", config.Metadata["DAFApplicationID"])
-						.Property("DAFApplicationRoot", config.Metadata["DAFApplicationRoot"]);
-				}
-
-				var appAppResult = await SubmitFirst<DAFApplicationConfiguration>(query);
-
-				var appQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
-					.HasId(config.ApplicationID)
-					.Has(EntGraphConstants.RegistryName, apiKey);
-
-				var appResult = await SubmitFirst<Application>(appQuery);
-
-				await ensureEdgeRelationships(g, appResult.ID, appAppResult.ID,
-					edgeToCheckBuy: EntGraphConstants.ProvidesEdgeName, edgesToCreate: new List<string>()
-					{
-						EntGraphConstants.ProvidesEdgeName
-					});
-
-				return appAppResult;
-			}, apiKey);
-		}
-
-		public virtual async Task<Status> SeedDefault(string sourceApiKey, string targetApiKey)
-		{
-			return await withG(async (client, g) =>
-			{
-				var defaultsQuery = g.V().HasLabel(EntGraphConstants.DefaultAppsVertexName)
-					.Has(EntGraphConstants.RegistryName, sourceApiKey);
-
-				var defaultApps = await Submit<BusinessModel<Guid>>(defaultsQuery);
-
-				var defaultApp = defaultApps.FirstOrDefault();
-
-				var entQuery = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, targetApiKey)
-					.Has("PrimaryAPIKey", targetApiKey);
-
-				var entResult = await SubmitFirst<Enterprise>(entQuery);
-
-				await ensureEdgeRelationships(g, entResult.ID, defaultApp.ID,
-					edgeToCheckBuy: EntGraphConstants.OffersEdgeName, edgesToCreate: new List<string>()
-					{
-						EntGraphConstants.OffersEdgeName
-					});
-
-				return Status.Success;
-			}, targetApiKey);
-		}
-		#endregion
-
-		#region Helpers
-		#endregion
-	}
+    public class ApplicationGraph : LCUGraph
+    {
+        #region Properties
+        #endregion
+
+        #region Constructors
+        public ApplicationGraph(LCUGraphConfig graphConfig, ILogger<ApplicationGraph> logger)
+            : base(graphConfig, logger)
+        { }
+        #endregion
+
+        #region API Methods
+        public virtual async Task<Status> AddDefaultApp(string entLookup, Guid appId)
+        {
+            var defApps = await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Out<Offers>()
+                .OfType<DefaultApplications>()
+                .Where(da => da.Registry == entLookup)
+                .FirstOrDefaultAsync();
+
+            await ensureEdgeRelationship<Consumes>(defApps.ID, appId);
+
+            return Status.Success;
+        }
+
+        public virtual async Task<Status> CreateDefaultApps(string entLookup)
+        {
+            var ent = await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .FirstOrDefaultAsync();
+
+            var dropDefaults = await g.V<Enterprise>(ent.ID)
+                .Out<Offers>()
+                .BothE().Where(__ => __.OutV<DefaultApplications>())
+                .Drop();
+
+            var defApps = await g.AddV(new DefaultApplications()
+            {
+                ID = Guid.NewGuid(),
+                Registry = entLookup,
+                EnterpriseLookup = entLookup
+            })
+            .FirstOrDefaultAsync();
+
+            await ensureEdgeRelationship<Consumes>(ent.ID, defApps.ID);
+
+            await ensureEdgeRelationship<Manages>(ent.ID, defApps.ID);
+
+            await ensureEdgeRelationship<Owns>(ent.ID, defApps.ID);
+
+            return Status.Success;
+        }
+
+        public virtual async Task<Application> GetApplication(Guid appId)
+        {
+            return await g.V<Application>(appId)
+                .FirstOrDefaultAsync();
+        }
+
+        public virtual async Task<DAFApplication> GetDAFApplication(Guid dafAppId)
+        {
+            return await g.V<DAFApplication>(dafAppId)
+                .FirstOrDefaultAsync();
+        }
+
+        public virtual async Task<Status> HasDefaultApps(string entLookup)
+        {
+            var defApps = await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Out<Owns>()
+                .OfType<DefaultApplications>()
+                .Where(e => e.Registry == entLookup)
+                .FirstOrDefaultAsync();
+
+            return defApps != null ? Status.Success : Status.NotLocated;
+        }
+
+        public virtual async Task<Status> IsDefaultApp(string entLookup, Guid appId)
+        {
+            var defApp = await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Out<Owns>()
+                .OfType<DefaultApplications>()
+                .Where(e => e.Registry == entLookup)
+                .Out<Consumes>()
+                .OfType<Application>()
+                .V(appId)
+                .FirstOrDefaultAsync();
+
+            return defApp != null ? Status.Success : Status.NotLocated;
+        }
+
+        public virtual async Task<List<Application>> ListApplications(string entLookup)
+        {
+            var apps = await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Out<Consumes>()
+                .OfType<Application>()
+                .Order(_ => _.ByDescending(a => a.Priority))
+                .ToListAsync();
+
+            return apps;
+        }
+
+        public virtual async Task<List<DAFApplication>> ListDAFApplications(string entLookup, Guid appId)
+        {
+            var dafApps = await g.V<Application>(appId)
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Out<Provides>()
+                .OfType<DAFApplication>()
+                .Where(da => da.Registry == $"{entLookup}|{appId}")
+                .Where(da => da.ApplicationID == appId.ToString())
+                .Order(_ => _.ByDescending(da => da.Priority))
+                .ToListAsync();
+
+            return dafApps;
+        }
+
+        public virtual async Task<List<Application>> LoadByEnterprise(string entLookup, string host, string container = null)
+        {
+            var appsQuery = g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Out<Consumes>()
+                .OfType<Application>()
+                .Where(a => a.Hosts.Contains(host));
+
+            //	TODO:  Turn on and enable as part of next wave of data apps
+            //if (!container.IsNullOrEmpty())
+            //	appsQuery = appsQuery.Where(a => a.Container == container);
+
+            var apps = await appsQuery
+                .Order(_ => _.ByDescending(a => a.Priority))
+                .ToListAsync();
+
+            return apps;
+        }
+
+        public virtual async Task<List<Application>> LoadDefaultApplications(string entLookup)
+        {
+            var defApps = await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Out<Offers>()
+                .OfType<DefaultApplications>()
+                .Out<Consumes>()
+                .OfType<Application>()
+                .Order(_ => _.ByDescending(da => da.Priority))
+                .ToListAsync();
+
+            return defApps;
+        }
+
+        public virtual async Task<Status> RemoveApplication(Guid appId)
+        {
+            await g.V<Application>(appId).Drop();
+
+            return Status.Success;
+        }
+
+        public virtual async Task<Status> RemoveDAFApplication(Guid dafAppId)
+        {
+            var existingResult = await g.V<DAFApplication>(dafAppId)
+                .Drop();
+
+            return Status.Success;
+        }
+
+        public virtual async Task<Status> RemoveDefaultApp(string entLookup, Guid appId)
+        {
+            var dropResult = await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Out<Offers>()
+                .OfType<DefaultApplications>()
+                .Where(da => da.Registry == entLookup)
+                .BothE().Where(__ => __.InV().V(appId))
+                .Drop();
+
+            return Status.Success;
+        }
+
+        public virtual async Task<Application> Save(string entLookup, Application application)
+        {
+            var existingApp = await g.V<Application>(application.ID)
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .FirstOrDefaultAsync();
+
+            application.EnterpriseLookup = entLookup;
+
+            application.Registry = entLookup;
+
+            if (existingApp == null)
+            {
+                if (application.ID.IsEmpty())
+                    application.ID = Guid.NewGuid();
+
+                application = await g.AddV(application).FirstOrDefaultAsync();
+            }
+            else
+                application = await g.V<Application>(existingApp.ID)
+                        .Update(application)
+                        .FirstOrDefaultAsync();
+
+            var ent = await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == application.EnterpriseLookup)
+                .Where(e => e.Registry == application.EnterpriseLookup)
+                .FirstOrDefaultAsync();
+
+            await ensureEdgeRelationship<Consumes>(ent.ID, application.ID);
+
+            await ensureEdgeRelationship<Manages>(ent.ID, application.ID);
+
+            await ensureEdgeRelationship<Owns>(ent.ID, application.ID);
+
+            return application;
+        }
+
+        public virtual async Task<DAFApplication> SaveDAFApplication(string entLookup, DAFApplication dafApp)
+        {
+            try
+            {
+                var existingDafApp = await g.V<DAFApplication>(dafApp.ID)
+                    .Where(da => da.Registry == $"{entLookup}|{dafApp.ApplicationID}")
+                    .Where(da => da.ApplicationID == dafApp.ApplicationID)
+                    .FirstOrDefaultAsync();
+
+                dafApp.EnterpriseLookup = entLookup;
+
+                dafApp.Registry = $"{entLookup}|{dafApp.ApplicationID}";
+
+                if (existingDafApp == null)
+                {
+                    if (dafApp.ID.IsEmpty())
+                        dafApp.ID = Guid.NewGuid();
+
+                    dafApp = await g.AddV(dafApp)
+                        .FirstOrDefaultAsync();
+                }
+                else
+                    dafApp = await g.V<DAFApplication>(existingDafApp.ID)
+                        .Update(dafApp)
+                        .FirstOrDefaultAsync();
+
+                var app = await g.V<Application>(dafApp.ApplicationID)
+                    .Where(a => a.Registry == entLookup)
+                    .FirstOrDefaultAsync();
+
+                await ensureEdgeRelationship<Provides>(app.ID, dafApp.ID);
+            } catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            return dafApp;
+            //var existingDafApp = await g.V<DAFApplicationConfiguration>(dafApp.ID)
+            //    .Where(da => da.Registry == $"{entLookup}|{dafApp.ApplicationID}")
+            //    .Where(da => da.ApplicationID == dafApp.ApplicationID)
+            //    .FirstOrDefaultAsync();
+
+            //if (dafApp.Metadata.ContainsKey("BaseHref"))
+            //{
+            //    query.Property("BaseHref", dafApp.Metadata["BaseHref"])
+            //        .Property("NPMPackage", dafApp.Metadata["NPMPackage"])
+            //        .Property("PackageVersion", dafApp.Metadata["PackageVersion"])
+            //        .Property("StateConfig", dafApp.Metadata.ContainsKey("StateConfig") ? dafApp.Metadata["StateConfig"] : "");
+            //}
+            //else if (dafApp.Metadata.ContainsKey("APIRoot"))
+            //{
+            //    query.Property("APIRoot", dafApp.Metadata["APIRoot"])
+            //        .Property("InboundPath", dafApp.Metadata["InboundPath"])
+            //        .Property("Methods", dafApp.Metadata["Methods"])
+            //        .Property("Security", dafApp.Metadata["Security"]);
+            //}
+            //else if (dafApp.Metadata.ContainsKey("Redirect"))
+            //{
+            //    query.Property("Redirect", dafApp.Metadata["Redirect"]);
+            //}
+            //else if (dafApp.Metadata.ContainsKey("DAFApplicationID"))
+            //{
+            //    query.Property("DAFApplicationID", dafApp.Metadata["DAFApplicationID"])
+            //        .Property("DAFApplicationRoot", dafApp.Metadata["DAFApplicationRoot"]);
+            //}
+
+            //var appAppResult = await SubmitFirst<DAFApplicationConfiguration>(query);
+
+            //var appQuery = g.V().HasLabel(EntGraphConstants.AppVertexName)
+            //    .HasId(dafApp.ApplicationID)
+            //    .Has(EntGraphConstants.RegistryName, apiKey);
+            //if (existingDafApp == null)
+            //{
+            //    if (dafApp.ID.IsEmpty())
+            //        dafApp.ID = Guid.NewGuid();
+
+            //    dafApp = await g.AddV(dafApp).FirstOrDefaultAsync();
+            //}
+            //else
+            //    dafApp = await g.V<DAFApplicationConfiguration>(existingDafApp.ID)
+            //        .Update(dafApp)
+            //        .FirstOrDefaultAsync();
+
+            //var app = await g.V<Application>(dafApp.ApplicationID)
+            //    .Where(a => a.Registry == entLookup)
+            //    .FirstOrDefaultAsync();
+
+            //await ensureEdgeRelationship<Provides>(app.ID, dafApp.ID);
+
+            //return dafApp;
+        }
+
+        public virtual async Task<Status> SeedDefault(string sourceEntLookup, string targetEntLookup)
+        {
+            var defaultApp = await g.V<DefaultApplications>()
+                .Where(da => da.EnterpriseLookup == sourceEntLookup)
+                .Where(da => da.Registry == sourceEntLookup)
+                .FirstOrDefaultAsync();
+
+            var ent = await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == targetEntLookup)
+                .Where(e => e.Registry == targetEntLookup)
+                .FirstOrDefaultAsync();
+
+            await ensureEdgeRelationship<Offers>(ent.ID, defaultApp.ID);
+
+            return Status.Success;
+        }
+        #endregion
+
+        #region Helpers
+        #endregion
+    }
 }

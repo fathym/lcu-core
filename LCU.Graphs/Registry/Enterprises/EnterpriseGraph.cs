@@ -1,6 +1,9 @@
-﻿using Fathym;
+﻿using ExRam.Gremlinq.Core;
+using Fathym;
 using Fathym.Business.Models;
-using Gremlin.Net.Process.Traversal;
+using LCU.Graphs.Registry.Enterprises.Edges;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,248 +11,203 @@ using System.Threading.Tasks;
 
 namespace LCU.Graphs.Registry.Enterprises
 {
-	public class EnterpriseGraph : LCUGraph, IEnterpriseGraph
-	{
-		#region Properties
-		#endregion
+    public class EnterpriseGraph : LCUGraph
+    {
+        #region Properties
+        #endregion
 
-		#region Constructors
-		public EnterpriseGraph(GremlinClientPoolManager clientPool)
-			: base(clientPool)
-		{
-			ListProperties.Add("Hosts");
-		}
-		#endregion
+        #region Constructors
+        public EnterpriseGraph(LCUGraphConfig graphConfig, ILogger<EnterpriseGraph> logger)
+            : base(graphConfig, logger)
+        { }
+        #endregion
 
-		#region API Methods
-		public virtual async Task<Enterprise> AddHost(string entApiKey, string host)
-		{
-			return await withG(async (client, g) =>
-			{
-				var existingEnt = await LoadByHost(host);
+        #region API Methods
+        public virtual async Task<Enterprise> AddHost(string entLookup, string host)
+        {
+            var existingEnt = await LoadByHost(host);
 
-				if (existingEnt == null)
-				{
-					var apiKey = Guid.NewGuid();
+            if (existingEnt == null)
+            {
+                return await g.V<Enterprise>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == entLookup)
+                    .Property(e => e.Hosts, new string[] { host })
+                    .FirstOrDefaultAsync();
+            }
+            else
+            {
+                if (existingEnt.EnterpriseLookup != entLookup)
+                    throw new Exception("An enterprise with that host already exists.");
+                else
+                    return existingEnt;
+            }
+        }
 
-					var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-						.Has("PrimaryAPIKey", entApiKey)
-						.Has(EntGraphConstants.RegistryName, entApiKey)
-						.Property(Cardinality.List, "Hosts", host);
+        public virtual async Task<Enterprise> Create(string name, string description, string host)
+        {
+            var existingEnt = await LoadByHost(host);
 
-					return await SubmitFirst<Enterprise>(query);
-				}
-				else
-				{
-					if (existingEnt.Metadata["Registry"].ToString() != entApiKey)
-						throw new Exception("An enterprise with that host already exists.");
-					else
-						return existingEnt;
-				}
-			}, entApiKey);
-		}
+            if (existingEnt == null)
+            {
+                var entLookup = Guid.NewGuid().ToString();
 
-		public virtual async Task<Enterprise> Create(string name, string description, string host)
-		{
-			return await withG(async (client, g) =>
-			{
-				var existingEnt = await LoadByHost(host);
+                return await g.AddV(new Enterprise()
+                {
+                    ID = Guid.NewGuid(),
+                    Name = name,
+                    Hosts = new string[] { host },
+                    Description = description,
+                    PreventDefaultApplications = false,
+                    EnterpriseLookup = entLookup,
+                    Registry = entLookup
+                }).FirstOrDefaultAsync();
+            }
+            else
+            {
+                throw new Exception("An enterprise with that host already exists.");
+            }
+        }
 
-				if (existingEnt == null)
-				{
-					var apiKey = Guid.NewGuid();
+        public virtual async Task<Status> DeleteEnterprise(string entLookup)
+        {
+            if (entLookup == "3ebd1c0d-22d0-489e-a46f-3260103c8cd7")
+                throw new Exception("This would blow up everything, so don't do it");
 
-					var query = g.AddV(EntGraphConstants.EnterpriseVertexName)
-						.Property(Cardinality.List, "Hosts", host)
-						.Property("Name", name)
-						.Property("Description", description)
-						.Property("PreventDefaultApplications", false)
-						.Property("PrimaryAPIKey", apiKey)
-						.Property(EntGraphConstants.RegistryName, apiKey);
+            var ent = await LoadByLookup(entLookup);
 
-					return await SubmitFirst<Enterprise>(query);
-				}
-				else
-				{
-					throw new Exception("An enterprise with that host already exists.");
-				}
-			});
-		}
+            if (ent != null && ent.EnterpriseLookup != "3ebd1c0d-22d0-489e-a46f-3260103c8cd7")
+            {
+                //	TODO:  We should be archiving the Enterprise records somewhere for potential reimport?
 
-		public virtual async Task<Status> DeleteEnterprise(string entApiKey)
-		{
-			return await withG(async (client, g) =>
-			{
-				var ent = await LoadByPrimaryAPIKey(entApiKey);
+                await g.V<LCUVertex>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Drop();
 
-				if (ent != null)
-				{
-					var dataQuery = g.V()
-						.Has("EnterpriseAPIKey", entApiKey)
-						.Drop();
+                return Status.Success;
+            }
+            else
+            {
+                return Status.GeneralError.Clone("Unable to located enterprise by that enterprise lookup");
+            }
+        }
 
-					await Submit(dataQuery);
+        public virtual async Task<bool> DoesHostExist(string host)
+        {
+            var ent = await g.V<Enterprise>()
+                .Where(e => e.Hosts.Contains(host))
+                .FirstOrDefaultAsync();
 
-					var entQuery = g.V()
-						.Has("PrimaryAPIKey", entApiKey)
-						.Drop();
+            return ent != null;
+        }
 
-					await Submit(entQuery);
+        public virtual async Task<List<string>> FindRegisteredHosts(string hostRoot)
+        {
+            var hosts = await g.V<Enterprise>()
+                .Values(e => e.Hosts);
 
-					return Status.Success;
-				}
-				else
-				{
-					return Status.GeneralError.Clone("Unable to located enterprise by that api key");
-				}
-			}, entApiKey);
-		}
+            hosts = hosts.Where(h => h.EndsWith(hostRoot)).ToArray();
 
-		public virtual async Task<bool> DoesHostExist(string host)
-		{
-			return await withG(async (client, g) =>
-			{
-				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName).Has("Hosts", host);
+            return hosts.Distinct().ToList();
+        }
 
-				var entHost = await Submit<Enterprise>(query);
+        public virtual async Task<List<Enterprise>> ListChildEnterprises(string entLookup)
+        {
+            return await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Out<Owns>()
+                .OfType<DefaultApplications>()
+                .In<Offers>()
+                .OfType<Enterprise>()
+                .ToListAsync();
+        }
 
-				return entHost != null && entHost.Count > 0;
-			});
-		}
+        public virtual async Task<List<string>> ListRegistrationHosts(string entLookup)
+        {
+            var hosts = await g.V<EnterpriseRegistration>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Values(e => e.Hosts);
 
-		public virtual async Task<List<string>> FindRegisteredHosts(string apiKey, string hostRoot)
-		{
-			return await withG(async (client, g) =>
-			{
-				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has("Hosts", TextP.EndingWith(hostRoot))
-					.Values<string>("Hosts");
+            return hosts.ToList();
+        }
 
-				var results = await Submit<string>(query);
+        public virtual async Task<Enterprise> LoadByHost(string host)
+        {
+            try
+            {
+                return await g.V<Enterprise>()
+                        .Where(e => e.Hosts.Contains(host))
+                        .FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
 
-				return results.Distinct().ToList();
-			}, apiKey);
-		}
+                throw;
+            }
+        }
 
-		public virtual async Task<List<Enterprise>> ListChildEnterprises(string apiKey)
-		{
-			return await withG(async (client, g) =>
-			{
-				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
-					.Out(EntGraphConstants.OwnsEdgeName)
-					.HasLabel(EntGraphConstants.DefaultAppsVertexName)
-					.In(EntGraphConstants.OffersEdgeName)
-					.HasLabel(EntGraphConstants.EnterpriseVertexName);
+        public virtual async Task<Enterprise> LoadByLookup(string entLookup)
+        {
+            return await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .FirstOrDefaultAsync();
+        }
 
-				var results = await Submit<Enterprise>(query);
+        public virtual async Task<string> RetrieveThirdPartyData(string entLookup, string key)
+        {
+            return await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Out<Owns>()
+                .OfType<ThirdPartyIdentifier>()
+                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Key == key)
+                .Values(e => e.Value)
+                .FirstOrDefaultAsync();
+        }
 
-				return results.ToList();
-			}, apiKey);
-		}
+        public virtual async Task<Status> SetThirdPartyData(string entLookup, string key, string value)
+        {
+            var ent = await LoadByLookup(entLookup);
 
-		public virtual async Task<List<string>> ListRegistrationHosts(string apiKey)
-		{
-			return await withG(async (client, g) =>
-			{
-				var query = g.V().HasLabel(EntGraphConstants.EnterpriseRegistrationVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Values<string>("Hosts");
+            var tpi = await g.V<Enterprise>(ent.ID)
+                .Out<Owns>()
+                .OfType<ThirdPartyIdentifier>()
+                .Where(e => e.Registry == entLookup)
+                .Where(e => e.Key == key)
+                .FirstOrDefaultAsync();
 
-				var results = await Submit<string>(query);
+            if (tpi == null)
+            {
+                tpi = await g.AddV(new ThirdPartyIdentifier()
+                {
+                    ID = Guid.NewGuid(),
+                    Key = key,
+                    Value = value,
+                    EnterpriseLookup = entLookup,
+                    Registry = entLookup,
+                    //Created = buildAudit()
+                })
+                .FirstOrDefaultAsync();
 
-				return results.ToList();
-			}, apiKey);
-		}
+                await ensureEdgeRelationship<Owns>(ent.ID, tpi.ID);
+            }
+            else
+            {
+                tpi = await g.V<ThirdPartyIdentifier>(tpi.ID)
+                    .Property(e => e.Value, value)
+                    //.Property(e => e.Modified, buildAudit())
+                    .FirstOrDefaultAsync();
+            }
 
-		public virtual async Task<Enterprise> LoadByHost(string host)
-		{
-			return await withG(async (client, g) =>
-			{
-				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName).Has("Hosts", host);
+            return Status.Success;
+        }
+        #endregion
 
-				return await SubmitFirst<Enterprise>(query);
-			});
-		}
-
-		public virtual async Task<Enterprise> LoadByPrimaryAPIKey(string apiKey)
-		{
-			return await withG(async (client, g) =>
-			{
-				var query = g.V().HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey);
-
-				return await SubmitFirst<Enterprise>(query);
-			}, apiKey);
-		}
-
-		public virtual async Task<string> RetrieveThirdPartyData(string apiKey, string key)
-		{
-			return await withG(async (client, g) =>
-			{
-				var registry = apiKey;
-
-				var existingQuery = g.V()
-					.HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
-					.Out(EntGraphConstants.OwnsEdgeName)
-					.HasLabel(EntGraphConstants.ThirdPartyDataVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("Key", key);
-
-				var tpdResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
-
-				return tpdResult?.Metadata["Value"].ToString();
-			}, apiKey);
-		}
-
-		public virtual async Task<Status> SetThirdPartyData(string apiKey, string key, string value)
-		{
-			return await withG(async (client, g) =>
-			{
-				var existingQuery = g.V()
-					.HasLabel(EntGraphConstants.EnterpriseVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("PrimaryAPIKey", apiKey)
-					.Out(EntGraphConstants.OwnsEdgeName)
-					.HasLabel(EntGraphConstants.ThirdPartyDataVertexName)
-					.Has(EntGraphConstants.RegistryName, apiKey)
-					.Has("Key", key);
-
-				var tpdResult = await SubmitFirst<BusinessModel<Guid>>(existingQuery);
-
-				var setQuery = tpdResult != null ? existingQuery :
-					g.AddV(EntGraphConstants.ThirdPartyDataVertexName)
-						.Property(EntGraphConstants.RegistryName, apiKey)
-						.Property(EntGraphConstants.EnterpriseAPIKeyName, apiKey)
-						.Property("Key", key);
-
-				setQuery = setQuery.Property("Value", value);
-
-				tpdResult = await SubmitFirst<BusinessModel<Guid>>(setQuery);
-
-				var entQuery = g.V()
-				   .HasLabel(EntGraphConstants.EnterpriseVertexName)
-				   .Has(EntGraphConstants.RegistryName, apiKey)
-				   .Has("PrimaryAPIKey", apiKey);
-
-				var entResult = await SubmitFirst<Enterprise>(entQuery);
-
-				await ensureEdgeRelationships(g, entResult.ID, tpdResult.ID,
-					edgeToCheckBuy: EntGraphConstants.OwnsEdgeName, edgesToCreate: new List<string>()
-					{
-						EntGraphConstants.OwnsEdgeName
-					});
-
-				return Status.Success;
-			}, apiKey);
-		}
-		#endregion
-
-		#region Helpers
-		#endregion
-	}
+        #region Helpers
+        #endregion
+    }
 }
