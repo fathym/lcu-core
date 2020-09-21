@@ -56,6 +56,16 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.IDE
 
         #region API Methods
         [TestMethod]
+        public async Task ListParentLCUs()
+        {
+            var lcus = await ideGraph.ListLCUs(parentEntLookup, "Default");
+
+            Assert.IsNotNull(lcus);
+            Assert.AreNotEqual(0, lcus.Count);
+            Assert.IsNotNull(lcus.First().Modules);
+        }
+
+        [TestMethod]
         public async Task ListParentSections()
         {
             var sections = await ideGraph.ListSideBarSections(parentEntLookup, "Default", "core");
