@@ -24,16 +24,5 @@ namespace LCU.Graphs
 
         [DataMember]
         public virtual string Registry { get; set; }
-
-
-
-        // Migration properties
-        [Obsolete]
-        [DataMember]
-        public virtual string EnterpriseAPIKey { get; set; }
-
-        [Obsolete]
-        [DataMember]
-        public virtual string PrimaryAPIKey { get; set; }
     }
 }
