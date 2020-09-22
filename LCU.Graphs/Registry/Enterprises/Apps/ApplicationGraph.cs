@@ -122,6 +122,19 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
             return apps;
         }
 
+        public virtual async Task<List<DAFApplication>> ListAllDAFApplications(string entLookup)
+        {
+            var dafApps = await g.V<Application>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Out<Provides>()
+                .OfType<DAFApplication>()
+                .Order(_ => _.ByDescending(da => da.Priority))
+                .ToListAsync();
+
+            return dafApps;
+        }
+
         public virtual async Task<List<DAFApplication>> ListDAFApplications(string entLookup, Guid appId)
         {
             var dafApps = await g.V<Application>(appId)
