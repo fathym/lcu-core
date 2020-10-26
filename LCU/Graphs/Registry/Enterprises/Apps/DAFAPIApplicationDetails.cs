@@ -16,6 +16,9 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 		public virtual string InboundPath { get; set; }
 
 		[DataMember]
+		public virtual string Lookup { get; set; }
+
+		[DataMember]
 		public virtual string Methods { get; set; }
 
 		[DataMember]
