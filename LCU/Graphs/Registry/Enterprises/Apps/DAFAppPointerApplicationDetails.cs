@@ -11,7 +11,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 {
     [Serializable]
     [DataContract]
-    public class DAFAppPointerApplicationDetails : MetadataModel
+    public class DAFAppPointerApplicationDetails
     {
         [DataMember]
         public virtual string DAFApplicationID { get; set; }

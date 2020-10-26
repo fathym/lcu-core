@@ -7,7 +7,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 {
 	[Serializable]
 	[DataContract]
-	public class DAFAPIApplicationDetails : MetadataModel
+	public class DAFAPIApplicationDetails
 	{
 		[DataMember]
 		public virtual string APIRoot { get; set; }

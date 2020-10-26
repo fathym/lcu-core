@@ -1,3 +1,4 @@
+using Fathym;
 using LCU.Graphs.Registry.Enterprises.Apps;
 using LCU.Testing.Graphs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -181,16 +182,20 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
                 Details = new DAFViewApplicationDetails()
                 {
                     BaseHref = "/something/",
-                    NPMPackage = "@habistack/lcu-fathym-forecast-lcu",
-                    PackageVersion = "latest",
-                    StateConfig = new Fathym.MetadataModel()
+                    Package = new DAFApplicationNPMPackage()
+                    {
+                        Name = "@habistack/lcu-fathym-forecast-lcu",
+                        Version = "latest"
+                    }.JSONConvert<MetadataModel>(),
+                    PackageType = DAFApplicationPackageTypes.NPM,
+                    StateConfig = new MetadataModel()
                     {
                         Metadata = new Dictionary<string, JToken>()
                         {
                             { "hello", "world" }
                         }
                     }
-                }
+                }.JSONConvert<MetadataModel>()
             };
         }
         #endregion
