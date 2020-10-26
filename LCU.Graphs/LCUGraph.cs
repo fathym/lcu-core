@@ -81,7 +81,8 @@ namespace LCU.Graphs
                             {
                                 return builder;
                             });
-                    });
+                    })
+                    .ConfigureModel(m => m.ConfigureNativeTypes(t => t.Add(typeof(Guid))));
             });
         }
         #endregion
