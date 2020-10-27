@@ -151,6 +151,34 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
             Assert.IsTrue(status);
         }
 
+
+        [TestMethod]
+        public async Task GetLicenseAccessTokenCreateRemove()
+        {
+            var expected = createLicenseAccessToken(mainEnt.EnterpriseLookup, username);
+
+            var actual = await identityGraph.SetLicenseAccessToken(mainEnt.EnterpriseLookup, username, expected);
+
+            Assert.IsNotNull(actual);
+
+            var retrievedLATs = await identityGraph.ListLicenseAccessTokens(mainEnt.EnterpriseLookup);
+
+            var retrievedActual = retrievedLATs.First(x => x.Username == username);
+
+            Assert.IsNotNull(retrievedActual);
+            Assert.AreEqual(actual.IsLocked, retrievedActual.IsLocked);
+            Assert.AreEqual(actual.IsReset, retrievedActual.IsReset);
+            Assert.AreEqual(actual.Lookup, retrievedActual.Lookup);
+            Assert.AreEqual(actual.TrialPeriodDays, retrievedActual.TrialPeriodDays);
+            Assert.AreEqual(actual.AccessStartDate.ToString("yyyy/MM/dd HH:mm:ss"), retrievedActual.AccessStartDate.ToString("yyyy/MM/dd HH:mm:ss"));
+            Assert.AreEqual(actual.ExpirationDate.ToString("yyyy/MM/dd HH:mm:ss"), retrievedActual.ExpirationDate.ToString("yyyy/MM/dd HH:mm:ss"));
+
+            var status = await identityGraph.DeleteLicenseAccessToken(mainEnt.EnterpriseLookup, username, expected.Lookup);
+
+            Assert.IsNotNull(status);
+            Assert.IsTrue(status);
+
+        }
         //[TestMethod]
         //public async Task TestAuthorization()
         //{
@@ -178,7 +206,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
             {
                 Username = username,
                 AccessStartDate = now,
-                ExpirationDate = now.AddDays(7.0),
+               // ExpirationDate = now.AddDays(7.0),
                 IsLocked = false,
                 IsReset = false,
                 Lookup = license,
@@ -193,6 +221,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
                 }.JSONConvert<MetadataModel>()
 
             };
+
         }
 
         protected virtual ThirdPartyToken createThirdPartyToken(string entId, string username)
