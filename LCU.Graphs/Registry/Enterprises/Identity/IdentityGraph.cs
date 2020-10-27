@@ -467,7 +467,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
             token.Registry = $"{entLookup}|{username}";
 
-            if (token.IsLocked) 
+            if (token.IsLocked)
                 token.ExpirationDate = System.DateTime.Now;
 
             if (token.IsReset)

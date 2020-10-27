@@ -136,7 +136,6 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
             Assert.AreEqual(expected.Lookup, actual.Lookup);
             Assert.AreEqual(expected.TrialPeriodDays, actual.TrialPeriodDays);
             Assert.AreEqual(expected.AccessStartDate.ToString("yyyy/MM/dd HH:mm:ss"), actual.AccessStartDate.ToString("yyyy/MM/dd HH:mm:ss"));
-            Assert.AreEqual(expected.ExpirationDate.ToString("yyyy/MM/dd HH:mm:ss"), actual.ExpirationDate.ToString("yyyy/MM/dd HH:mm:ss"));
 
             Assert.IsNotNull(actual.Details);
             Assert.AreEqual(expected.Details.Metadata["PlanGroup"].ToString(), actual.Details.Metadata["PlanGroup"].ToString());
@@ -171,7 +170,6 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
             Assert.AreEqual(actual.Lookup, retrievedActual.Lookup);
             Assert.AreEqual(actual.TrialPeriodDays, retrievedActual.TrialPeriodDays);
             Assert.AreEqual(actual.AccessStartDate.ToString("yyyy/MM/dd HH:mm:ss"), retrievedActual.AccessStartDate.ToString("yyyy/MM/dd HH:mm:ss"));
-            Assert.AreEqual(actual.ExpirationDate.ToString("yyyy/MM/dd HH:mm:ss"), retrievedActual.ExpirationDate.ToString("yyyy/MM/dd HH:mm:ss"));
 
             var status = await identityGraph.DeleteLicenseAccessToken(mainEnt.EnterpriseLookup, username, expected.Lookup);
 
@@ -206,7 +204,6 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
             {
                 Username = username,
                 AccessStartDate = now,
-               // ExpirationDate = now.AddDays(7.0),
                 IsLocked = false,
                 IsReset = false,
                 Lookup = license,
