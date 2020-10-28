@@ -166,12 +166,15 @@ namespace LCU.Graphs
                             }
                         }
 
+                        if (!retriable)
+                            throw;
+
                         return retriable;
                     }
                 })
                 .SetCycles(10)
-                .SetThrottle(10)
-                .SetThrottleScale(1.5)
+                .SetThrottle(25)
+                .SetThrottleScale(2)
                 .Run();
 
             return result;
