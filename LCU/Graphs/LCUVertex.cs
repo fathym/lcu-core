@@ -22,8 +22,8 @@ namespace LCU.Graphs
         [DataMember]
         public virtual string Label { get; set; }
 
-        [DataMember]
-        public virtual string PartitionKey { get; set; }
+        //[DataMember]
+        //public virtual string PartitionKey { get; set; }
 
         [DataMember]
         public virtual string Registry { get; set; }

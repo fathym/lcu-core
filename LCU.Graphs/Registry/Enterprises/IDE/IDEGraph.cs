@@ -29,370 +29,418 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
         #region API Methods
         public virtual async Task<Status> AddSideBarSection(string entLookup, string container, string activityLookup, string section)
         {
-            var registry = $"{entLookup}|{container}";
-
-            var activity = await g.V<IDEContainer>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == entLookup)
-                .Where(e => e.Container == container)
-                .Out<Consumes>()
-                .OfType<Activity>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == registry)
-                .Where(e => e.Lookup == activityLookup)
-                .FirstOrDefaultAsync();
-
-            if (activity != null)
+            return await withCommonGraphBoundary(async () =>
             {
-                activity.Sections = activity.Sections.AddItem(section).Distinct().ToArray();
+                var registry = $"{entLookup}|{container}";
 
-                activity = await g.V<Activity>(activity.ID)
-                    .Update(activity)
+                var activity = await g.V<IDEContainer>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == entLookup)
+                    .Where(e => e.Container == container)
+                    .Out<Consumes>()
+                    .OfType<Activity>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == registry)
+                    .Where(e => e.Lookup == activityLookup)
                     .FirstOrDefaultAsync();
-            }
 
-            return activity != null;
+                if (activity != null)
+                {
+                    activity.Sections = activity.Sections.AddItem(section).Distinct().ToArray();
+
+                    activity = await g.V<Activity>(activity.ID)
+                        .Update(activity)
+                        .FirstOrDefaultAsync();
+                }
+
+                return activity != null;
+            });
         }
 
         public virtual async Task<Status> DeleteActivity(string entLookup, string container, string activityLookup)
         {
-            var act = await GetActivity(entLookup, container, activityLookup);
-
-            if (act != null)
+            return await withCommonGraphBoundary(async () =>
             {
-                await g.V<Activity>(act.ID)
-                    .Where(e => e.EnterpriseLookup == entLookup)
-                    .Drop();
+                var act = await GetActivity(entLookup, container, activityLookup);
 
-                return Status.Success;
-            }
-            else
-            {
-                return Status.GeneralError.Clone("Unable to locate data flow by that enterprise lookup");
-            }
+                if (act != null)
+                {
+                    await g.V<Activity>(act.ID)
+                        .Where(e => e.EnterpriseLookup == entLookup)
+                        .Drop();
+
+                    return Status.Success;
+                }
+                else
+                {
+                    return Status.GeneralError.Clone("Unable to locate data flow by that enterprise lookup");
+                }
+            });
         }
 
         public virtual async Task<Status> DeleteLCU(string entLookup, string container, string lcuLookup)
         {
-            var lcu = await GetLCU(entLookup, container, lcuLookup);
-
-            if (lcu != null)
+            return await withCommonGraphBoundary(async () =>
             {
-                await g.V<LCUConfig>(lcu.ID)
-                    .Where(e => e.EnterpriseLookup == entLookup)
-                    .Drop();
+                var lcu = await GetLCU(entLookup, container, lcuLookup);
 
-                return Status.Success;
-            }
-            else
-            {
-                return Status.GeneralError.Clone("Unable to locate data flow by that enterprise lookup");
-            }
+                if (lcu != null)
+                {
+                    await g.V<LCUConfig>(lcu.ID)
+                        .Where(e => e.EnterpriseLookup == entLookup)
+                        .Drop();
+
+                    return Status.Success;
+                }
+                else
+                {
+                    return Status.GeneralError.Clone("Unable to locate data flow by that enterprise lookup");
+                }
+            });
         }
 
         public virtual async Task<Status> DeleteSectionAction(string entLookup, string container, string activityLookup, string section, string action, string group)
         {
-            var secAct = await GetSectionAction(entLookup, container, activityLookup, section, action, group);
-
-            if (secAct != null)
+            return await withCommonGraphBoundary(async () =>
             {
-                await g.V<SectionAction>(secAct.ID)
-                    .Where(e => e.EnterpriseLookup == entLookup)
-                    .Drop();
+                var secAct = await GetSectionAction(entLookup, container, activityLookup, section, action, group);
 
-                return Status.Success;
-            }
-            else
-            {
-                return Status.GeneralError.Clone("Unable to locate data flow by that enterprise lookup");
-            }
+                if (secAct != null)
+                {
+                    await g.V<SectionAction>(secAct.ID)
+                        .Where(e => e.EnterpriseLookup == entLookup)
+                        .Drop();
+
+                    return Status.Success;
+                }
+                else
+                {
+                    return Status.GeneralError.Clone("Unable to locate data flow by that enterprise lookup");
+                }
+            });
         }
 
         public virtual async Task<Status> DeleteSideBarSection(string entLookup, string container, string activityLookup, string section)
         {
-            var registry = $"{entLookup}|{container}";
-
-            var activity = await g.V<IDEContainer>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == entLookup)
-                .Where(e => e.Container == container)
-                .Out<Consumes>()
-                .OfType<Activity>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == registry)
-                .Where(e => e.Lookup == activityLookup)
-                .FirstOrDefaultAsync();
-
-            if (activity != null)
+            return await withCommonGraphBoundary(async () =>
             {
-                activity.Sections = activity.Sections.RemoveItem(section).Distinct().ToArray();
+                var registry = $"{entLookup}|{container}";
 
-                activity = await g.V<Activity>(activity.ID)
-                    .Update(activity)
+                var activity = await g.V<IDEContainer>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == entLookup)
+                    .Where(e => e.Container == container)
+                    .Out<Consumes>()
+                    .OfType<Activity>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == registry)
+                    .Where(e => e.Lookup == activityLookup)
                     .FirstOrDefaultAsync();
-            }
 
-            return activity != null;
+                if (activity != null)
+                {
+                    activity.Sections = activity.Sections.RemoveItem(section).Distinct().ToArray();
+
+                    activity = await g.V<Activity>(activity.ID)
+                        .Update(activity)
+                        .FirstOrDefaultAsync();
+                }
+
+                return activity != null;
+            });
         }
 
         public virtual async Task<IDEContainer> EnsureIDESettings(string entLookup, IDEContainer container)
         {
-            var existingContainer = await g.V<IDEContainer>()
+            return await withCommonGraphBoundary(async () =>
+            {
+                var existingContainer = await g.V<IDEContainer>()
                 .Where(e => e.EnterpriseLookup == entLookup)
                 .Where(e => e.Registry == entLookup)
                 .Where(e => e.Container == container.Container)
                 .FirstOrDefaultAsync();
 
-            container.EnterpriseLookup = entLookup;
+                container.EnterpriseLookup = entLookup;
 
-            container.Registry = entLookup;
+                container.Registry = entLookup;
 
-            if (existingContainer == null)
-            {
-                if (container.ID.IsEmpty())
-                    container.ID = Guid.NewGuid();
+                if (existingContainer == null)
+                {
+                    if (container.ID.IsEmpty())
+                        container.ID = Guid.NewGuid();
 
-                container = await g.AddV(container).FirstOrDefaultAsync();
-            }
-            else
-            {
-                container = await g.V<IDEContainer>(existingContainer.ID)
-                    .Update(container)
-                    .FirstOrDefaultAsync();
-            }
+                    container = await g.AddV(container).FirstOrDefaultAsync();
+                }
+                else
+                {
+                    container = await g.V<IDEContainer>(existingContainer.ID)
+                        .Update(container)
+                        .FirstOrDefaultAsync();
+                }
 
-            return container;
+                return container;
+            });
         }
 
         public virtual async Task<Activity> GetActivity(string entLookup, string container, string activityLookup)
         {
-            var registry = $"{entLookup}|{container}";
+            return await withCommonGraphBoundary(async () =>
+            {
+                var registry = $"{entLookup}|{container}";
 
-            return await g.V<IDEContainer>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == entLookup)
-                .Where(e => e.Container == container)
-                .Out<Consumes>()
-                .OfType<Activity>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == registry)
-                .Where(e => e.Lookup == activityLookup)
-                .FirstOrDefaultAsync();
+                return await g.V<IDEContainer>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == entLookup)
+                    .Where(e => e.Container == container)
+                    .Out<Consumes>()
+                    .OfType<Activity>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == registry)
+                    .Where(e => e.Lookup == activityLookup)
+                    .FirstOrDefaultAsync();
+            });
         }
 
         public virtual async Task<LCUConfig> GetLCU(string entLookup, string container, string lcuLookup)
         {
-            var registry = $"{entLookup}|{container}";
+            return await withCommonGraphBoundary(async () =>
+            {
+                var registry = $"{entLookup}|{container}";
 
-            return await g.V<IDEContainer>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == entLookup)
-                .Where(e => e.Container == container)
-                .Out<Manages>()
-                .OfType<LCUConfig>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == registry)
-                .Where(e => e.Lookup == lcuLookup)
-                .FirstOrDefaultAsync();
+                return await g.V<IDEContainer>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == entLookup)
+                    .Where(e => e.Container == container)
+                    .Out<Manages>()
+                    .OfType<LCUConfig>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == registry)
+                    .Where(e => e.Lookup == lcuLookup)
+                    .FirstOrDefaultAsync();
+            });
         }
 
         public virtual async Task<SectionAction> GetSectionAction(string entLookup, string container, string activityLookup, string section, string action, string group)
         {
-            var registry = $"{entLookup}|{container}";
+            return await withCommonGraphBoundary(async () =>
+            {
+                var registry = $"{entLookup}|{container}";
 
-            return await g.V<IDEContainer>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == entLookup)
-                .Where(e => e.Container == container)
-                .Out<Consumes>()
-                .OfType<Activity>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == registry)
-                .Where(e => e.Lookup == activityLookup)
-                .Out<Consumes>()
-                .OfType<SectionAction>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == registry)
-                .Where(e => e.Section == section)
-                .Where(e => e.Group == group)
-                .Where(e => e.Action == action)
-                .FirstOrDefaultAsync();
+                return await g.V<IDEContainer>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == entLookup)
+                    .Where(e => e.Container == container)
+                    .Out<Consumes>()
+                    .OfType<Activity>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == registry)
+                    .Where(e => e.Lookup == activityLookup)
+                    .Out<Consumes>()
+                    .OfType<SectionAction>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == registry)
+                    .Where(e => e.Section == section)
+                    .Where(e => e.Group == group)
+                    .Where(e => e.Action == action)
+                    .FirstOrDefaultAsync();
+            });
         }
 
         public virtual async Task<List<Activity>> ListActivities(string entLookup, string container)
         {
-            var registry = $"{entLookup}|{container}";
+            return await withCommonGraphBoundary(async () =>
+            {
+                var registry = $"{entLookup}|{container}";
 
-            return await g.V<IDEContainer>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == entLookup)
-                .Where(e => e.Container == container)
-                .Out<Consumes>()
-                .OfType<Activity>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == registry)
-                .ToListAsync();
+                return await g.V<IDEContainer>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == entLookup)
+                    .Where(e => e.Container == container)
+                    .Out<Consumes>()
+                    .OfType<Activity>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == registry)
+                    .ToListAsync();
+            });
         }
 
         public virtual async Task<List<LCUConfig>> ListLCUs(string entLookup, string container)
         {
-            var registry = $"{entLookup}|{container}";
+            return await withCommonGraphBoundary(async () =>
+            {
+                var registry = $"{entLookup}|{container}";
 
-            return await g.V<IDEContainer>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == entLookup)
-                .Where(e => e.Container == container)
-                .Out<Manages>()
-                .OfType<LCUConfig>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == registry)
-                .ToListAsync();
+                return await g.V<IDEContainer>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == entLookup)
+                    .Where(e => e.Container == container)
+                    .Out<Manages>()
+                    .OfType<LCUConfig>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == registry)
+                    .ToListAsync();
+            });
         }
 
         public virtual async Task<List<SectionAction>> ListSectionActions(string entLookup, string container, string activityLookup, string section)
         {
-            var registry = $"{entLookup}|{container}";
+            return await withCommonGraphBoundary(async () =>
+            {
+                var registry = $"{entLookup}|{container}";
 
-            return await g.V<IDEContainer>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == entLookup)
-                .Where(e => e.Container == container)
-                .Out<Consumes>()
-                .OfType<Activity>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == registry)
-                .Where(e => e.Lookup == activityLookup)
-                .Out<Consumes>()
-                .OfType<SectionAction>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == registry)
-                .Where(e => e.Section == section)
-                .ToListAsync();
+                return await g.V<IDEContainer>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == entLookup)
+                    .Where(e => e.Container == container)
+                    .Out<Consumes>()
+                    .OfType<Activity>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == registry)
+                    .Where(e => e.Lookup == activityLookup)
+                    .Out<Consumes>()
+                    .OfType<SectionAction>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == registry)
+                    .Where(e => e.Section == section)
+                    .ToListAsync();
+            });
         }
 
         public virtual async Task<List<string>> ListSideBarSections(string entLookup, string container, string activityLookup)
         {
-            var registry = $"{entLookup}|{container}";
+            return await withCommonGraphBoundary(async () =>
+            {
+                var registry = $"{entLookup}|{container}";
 
-            var activity = await g.V<IDEContainer>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == entLookup)
-                .Where(e => e.Container == container)
-                .Out<Consumes>()
-                .OfType<Activity>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == registry)
-                .Where(e => e.Lookup == activityLookup)
-                .FirstOrDefaultAsync();
+                var activity = await g.V<IDEContainer>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == entLookup)
+                    .Where(e => e.Container == container)
+                    .Out<Consumes>()
+                    .OfType<Activity>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == registry)
+                    .Where(e => e.Lookup == activityLookup)
+                    .FirstOrDefaultAsync();
 
-            return activity?.Sections.ToList();
+                return activity?.Sections.ToList();
+            });
         }
 
         public virtual async Task<Activity> SaveActivity(string entLookup, string container, Activity activity)
         {
-            var existingAct = await GetActivity(entLookup, container, activity.Lookup);
-
-            activity.EnterpriseLookup = entLookup;
-
-            activity.Registry = $"{entLookup}|{container}";
-
-            if (existingAct == null)
+            return await withCommonGraphBoundary(async () =>
             {
-                if (activity.ID.IsEmpty())
-                    activity.ID = Guid.NewGuid();
+                var existingAct = await GetActivity(entLookup, container, activity.Lookup);
 
-                activity = await g.AddV(activity).FirstOrDefaultAsync();
+                activity.EnterpriseLookup = entLookup;
 
-                var ide = await g.V<IDEContainer>()
-                    .Where(e => e.EnterpriseLookup == entLookup)
-                    .Where(e => e.Registry == entLookup)
-                    .Where(e => e.Container == container)
-                    .FirstOrDefaultAsync();
+                activity.Registry = $"{entLookup}|{container}";
 
-                await ensureEdgeRelationship<Consumes>(ide.ID, activity.ID);
+                if (existingAct == null)
+                {
+                    if (activity.ID.IsEmpty())
+                        activity.ID = Guid.NewGuid();
 
-                await ensureEdgeRelationship<Manages>(ide.ID, activity.ID);
+                    activity = await g.AddV(activity).FirstOrDefaultAsync();
 
-                await ensureEdgeRelationship<Owns>(ide.ID, activity.ID);
-            }
-            else
-            {
-                activity = await g.V<Activity>(existingAct.ID)
-                    .Update(activity)
-                    .FirstOrDefaultAsync();
-            }
+                    var ide = await g.V<IDEContainer>()
+                        .Where(e => e.EnterpriseLookup == entLookup)
+                        .Where(e => e.Registry == entLookup)
+                        .Where(e => e.Container == container)
+                        .FirstOrDefaultAsync();
 
-            return activity;
+                    await ensureEdgeRelationship<Consumes>(ide.ID, activity.ID);
+
+                    await ensureEdgeRelationship<Manages>(ide.ID, activity.ID);
+
+                    await ensureEdgeRelationship<Owns>(ide.ID, activity.ID);
+                }
+                else
+                {
+                    activity = await g.V<Activity>(existingAct.ID)
+                        .Update(activity)
+                        .FirstOrDefaultAsync();
+                }
+
+                return activity;
+            });
         }
 
         public virtual async Task<LCUConfig> SaveLCU(string entLookup, string container, LCUConfig lcu)
         {
-            var existingLCU = await GetLCU(entLookup, container, lcu.Lookup);
-
-            lcu.EnterpriseLookup = entLookup;
-
-            lcu.Registry = $"{entLookup}|{container}";
-
-            if (existingLCU == null)
+            return await withCommonGraphBoundary(async () =>
             {
-                if (lcu.ID.IsEmpty())
-                    lcu.ID = Guid.NewGuid();
+                var existingLCU = await GetLCU(entLookup, container, lcu.Lookup);
 
-                lcu = await g.AddV(lcu).FirstOrDefaultAsync();
+                lcu.EnterpriseLookup = entLookup;
 
-                var ide = await g.V<IDEContainer>()
-                    .Where(e => e.EnterpriseLookup == entLookup)
-                    .Where(e => e.Registry == entLookup)
-                    .Where(e => e.Container == container)
-                    .FirstOrDefaultAsync();
+                lcu.Registry = $"{entLookup}|{container}";
 
-                await ensureEdgeRelationship<Consumes>(ide.ID, lcu.ID);
+                if (existingLCU == null)
+                {
+                    if (lcu.ID.IsEmpty())
+                        lcu.ID = Guid.NewGuid();
 
-                await ensureEdgeRelationship<Manages>(ide.ID, lcu.ID);
+                    lcu = await g.AddV(lcu).FirstOrDefaultAsync();
 
-                await ensureEdgeRelationship<Owns>(ide.ID, lcu.ID);
-            }
-            else
-            {
-                lcu = await g.V<LCUConfig>(existingLCU.ID)
-                    .Update(lcu)
-                    .FirstOrDefaultAsync();
-            }
+                    var ide = await g.V<IDEContainer>()
+                        .Where(e => e.EnterpriseLookup == entLookup)
+                        .Where(e => e.Registry == entLookup)
+                        .Where(e => e.Container == container)
+                        .FirstOrDefaultAsync();
 
-            return lcu;
+                    await ensureEdgeRelationship<Consumes>(ide.ID, lcu.ID);
+
+                    await ensureEdgeRelationship<Manages>(ide.ID, lcu.ID);
+
+                    await ensureEdgeRelationship<Owns>(ide.ID, lcu.ID);
+                }
+                else
+                {
+                    lcu = await g.V<LCUConfig>(existingLCU.ID)
+                        .Update(lcu)
+                        .FirstOrDefaultAsync();
+                }
+
+                return lcu;
+            });
         }
 
         public virtual async Task<SectionAction> SaveSectionAction(string entLookup, string container, string activityLookup, SectionAction action)
         {
-            var existingAct = await GetSectionAction(entLookup, container, activityLookup, action.Section, action.Action, action.Group);
-
-            action.EnterpriseLookup = entLookup;
-
-            action.Registry = $"{entLookup}|{container}";
-
-            if (existingAct == null)
+            return await withCommonGraphBoundary(async () =>
             {
-                if (action.ID.IsEmpty())
-                    action.ID = Guid.NewGuid();
+                var existingAct = await GetSectionAction(entLookup, container, activityLookup, action.Section, action.Action, action.Group);
 
-                action = await g.AddV(action).FirstOrDefaultAsync();
+                action.EnterpriseLookup = entLookup;
 
-                var activity = await GetActivity(entLookup, container, activityLookup);
+                action.Registry = $"{entLookup}|{container}";
 
-                await ensureEdgeRelationship<Consumes>(activity.ID, action.ID);
+                if (existingAct == null)
+                {
+                    if (action.ID.IsEmpty())
+                        action.ID = Guid.NewGuid();
 
-                await ensureEdgeRelationship<Manages>(activity.ID, action.ID);
+                    action = await g.AddV(action).FirstOrDefaultAsync();
 
-                await ensureEdgeRelationship<Owns>(activity.ID, action.ID);
-            }
-            else
-            {
-                action = await g.V<SectionAction>(existingAct.ID)
-                    .Update(action)
-                    .FirstOrDefaultAsync();
-            }
+                    var activity = await GetActivity(entLookup, container, activityLookup);
 
-            return action;
+                    await ensureEdgeRelationship<Consumes>(activity.ID, action.ID);
+
+                    await ensureEdgeRelationship<Manages>(activity.ID, action.ID);
+
+                    await ensureEdgeRelationship<Owns>(activity.ID, action.ID);
+                }
+                else
+                {
+                    action = await g.V<SectionAction>(existingAct.ID)
+                        .Update(action)
+                        .FirstOrDefaultAsync();
+                }
+
+                return action;
+            });
         }
         #endregion
 
