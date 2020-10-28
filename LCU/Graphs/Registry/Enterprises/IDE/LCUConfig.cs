@@ -1,4 +1,5 @@
 ﻿using Fathym;
+using LCU.Graphs.Registry.Enterprises.Apps;
 using LCU.Graphs.Registry.Enterprises.DataFlows;
 using System;
 using System.Collections.Generic;
@@ -21,8 +22,16 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 		public virtual ModulePackSetup Modules { get; set; }
 
 		[DataMember]
+		public virtual MetadataModel Package { get; set; }
+
+		[DataMember]
+		public virtual DAFApplicationPackageTypes PackageType { get; set; }
+
+        [Obsolete]
+		[DataMember]
 		public virtual string NPMPackage { get; set; }
 
+        [Obsolete]
 		[DataMember]
 		public virtual string PackageVersion { get; set; }
 

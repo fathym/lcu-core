@@ -2,6 +2,8 @@
 using ExRam.Gremlinq.Core.AspNet;
 using ExRam.Gremlinq.Providers.WebSocket;
 using Fathym;
+using Fathym.Design;
+using Gremlin.Net.Driver.Exceptions;
 using Gremlin.Net.Structure;
 using LCU.Graphs.Registry.Enterprises;
 using LCU.Graphs.Registry.Enterprises.Apps;
@@ -119,6 +121,60 @@ namespace LCU.Graphs
                     .AddE<TEdge>()
                     .To(__ => __.V(toId))
                     .FirstOrDefaultAsync();
+        }
+
+        protected virtual async Task withCommonGraphBoundary(Func<Task> action)
+        {
+            var result = await withCommonGraphBoundary(async () =>
+            {
+                await action();
+
+                return Status.Success;
+            });
+        }
+
+        protected virtual async Task<T> withCommonGraphBoundary<T>(Func<Task<T>> action)
+        {
+            T result = default(T);
+
+            await DesignOutline.Instance.Retry()
+                .SetActionAsync(async () =>
+                {
+                    try
+                    {
+                        result = await action();
+
+                        return false;
+                    }
+                    catch (Exception ex)
+                    {
+                        var retriable = false;
+
+                        var retriableExceptionCodes = new List<int>() { 409, 412, 429, 1007, 1008 };
+
+                        if (ex is ResponseException rex)
+                        {
+                            var code = rex.StatusAttributes["x-ms-status-code"].As<int>();
+
+                            retriable = retriableExceptionCodes.Contains(code);
+
+                            if (retriable && rex.StatusAttributes.ContainsKey("x-ms-retry-after-ms"))
+                            {
+                                var retryMsWait = rex.StatusAttributes["x-ms-retry-after-ms"].As<int>();
+
+                                await Task.Delay(retryMsWait);
+                            }
+                        }
+
+                        return retriable;
+                    }
+                })
+                .SetCycles(10)
+                .SetThrottle(10)
+                .SetThrottleScale(1.5)
+                .Run();
+
+            return result;
         }
         #endregion
     }

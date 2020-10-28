@@ -32,96 +32,114 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
         #region API Methods
         public virtual async Task<Status> DeleteAccessCard(string entLookup, string username, string accessConfigType)
         {
-            var ac = await GetAccessCard(entLookup, username, accessConfigType);
-
-            if (ac != null)
+            return await withCommonGraphBoundary(async () =>
             {
-                await g.V<AccessCard>(ac.ID)
-                    .Where(e => e.EnterpriseLookup == entLookup)
-                    .Drop();
+                var ac = await GetAccessCard(entLookup, username, accessConfigType);
 
-                return Status.Success;
-            }
-            else
-            {
-                return Status.GeneralError.Clone("Unable to locate access card");
-            }
+                if (ac != null)
+                {
+                    await g.V<AccessCard>(ac.ID)
+                        .Where(e => e.EnterpriseLookup == entLookup)
+                        .Drop();
+
+                    return Status.Success;
+                }
+                else
+                {
+                    return Status.GeneralError.Clone("Unable to locate access card");
+                }
+            });
         }
 
         public virtual async Task<Status> DeleteRelyingParty(string entLookup)
         {
-            var rp = await GetRelyingParty(entLookup);
-
-            if (rp != null)
+            return await withCommonGraphBoundary(async () =>
             {
-                await g.V<RelyingParty>(rp.ID)
-                    .Where(e => e.EnterpriseLookup == entLookup)
-                    .Drop();
+                var rp = await GetRelyingParty(entLookup);
 
-                return Status.Success;
-            }
-            else
-            {
-                return Status.GeneralError.Clone("Unable to locate relying party");
-            }
+                if (rp != null)
+                {
+                    await g.V<RelyingParty>(rp.ID)
+                        .Where(e => e.EnterpriseLookup == entLookup)
+                        .Drop();
+
+                    return Status.Success;
+                }
+                else
+                {
+                    return Status.GeneralError.Clone("Unable to locate relying party");
+                }
+            });
         }
 
         public virtual async Task<Status> DeleteLicenseAccessToken(string entLookup, string username, string lookup)
         {
-            var lat = await GetLicenseAccessToken(entLookup, username, lookup);
-
-            if (lat != null)
+            return await withCommonGraphBoundary(async () =>
             {
-                await g.V<LicenseAccessToken>(lat.ID)
-                    .Where(e => e.EnterpriseLookup == entLookup)
-                    .Drop();
+                var lat = await GetLicenseAccessToken(entLookup, username, lookup);
 
-                return Status.Success;
-            }
-            else
-            {
-                return Status.GeneralError.Clone("Unable to locate license access token");
-            }
+                if (lat != null)
+                {
+                    await g.V<LicenseAccessToken>(lat.ID)
+                        .Where(e => e.EnterpriseLookup == entLookup)
+                        .Drop();
+
+                    return Status.Success;
+                }
+                else
+                {
+                    return Status.GeneralError.Clone("Unable to locate license access token");
+                }
+            });
         }
 
         public virtual async Task<Status> Exists(string email, string entLookup = null)
         {
-            var registry = email.Split('@')[1];
+            return await withCommonGraphBoundary(async () =>
+            {
+                var registry = email.Split('@')[1];
 
-            var existing = await GetPassport(email, entLookup);
+                var existing = await GetPassport(email, entLookup);
 
-            if (existing != null)
-                return Status.Success;
-            else
-                return Status.NotLocated;
+                if (existing != null)
+                    return Status.Success;
+                else
+                    return Status.NotLocated;
+            });
         }
 
         public virtual async Task<Account> GetAccount(string email)
         {
-            var registry = email.Split('@')[1];
+            return await withCommonGraphBoundary(async () =>
+            {
+                var registry = email.Split('@')[1];
 
-            return await g.V<Account>()
-                  .Where(e => e.Registry == registry)
-                  .Where(e => e.Email == email)
-                  .FirstOrDefaultAsync();
+                return await g.V<Account>()
+                      .Where(e => e.Registry == registry)
+                      .Where(e => e.Email == email)
+                      .FirstOrDefaultAsync();
+            });
         }
 
         public virtual async Task<Passport> GetPassport(string email, string entLookup = null)
         {
-            var registry = email.Split('@')[1];
+            return await withCommonGraphBoundary(async () =>
+            {
+                var registry = email.Split('@')[1];
 
-            var passport = await g.V<Account>()
-                  .Where(e => e.Registry == registry)
-                  .Where(e => e.Email == email)
-                  .Out<Carries>()
-                  .OfType<Passport>()
-                  .Where(e => e.IsActive)
-                  .FirstOrDefaultAsync();
+                var passport = await g.V<Account>()
+                      .Where(e => e.Registry == registry)
+                      .Where(e => e.Email == email)
+                      .Out<Carries>()
+                      .OfType<Passport>()
+                      .Where(e => e.IsActive)
+                      .FirstOrDefaultAsync();
 
-            if (!entLookup.IsNullOrEmpty() && passport?.EnterpriseLookup != entLookup)
-                passport = null;
+                if (!entLookup.IsNullOrEmpty() && passport?.EnterpriseLookup != entLookup)
+                    passport = null;
 
-            return passport;
+                return passport;
+            });
         }
 
         public virtual async Task<IEnumerable<Claim>> GetClaims(string userId)
@@ -142,57 +160,72 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
         public virtual async Task<AccessCard> GetAccessCard(string entLookup, string username, string accessConfigType)
         {
-            var registry = username.Split('@')[1];
+            return await withCommonGraphBoundary(async () =>
+            {
+                var registry = username.Split('@')[1];
 
-            var accessCard = await g.V<AccessCard>()
-                  .Where(e => e.EnterpriseLookup == entLookup)
-                  .Where(e => e.Registry == $"{entLookup}|{username}")
-                  .Where(e => e.AccessConfigurationType == accessConfigType)
-                  .FirstOrDefaultAsync();
+                var accessCard = await g.V<AccessCard>()
+                      .Where(e => e.EnterpriseLookup == entLookup)
+                      .Where(e => e.Registry == $"{entLookup}|{username}")
+                      .Where(e => e.AccessConfigurationType == accessConfigType)
+                      .FirstOrDefaultAsync();
 
-            return accessCard;
+                return accessCard;
+            });
         }
 
         public virtual async Task<RelyingParty> GetRelyingParty(string entLookup)
         {
-            var rp = await g.V<RelyingParty>()
+            return await withCommonGraphBoundary(async () =>
+            {
+                var rp = await g.V<RelyingParty>()
                   .Where(e => e.EnterpriseLookup == entLookup)
                   .Where(e => e.Registry == entLookup)
                   .FirstOrDefaultAsync();
 
-            return rp;
+                return rp;
+            });
         }
 
         public virtual async Task<LicenseAccessToken> GetLicenseAccessToken(string entLookup, string username, string lookup)
         {
-            var lat = await g.V<LicenseAccessToken>()
+            return await withCommonGraphBoundary(async () =>
+            {
+                var lat = await g.V<LicenseAccessToken>()
                   .Where(e => e.EnterpriseLookup == entLookup)
                   .Where(e => e.Registry == $"{entLookup}|{username}")
                   .Where(e => e.Lookup == lookup)
                   .FirstOrDefaultAsync();
 
-            return lat;
+                return lat;
+            });
         }
 
         public virtual async Task<List<Account>> ListAccountsByOrg(string entLookup)
         {
-            var accounts = await g.V<Passport>()
+            return await withCommonGraphBoundary(async () =>
+            {
+                var accounts = await g.V<Passport>()
                   .Where(e => e.EnterpriseLookup == entLookup)
                   .InE<Carries>()
                   .OutV<Account>()
                   .ToListAsync();
 
-            return accounts;
+                return accounts;
+            });
         }
 
         public virtual async Task<List<AccessCard>> ListAccessCards(string entLookup, string username)
         {
-            var accessCards = await g.V<AccessCard>()
+            return await withCommonGraphBoundary(async () =>
+            {
+                var accessCards = await g.V<AccessCard>()
                   .Where(e => e.EnterpriseLookup == entLookup)
                   .Where(e => e.Registry == $"{entLookup}|{username}")
                   .ToListAsync();
 
-            return accessCards;
+                return accessCards;
+            });
         }
 
         public virtual async Task<List<string>> ListAdmins(string entLookup)
@@ -202,297 +235,324 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
         public virtual async Task<List<LicenseAccessToken>> ListLicenseAccessTokens(string entLookup)
         {
-            var lats = await g.V<LicenseAccessToken>()
+            return await withCommonGraphBoundary(async () =>
+            {
+                var lats = await g.V<LicenseAccessToken>()
                   .Where(e => e.EnterpriseLookup == entLookup)
                   .ToListAsync();
 
-            return lats;
+                return lats;
+            });
         }
 
         public virtual async Task<List<LicenseAccessToken>> ListLicenseAccessTokensByUser(string entLookup, string username)
         {
-            var lats = await g.V<LicenseAccessToken>()
+            return await withCommonGraphBoundary(async () =>
+            {
+                var lats = await g.V<LicenseAccessToken>()
                   .Where(e => e.EnterpriseLookup == entLookup)
                   .Where(e => e.Registry == $"{entLookup}|{username}")
                   .ToListAsync();
 
-            return lats;
+                return lats;
+            });
         }
 
         public virtual async Task<List<string>> ListMembersWithAccessConfigType(string entLookup, string accessConfigType)
         {
-            var accessCards = await g.V<AccessCard>()
+            return await withCommonGraphBoundary(async () =>
+            {
+                var accessCards = await g.V<AccessCard>()
                   .Where(e => e.EnterpriseLookup == entLookup)
                   .Where(e => e.AccessConfigurationType == accessConfigType)
                   .ToListAsync();
 
-            var members = new List<string>();
+                var members = new List<string>();
 
-            foreach (var result in accessCards)
-                if (result.Registry?.Split('|').Count() > 1)
-                    members.Add(result.Registry.Split('|')[1]);
+                foreach (var result in accessCards)
+                    if (result.Registry?.Split('|').Count() > 1)
+                        members.Add(result.Registry.Split('|')[1]);
 
-            return accessCards.Select(ac => ac.Registry.Split('|')[1]).Distinct().ToList();
+                return accessCards.Select(ac => ac.Registry.Split('|')[1]).Distinct().ToList();
+            });
         }
 
         public virtual async Task<Status> Register(string entLookup, string email, string password, string providerId)
         {
-            var registry = email.Split('@')[1];
-
-            var account = await GetAccount(email);
-
-            if (account == null)
-                account = await g.AddV(new Account()
-                {
-                    ID = Guid.NewGuid(),
-                    Email = email,
-                    Registry = registry
-                }).FirstOrDefaultAsync();
-
-            var passport = await GetPassport(email, entLookup);
-
-            if (passport == null)
+            return await withCommonGraphBoundary(async () =>
             {
-                passport = new Passport()
+                var registry = email.Split('@')[1];
+
+                var account = await GetAccount(email);
+
+                if (account == null)
+                    account = await g.AddV(new Account()
+                    {
+                        ID = Guid.NewGuid(),
+                        Email = email,
+                        Registry = registry
+                    }).FirstOrDefaultAsync();
+
+                var passport = await GetPassport(email, entLookup);
+
+                if (passport == null)
                 {
-                    ID = Guid.NewGuid(),
-                    EnterpriseLookup = entLookup,
-                    Registry = $"{entLookup}|{registry}",
-                    PasswordHash = password.ToMD5Hash(),
-                    ProviderID = providerId,
-                    IsActive = true
-                };
+                    passport = new Passport()
+                    {
+                        ID = Guid.NewGuid(),
+                        EnterpriseLookup = entLookup,
+                        Registry = $"{entLookup}|{registry}",
+                        PasswordHash = password.ToMD5Hash(),
+                        ProviderID = providerId,
+                        IsActive = true
+                    };
 
-                passport = await g.AddV(passport).FirstOrDefaultAsync();
+                    passport = await g.AddV(passport).FirstOrDefaultAsync();
 
-                await ensureEdgeRelationship<Carries>(account.ID, passport.ID);
-            }
-            else
-            {
-                passport.PasswordHash = password.ToMD5Hash();
+                    await ensureEdgeRelationship<Carries>(account.ID, passport.ID);
+                }
+                else
+                {
+                    passport.PasswordHash = password.ToMD5Hash();
 
-                passport.ProviderID = providerId;
+                    passport.ProviderID = providerId;
 
-                passport = await g.V<Passport>(passport.ID)
-                    .Update(passport)
-                    .FirstOrDefaultAsync();
-            }
+                    passport = await g.V<Passport>(passport.ID)
+                        .Update(passport)
+                        .FirstOrDefaultAsync();
+                }
 
-            return Status.Success;
+                return Status.Success;
+            });
         }
 
         public virtual async Task<string> RetrieveThirdPartyAccessToken(string entLookup, string email, string key, string tokenEncodingKey = null)
         {
-            bool isEncrypted = false;
+            return await withCommonGraphBoundary(async () =>
+            {
+                bool isEncrypted = false;
 
-            string tokenResult = String.Empty;
+                string tokenResult = String.Empty;
 
-            var registry = email.Split('@')[1];
+                var registry = email.Split('@')[1];
 
-            IVertexGremlinQueryBase tpiQuery = g.V<Account>()
-                .Where(e => e.Registry == registry)
-                .Where(e => e.Email == email);
+                IVertexGremlinQueryBase tpiQuery = g.V<Account>()
+                    .Where(e => e.Registry == registry)
+                    .Where(e => e.Email == email);
 
-            if (!entLookup.IsNullOrEmpty())
-                tpiQuery = tpiQuery
-                    .Out<Carries>()
-                    .OfType<Passport>()
+                if (!entLookup.IsNullOrEmpty())
+                    tpiQuery = tpiQuery
+                        .Out<Carries>()
+                        .OfType<Passport>()
+                        .Where(e => e.EnterpriseLookup == entLookup)
+                        .Where(e => e.Registry == $"{entLookup}|{registry}");
+
+                var tpi = await tpiQuery
+                    .Out<Owns>()
+                    .OfType<ThirdPartyToken>()
                     .Where(e => e.EnterpriseLookup == entLookup)
-                    .Where(e => e.Registry == $"{entLookup}|{registry}");
+                    .Where(e => e.Registry == email)
+                    .FirstOrDefaultAsync();
 
-            var tpi = await tpiQuery
-                .Out<Owns>()
-                .OfType<ThirdPartyToken>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == email)
-                .FirstOrDefaultAsync();
+                if (tpi != null)
+                    isEncrypted = tpi.Encrypt;
 
-            if (tpi != null)
-                isEncrypted = tpi.Encrypt;
-
-            return isEncrypted ? Encryption.Decrypt(tpi?.Token, tokenEncodingKey) : tpi?.Token;
+                return isEncrypted ? Encryption.Decrypt(tpi?.Token, tokenEncodingKey) : tpi?.Token;
+            });
         }
 
         public virtual async Task<Status> SetThirdPartyAccessToken(string entLookup, string email, string key, string token, string tokenEncodingKey = null)
         {
-            var account = await GetAccount(email);
-
-            var accRegistry = email.Split('@')[1];
-
-            IVertexGremlinQueryBase tpiQuery = g.V<Account>(account.ID)
-                .Where(e => e.Registry == accRegistry)
-                .Where(e => e.Email == email);
-
-            if (!entLookup.IsNullOrEmpty())
+            return await withCommonGraphBoundary(async () =>
             {
-                tpiQuery = tpiQuery
-                    .Out<Carries>()
-                    .OfType<Passport>()
-                    .Where(e => e.EnterpriseLookup == entLookup)
-                    .Where(e => e.Registry == $"{entLookup}|{accRegistry}");
-            }
+                var account = await GetAccount(email);
 
-            var tpi = await tpiQuery
-                .Out<Owns>()
-                .OfType<ThirdPartyToken>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == email)
-                .Where(e => e.Key == key)
-                .FirstOrDefaultAsync();
+                var accRegistry = email.Split('@')[1];
 
-            if (!tokenEncodingKey.IsNullOrEmpty())
-                token = Encryption.Encrypt(token, tokenEncodingKey);
-
-            if (tpi == null)
-            {
-                tpi = new ThirdPartyToken()
-                {
-                    ID = Guid.NewGuid(),
-                    EnterpriseLookup = entLookup,
-                    Registry = email,
-                    Encrypt = !tokenEncodingKey.IsNullOrEmpty(),
-                    Key = key,
-                    Token = token
-                };
-
-                tpi = await g.AddV(tpi).FirstOrDefaultAsync();
-
-                var parentId = account.ID;
+                IVertexGremlinQueryBase tpiQuery = g.V<Account>(account.ID)
+                    .Where(e => e.Registry == accRegistry)
+                    .Where(e => e.Email == email);
 
                 if (!entLookup.IsNullOrEmpty())
                 {
-                    var passport = await GetPassport(email, entLookup);
-
-                    parentId = passport.ID;
+                    tpiQuery = tpiQuery
+                        .Out<Carries>()
+                        .OfType<Passport>()
+                        .Where(e => e.EnterpriseLookup == entLookup)
+                        .Where(e => e.Registry == $"{entLookup}|{accRegistry}");
                 }
 
-                await ensureEdgeRelationship<Owns>(parentId, tpi.ID);
-            }
-            else
-            {
-                tpi.Encrypt = !tokenEncodingKey.IsNullOrEmpty();
-
-                tpi.Token = token;
-
-                tpi = await g.V<ThirdPartyToken>(tpi.ID)
-                    .Update(tpi)
+                var tpi = await tpiQuery
+                    .Out<Owns>()
+                    .OfType<ThirdPartyToken>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == email)
+                    .Where(e => e.Key == key)
                     .FirstOrDefaultAsync();
-            }
 
-            return Status.Success;
+                if (!tokenEncodingKey.IsNullOrEmpty())
+                    token = Encryption.Encrypt(token, tokenEncodingKey);
+
+                if (tpi == null)
+                {
+                    tpi = new ThirdPartyToken()
+                    {
+                        ID = Guid.NewGuid(),
+                        EnterpriseLookup = entLookup,
+                        Registry = email,
+                        Encrypt = !tokenEncodingKey.IsNullOrEmpty(),
+                        Key = key,
+                        Token = token
+                    };
+
+                    tpi = await g.AddV(tpi).FirstOrDefaultAsync();
+
+                    var parentId = account.ID;
+
+                    if (!entLookup.IsNullOrEmpty())
+                    {
+                        var passport = await GetPassport(email, entLookup);
+
+                        parentId = passport.ID;
+                    }
+
+                    await ensureEdgeRelationship<Owns>(parentId, tpi.ID);
+                }
+                else
+                {
+                    tpi.Encrypt = !tokenEncodingKey.IsNullOrEmpty();
+
+                    tpi.Token = token;
+
+                    tpi = await g.V<ThirdPartyToken>(tpi.ID)
+                        .Update(tpi)
+                        .FirstOrDefaultAsync();
+                }
+
+                return Status.Success;
+            });
         }
 
         public virtual async Task<AccessCard> SaveAccessCard(AccessCard accessCard, string entLookup, string username)
         {
-            var account = await GetAccount(username);
-
-            var existingAccessCard = await GetAccessCard(entLookup, username, accessCard.AccessConfigurationType);
-
-            accessCard.EnterpriseLookup = entLookup;
-
-            accessCard.Registry = $"{entLookup}|{username}";
-
-            accessCard.LastAccess = buildAudit(by: username, description: $"Last accessed by {entLookup}");
-
-            if (existingAccessCard == null)
+            return await withCommonGraphBoundary(async () =>
             {
-                if (accessCard.ID.IsEmpty())
-                    accessCard.ID = Guid.NewGuid();
+                var account = await GetAccount(username);
 
-                accessCard.FirstAccess = buildAudit(by: username, description: $"First accessed by {entLookup}");
+                var existingAccessCard = await GetAccessCard(entLookup, username, accessCard.AccessConfigurationType);
 
-                accessCard = await g.AddV(accessCard).FirstOrDefaultAsync();
+                accessCard.EnterpriseLookup = entLookup;
 
-                await ensureEdgeRelationship<Carries>(account.ID, accessCard.ID);
-            }
-            else
-            {
-                accessCard = await g.V<AccessCard>(existingAccessCard.ID)
-                    .Update(accessCard)
-                    .FirstOrDefaultAsync();
-            }
+                accessCard.Registry = $"{entLookup}|{username}";
 
-            if (accessCard != null)
-            {
-                var rp = await GetRelyingParty(entLookup);
+                accessCard.LastAccess = buildAudit(by: username, description: $"Last accessed by {entLookup}");
 
-                if (rp != null)
+                if (existingAccessCard == null)
                 {
-                    await ensureEdgeRelationship<Provides>(rp.ID, accessCard.ID);
+                    if (accessCard.ID.IsEmpty())
+                        accessCard.ID = Guid.NewGuid();
 
-                    await ensureEdgeRelationship<Consumes>(account.ID, accessCard.ID);
+                    accessCard.FirstAccess = buildAudit(by: username, description: $"First accessed by {entLookup}");
+
+                    accessCard = await g.AddV(accessCard).FirstOrDefaultAsync();
+
+                    await ensureEdgeRelationship<Carries>(account.ID, accessCard.ID);
                 }
-            }
+                else
+                {
+                    accessCard = await g.V<AccessCard>(existingAccessCard.ID)
+                        .Update(accessCard)
+                        .FirstOrDefaultAsync();
+                }
 
-            return accessCard;
+                if (accessCard != null)
+                {
+                    var rp = await GetRelyingParty(entLookup);
+
+                    if (rp != null)
+                    {
+                        await ensureEdgeRelationship<Provides>(rp.ID, accessCard.ID);
+
+                        await ensureEdgeRelationship<Consumes>(account.ID, accessCard.ID);
+                    }
+                }
+
+                return accessCard;
+            });
         }
 
         public virtual async Task<RelyingParty> SaveRelyingParty(RelyingParty relyingParty, string entLookup)
         {
-            var existingRP = await GetRelyingParty(entLookup);
-
-            relyingParty.EnterpriseLookup = entLookup;
-
-            relyingParty.Registry = entLookup;
-
-            if (existingRP == null)
+            return await withCommonGraphBoundary(async () =>
             {
-                if (relyingParty.ID.IsEmpty())
-                    relyingParty.ID = Guid.NewGuid();
+                var existingRP = await GetRelyingParty(entLookup);
 
-                relyingParty = await g.AddV(relyingParty).FirstOrDefaultAsync();
+                relyingParty.EnterpriseLookup = entLookup;
 
-                var ent = await g.V<Enterprise>()
-                    .Where(e => e.EnterpriseLookup == entLookup)
-                    .Where(e => e.Registry == entLookup)
-                    .FirstOrDefaultAsync();
+                relyingParty.Registry = entLookup;
 
-                await ensureEdgeRelationship<Owns>(ent.ID, relyingParty.ID);
-            }
-            else
-            {
-                relyingParty = await g.V<RelyingParty>(existingRP.ID)
-                    .Update(relyingParty)
-                    .FirstOrDefaultAsync();
-            }
+                if (existingRP == null)
+                {
+                    if (relyingParty.ID.IsEmpty())
+                        relyingParty.ID = Guid.NewGuid();
 
-            return relyingParty;
+                    relyingParty = await g.AddV(relyingParty).FirstOrDefaultAsync();
+
+                    var ent = await g.V<Enterprise>()
+                        .Where(e => e.EnterpriseLookup == entLookup)
+                        .Where(e => e.Registry == entLookup)
+                        .FirstOrDefaultAsync();
+
+                    await ensureEdgeRelationship<Owns>(ent.ID, relyingParty.ID);
+                }
+                else
+                {
+                    relyingParty = await g.V<RelyingParty>(existingRP.ID)
+                        .Update(relyingParty)
+                        .FirstOrDefaultAsync();
+                }
+
+                return relyingParty;
+            });
         }
 
         public virtual async Task<LicenseAccessToken> SetLicenseAccessToken(string entLookup, string username, LicenseAccessToken token)
         {
-            var existingLAT = await GetLicenseAccessToken(entLookup, username, token.Lookup);
-
-            token.EnterpriseLookup = entLookup;
-
-            token.Registry = $"{entLookup}|{username}";
-
-            if (token.IsLocked) 
-                token.ExpirationDate = System.DateTime.Now;
-
-            if (token.IsReset)
+            return await withCommonGraphBoundary(async () =>
             {
-                token.AccessStartDate = System.DateTime.Now;
+                var existingLAT = await GetLicenseAccessToken(entLookup, username, token.Lookup);
 
-                if (token.TrialPeriodDays > 0)
-                    token.ExpirationDate = DateTime.Now.AddDays(token.TrialPeriodDays);
-            }
+                token.EnterpriseLookup = entLookup;
 
-            if (existingLAT == null)
-            {
-                if (token.ID.IsEmpty())
-                    token.ID = Guid.NewGuid();
+                token.Registry = $"{entLookup}|{username}";
 
-                token = await g.AddV(token).FirstOrDefaultAsync();
-            }
-            else
-            {
-                token = await g.V<LicenseAccessToken>(existingLAT.ID)
-                    .Update(token)
-                    .FirstOrDefaultAsync();
-            }
+                if (token.IsLocked)
+                    token.ExpirationDate = System.DateTime.Now;
 
-            return token;
+                if (token.IsReset)
+                {
+                    token.AccessStartDate = System.DateTime.Now;
+
+                    if (token.TrialPeriodDays > 0)
+                        token.ExpirationDate = DateTime.Now.AddDays(token.TrialPeriodDays);
+                }
+
+                if (existingLAT == null)
+                {
+                    if (token.ID.IsEmpty())
+                        token.ID = Guid.NewGuid();
+
+                    token = await g.AddV(token).FirstOrDefaultAsync();
+                }
+                else
+                {
+                    token = await g.V<LicenseAccessToken>(existingLAT.ID)
+                        .Update(token)
+                        .FirstOrDefaultAsync();
+                }
+
+                return token;
+            });
         }
 
         public virtual async Task<Status> Validate(string entLookup, string email, string password)
