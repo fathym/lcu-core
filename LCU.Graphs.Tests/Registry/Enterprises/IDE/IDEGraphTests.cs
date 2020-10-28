@@ -251,8 +251,12 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.IDE
             {
                 CapabilityFiles = new[] { "afile.file" },
                 Lookup = "testlcu",
-                NPMPackage = "npm-package",
-                PackageVersion = "version",
+                Package = new DAFApplicationNPMPackage()
+                {
+                    Name = "npm-package",
+                    Version = "version",
+                }.JSONConvert<MetadataModel>(),
+                PackageType = DAFApplicationPackageTypes.NPM,
                 Modules = new ModulePackSetup()
                 {
                     Displays = new[]
@@ -342,8 +346,8 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.IDE
             Assert.AreNotEqual(Guid.Empty, lcu.ID);
             Assert.IsFalse(lcu.CapabilityFiles.IsNullOrEmpty());
             Assert.AreEqual(expected.EnterpriseLookup, lcu.EnterpriseLookup);
-            Assert.AreEqual(expected.NPMPackage, lcu.NPMPackage);
-            Assert.AreEqual(expected.PackageVersion, lcu.PackageVersion);
+            Assert.AreEqual(expected.Package.Metadata["Name"], lcu.Package.Metadata["Name"]);
+            Assert.AreEqual(expected.Package.Metadata["Version"], lcu.Package.Metadata["Version"]);
             Assert.AreEqual(expected.Lookup, lcu.Lookup);
             Assert.AreEqual(expected.Registry, lcu.Registry);
             Assert.IsNotNull(lcu.Modules);
