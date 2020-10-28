@@ -87,10 +87,6 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.IDE
                 simpleManageSectionActions(),
                 simpleManageSectionActions(),
                 simpleManageSectionActions(),
-                simpleManageSectionActions(),
-                simpleManageSectionActions(),
-                simpleManageSectionActions(),
-                simpleManageSectionActions(),
                 simpleManageSectionActions()
             };
 
