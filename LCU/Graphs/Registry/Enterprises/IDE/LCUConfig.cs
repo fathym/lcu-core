@@ -27,13 +27,13 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
         [DataMember]
         public virtual DAFApplicationPackageTypes PackageType { get; set; }
 
-        [Obsolete]
-        [DataMember]
-        public virtual string NPMPackage { get; set; }
+        //[Obsolete]
+        //[DataMember]
+        //public virtual string NPMPackage { get; set; }
 
-        [Obsolete]
-        [DataMember]
-        public virtual string PackageVersion { get; set; }
+        //[Obsolete]
+        //[DataMember]
+        //public virtual string PackageVersion { get; set; }
 
         [DataMember]
         public virtual IdeSettingsConfigSolution[] Solutions { get; set; }

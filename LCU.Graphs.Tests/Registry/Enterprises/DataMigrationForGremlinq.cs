@@ -93,59 +93,59 @@ namespace LCU.Graphs.Tests.Registry.Enterprises
         //    });
         //}
 
-        [TestMethod]
-        public async Task MigrateDAFApplications()
-        {
-            //	Update all DAF Applications so that extra details are on the .Details property
+        //[TestMethod]
+        //public async Task MigrateDAFApplications()
+        //{
+        //    //	Update all DAF Applications so that extra details are on the .Details property
 
-            var allDafApps = await entGraph.g.V<DAFApplication>().ToListAsync();
+        //    var allDafApps = await entGraph.g.V<DAFApplication>().ToListAsync();
 
-            await allDafApps.Each(async dafApp =>
-            {
-                var details = dafApp.Details.JSONConvert<DAFViewApplicationDetails>();
+        //    await allDafApps.Each(async dafApp =>
+        //    {
+        //        var details = dafApp.Details.JSONConvert<DAFViewApplicationDetails>();
 
-                if (!details.NPMPackage.IsNullOrEmpty())
-                {
-                    dafApp.Details.Metadata["Package"] = new DAFApplicationNPMPackage()
-                    {
-                        Name = details.NPMPackage,
-                        Version = details.PackageVersion
-                    }.JSONConvert<JToken>();
+        //        if (!details.NPMPackage.IsNullOrEmpty())
+        //        {
+        //            dafApp.Details.Metadata["Package"] = new DAFApplicationNPMPackage()
+        //            {
+        //                Name = details.NPMPackage,
+        //                Version = details.PackageVersion
+        //            }.JSONConvert<JToken>();
 
-                    dafApp.Details.Metadata["PackageType"] = DAFApplicationPackageTypes.NPM.ToString();
+        //            dafApp.Details.Metadata["PackageType"] = DAFApplicationPackageTypes.NPM.ToString();
 
-                    await entGraph.g.V<DAFApplication>(dafApp.ID)
-                        .Update(dafApp)
-                        .FirstOrDefaultAsync();
-                }
-            });
-        }
+        //            await entGraph.g.V<DAFApplication>(dafApp.ID)
+        //                .Update(dafApp)
+        //                .FirstOrDefaultAsync();
+        //        }
+        //    });
+        //}
 
-        [TestMethod]
-        public async Task MigrateLCUConfigs()
-        {
-            //	Update all DAF Applications so that extra details are on the .Details property
+        //[TestMethod]
+        //public async Task MigrateLCUConfigs()
+        //{
+        //    //	Update all DAF Applications so that extra details are on the .Details property
 
-            var lcuConfigs = await entGraph.g.V<LCUConfig>().ToListAsync();
+        //    var lcuConfigs = await entGraph.g.V<LCUConfig>().ToListAsync();
 
-            await lcuConfigs.Each(async lcuConfig =>
-            {
-                if (!lcuConfig.NPMPackage.IsNullOrEmpty())
-                {
-                    lcuConfig.Package = new DAFApplicationNPMPackage()
-                    {
-                        Name = lcuConfig.NPMPackage,
-                        Version = lcuConfig.PackageVersion
-                    }.JSONConvert<MetadataModel>();
+        //    await lcuConfigs.Each(async lcuConfig =>
+        //    {
+        //        if (!lcuConfig.NPMPackage.IsNullOrEmpty())
+        //        {
+        //            lcuConfig.Package = new DAFApplicationNPMPackage()
+        //            {
+        //                Name = lcuConfig.NPMPackage,
+        //                Version = lcuConfig.PackageVersion
+        //            }.JSONConvert<MetadataModel>();
 
-                    lcuConfig.PackageType = DAFApplicationPackageTypes.NPM;
+        //            lcuConfig.PackageType = DAFApplicationPackageTypes.NPM;
 
-                    await entGraph.g.V<LCUConfig>(lcuConfig.ID)
-                        .Update(lcuConfig)
-                        .FirstOrDefaultAsync();
-                }
-            });
-        }
+        //            await entGraph.g.V<LCUConfig>(lcuConfig.ID)
+        //                .Update(lcuConfig)
+        //                .FirstOrDefaultAsync();
+        //        }
+        //    });
+        //}
 
         ////[TestMethod]
         //public async Task MigrateEnvironmentSettings()
