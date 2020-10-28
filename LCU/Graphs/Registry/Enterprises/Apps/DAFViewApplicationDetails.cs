@@ -26,12 +26,12 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
         [DataMember]
         public virtual MetadataModel StateConfig { get; set; }
 
-        [Obsolete]
-        [DataMember]
-        public virtual string NPMPackage { get; set; }
+        //[Obsolete]
+        //[DataMember]
+        //public virtual string NPMPackage { get; set; }
 
-        [Obsolete]
-        [DataMember]
-        public virtual string PackageVersion { get; set; }
+        //[Obsolete]
+        //[DataMember]
+        //public virtual string PackageVersion { get; set; }
     }
 }
