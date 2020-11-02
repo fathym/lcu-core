@@ -126,6 +126,21 @@ namespace LCU.Graphs.Registry.Enterprises
             });
         }
 
+        public virtual async Task<Enterprise> GetParentEnterprise(string entLookup)
+        {
+            return await withCommonGraphBoundary(async () =>
+            {
+                return await g.V<Enterprise>()
+                .Where(e => e.EnterpriseLookup == entLookup)
+                .Where(e => e.Registry == entLookup)
+                .Out<Offers>()
+                .OfType<DefaultApplications>()
+                .In<Owns>()
+                .OfType<Enterprise>()
+                .FirstOrDefaultAsync();
+            });
+        }
+
         public virtual async Task<List<Enterprise>> ListChildEnterprises(string entLookup)
         {
             return await withCommonGraphBoundary(async () =>
