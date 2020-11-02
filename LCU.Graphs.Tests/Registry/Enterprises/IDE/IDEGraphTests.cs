@@ -79,7 +79,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.IDE
             Assert.AreEqual(3, actions.Count);
         }
 
-        [TestMethod]
+        //[TestMethod]
         public async Task ParallelSideBarActions()
         {
             var tasks = new List<Task>()
