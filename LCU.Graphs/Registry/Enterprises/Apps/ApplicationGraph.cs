@@ -47,14 +47,14 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
             return await withCommonGraphBoundary(async () =>
             {
                 var ent = await g.V<Enterprise>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == entLookup)
-                .FirstOrDefaultAsync();
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == entLookup)
+                    .FirstOrDefaultAsync();
 
-                var dropDefaults = await g.V<Enterprise>(ent.ID)
-                    .Out<Offers>()
-                    .BothE().Where(__ => __.OutV<DefaultApplications>())
-                    .Drop();
+                //var dropDefaults = await g.V<Enterprise>(ent.ID)
+                //    .Out<Offers>()
+                //    .BothE().Where(__ => __.OutV<DefaultApplications>())
+                //    .Drop();
 
                 var defApps = await g.AddV(new DefaultApplications()
                 {
@@ -396,10 +396,14 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
         {
             return await withCommonGraphBoundary(async () =>
             {
-                var defaultApp = await g.V<DefaultApplications>()
-                .Where(da => da.EnterpriseLookup == sourceEntLookup)
-                .Where(da => da.Registry == sourceEntLookup)
-                .FirstOrDefaultAsync();
+                var defaultApp = await g.V<Enterprise>()
+                    .Where(da => da.EnterpriseLookup == sourceEntLookup)
+                    .Where(da => da.Registry == sourceEntLookup)
+                    .Out<Owns>()
+                    .OfType<DefaultApplications>()
+                    .Where(da => da.EnterpriseLookup == sourceEntLookup)
+                    .Where(da => da.Registry == sourceEntLookup)
+                    .FirstOrDefaultAsync();
 
                 var ent = await g.V<Enterprise>()
                     .Where(e => e.EnterpriseLookup == targetEntLookup)
