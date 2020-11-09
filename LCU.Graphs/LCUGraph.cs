@@ -90,23 +90,7 @@ namespace LCU.Graphs
         #endregion
 
         #region API Methods
-        #endregion
-
-        #region Helpers
-        protected virtual Audit buildAudit(string by = null, string description = null)
-        {
-            by = by ?? "LCU System";
-
-            description = description ?? GetType().FullName;
-
-            return new Audit()
-            {
-                By = by,
-                Description = description
-            };
-        }
-
-        protected virtual async Task ensureEdgeRelationship<TEdge>(Guid fromId, Guid toId)
+        public virtual async Task EnsureEdgeRelationship<TEdge>(Guid fromId, Guid toId)
             where TEdge : new()
         {
             var outEdges = await g.V(fromId)
@@ -121,6 +105,22 @@ namespace LCU.Graphs
                     .AddE<TEdge>()
                     .To(__ => __.V(toId))
                     .FirstOrDefaultAsync();
+        }
+
+        #endregion
+
+        #region Helpers
+        protected virtual Audit buildAudit(string by = null, string description = null)
+        {
+            by = by ?? "LCU System";
+
+            description = description ?? GetType().FullName;
+
+            return new Audit()
+            {
+                By = by,
+                Description = description
+            };
         }
 
         protected virtual async Task withCommonGraphBoundary(Func<Task> action)

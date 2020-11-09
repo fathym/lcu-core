@@ -232,7 +232,7 @@ namespace LCU.Graphs.Registry.Enterprises
                     })
                     .FirstOrDefaultAsync();
 
-                    await ensureEdgeRelationship<Owns>(ent.ID, tpi.ID);
+                    await EnsureEdgeRelationship<Owns>(ent.ID, tpi.ID);
                 }
                 else
                 {

@@ -121,21 +121,22 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             });
         }
 
-        public virtual async Task<Passport> GetPassport(string email, string entLookup = null)
+        public virtual async Task<Passport> GetPassport(string email, string entLookup)
         {
             return await withCommonGraphBoundary(async () =>
             {
                 var registry = email.Split('@')[1];
 
                 var passport = await g.V<Account>()
-                      .Where(e => e.Registry == registry)
-                      .Where(e => e.Email == email)
-                      .Out<Carries>()
-                      .OfType<Passport>()
-                      .Where(e => e.IsActive)
-                      .FirstOrDefaultAsync();
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == registry)
+                    .Where(e => e.Email == email)
+                    .Out<Carries>()
+                    .OfType<Passport>()
+                    .Where(e => e.IsActive)
+                    .FirstOrDefaultAsync();
 
-                if (!entLookup.IsNullOrEmpty() && passport?.EnterpriseLookup != entLookup)
+                if (passport?.EnterpriseLookup != entLookup)
                     passport = null;
 
                 return passport;
@@ -309,7 +310,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
                     passport = await g.AddV(passport).FirstOrDefaultAsync();
 
-                    await ensureEdgeRelationship<Carries>(account.ID, passport.ID);
+                    await EnsureEdgeRelationship<Carries>(account.ID, passport.ID);
                 }
                 else
                 {
@@ -410,7 +411,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                         parentId = passport.ID;
                     }
 
-                    await ensureEdgeRelationship<Owns>(parentId, tpi.ID);
+                    await EnsureEdgeRelationship<Owns>(parentId, tpi.ID);
                 }
                 else
                 {
@@ -448,7 +449,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
                     accessCard = await g.AddV(accessCard).FirstOrDefaultAsync();
 
-                    await ensureEdgeRelationship<Carries>(account.ID, accessCard.ID);
+                    await EnsureEdgeRelationship<Carries>(account.ID, accessCard.ID);
                 }
                 else
                 {
@@ -463,9 +464,9 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
 
                     if (rp != null)
                     {
-                        await ensureEdgeRelationship<Provides>(rp.ID, accessCard.ID);
+                        await EnsureEdgeRelationship<Provides>(rp.ID, accessCard.ID);
 
-                        await ensureEdgeRelationship<Consumes>(account.ID, accessCard.ID);
+                        await EnsureEdgeRelationship<Consumes>(account.ID, accessCard.ID);
                     }
                 }
 
@@ -495,7 +496,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                         .Where(e => e.Registry == entLookup)
                         .FirstOrDefaultAsync();
 
-                    await ensureEdgeRelationship<Owns>(ent.ID, relyingParty.ID);
+                    await EnsureEdgeRelationship<Owns>(ent.ID, relyingParty.ID);
                 }
                 else
                 {

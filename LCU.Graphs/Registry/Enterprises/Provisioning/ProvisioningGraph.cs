@@ -161,11 +161,11 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
                         .Where(e => e.Registry == entLookup)
                         .FirstOrDefaultAsync();
 
-                    await ensureEdgeRelationship<Consumes>(ent.ID, env.ID);
+                    await EnsureEdgeRelationship<Consumes>(ent.ID, env.ID);
 
-                    await ensureEdgeRelationship<Manages>(ent.ID, env.ID);
+                    await EnsureEdgeRelationship<Manages>(ent.ID, env.ID);
 
-                    await ensureEdgeRelationship<Owns>(ent.ID, env.ID);
+                    await EnsureEdgeRelationship<Owns>(ent.ID, env.ID);
                 }
                 else
                 {
@@ -199,11 +199,11 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 
                     var env = await GetEnvironment(entLookup, envLookup);
 
-                    await ensureEdgeRelationship<Consumes>(env.ID, settings.ID);
+                    await EnsureEdgeRelationship<Consumes>(env.ID, settings.ID);
 
-                    await ensureEdgeRelationship<Manages>(env.ID, settings.ID);
+                    await EnsureEdgeRelationship<Manages>(env.ID, settings.ID);
 
-                    await ensureEdgeRelationship<Owns>(env.ID, settings.ID);
+                    await EnsureEdgeRelationship<Owns>(env.ID, settings.ID);
                 }
                 else
                 {
@@ -237,11 +237,11 @@ namespace LCU.Graphs.Registry.Enterprises.Provisioning
 
                     var env = await GetEnvironment(entLookup, envLookup);
 
-                    await ensureEdgeRelationship<Consumes>(env.ID, sc.ID);
+                    await EnsureEdgeRelationship<Consumes>(env.ID, sc.ID);
 
-                    await ensureEdgeRelationship<Manages>(env.ID, sc.ID);
+                    await EnsureEdgeRelationship<Manages>(env.ID, sc.ID);
 
-                    await ensureEdgeRelationship<Owns>(env.ID, sc.ID);
+                    await EnsureEdgeRelationship<Owns>(env.ID, sc.ID);
                 }
                 else
                 {
