@@ -128,11 +128,11 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                 var registry = email.Split('@')[1];
 
                 var passport = await g.V<Account>()
-                    .Where(e => e.EnterpriseLookup == entLookup)
                     .Where(e => e.Registry == registry)
                     .Where(e => e.Email == email)
                     .Out<Carries>()
                     .OfType<Passport>()
+                    .Where(e => e.EnterpriseLookup == entLookup)
                     .Where(e => e.IsActive)
                     .FirstOrDefaultAsync();
 
