@@ -9,9 +9,6 @@ namespace LCU.Graphs.Registry.Enterprises
 	public class ThirdPartyToken : LCUVertex
 	{
 		[DataMember]
-		public virtual bool Encrypt { get; set; }
-
-		[DataMember]
 		public virtual string Key { get; set; }
 
 		[DataMember]
