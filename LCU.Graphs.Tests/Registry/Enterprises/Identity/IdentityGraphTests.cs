@@ -226,7 +226,6 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Identity
             return new ThirdPartyToken()
             {
                 Key = tokenKey,
-                Encrypt = false,
                 Token = tokenValue
             };
         }
