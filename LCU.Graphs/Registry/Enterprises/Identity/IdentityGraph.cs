@@ -352,6 +352,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                     .OfType<ThirdPartyToken>()
                     .Where(e => e.EnterpriseLookup == entLookup)
                     .Where(e => e.Registry == email)
+                    .Where(e => e.Key == key)
                     .FirstOrDefaultAsync();
 
                 if (tpi != null)
