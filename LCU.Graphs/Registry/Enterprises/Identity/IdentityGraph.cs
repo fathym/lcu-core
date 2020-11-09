@@ -326,7 +326,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             });
         }
 
-        public virtual async Task<string> RetrieveThirdPartyAccessToken(string entLookup, string email, string key, string tokenEncodingKey = null)
+        public virtual async Task<string> RetrieveThirdPartyAccessToken(string entLookup, string email, string key)
         {
             return await withCommonGraphBoundary(async () =>
             {
@@ -355,14 +355,11 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                     .Where(e => e.Key == key)
                     .FirstOrDefaultAsync();
 
-                if (tpi != null)
-                    isEncrypted = tpi.Encrypt;
-
-                return isEncrypted ? Encryption.Decrypt(tpi?.Token, tokenEncodingKey) : tpi?.Token;
+                return tpi?.Token;
             });
         }
 
-        public virtual async Task<Status> SetThirdPartyAccessToken(string entLookup, string email, string key, string token, string tokenEncodingKey = null)
+        public virtual async Task<Status> SetThirdPartyAccessToken(string entLookup, string email, string key, string token)
         {
             return await withCommonGraphBoundary(async () =>
             {
@@ -391,9 +388,6 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                     .Where(e => e.Key == key)
                     .FirstOrDefaultAsync();
 
-                if (!tokenEncodingKey.IsNullOrEmpty())
-                    token = Encryption.Encrypt(token, tokenEncodingKey);
-
                 if (tpi == null)
                 {
                     tpi = new ThirdPartyToken()
@@ -401,7 +395,6 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                         ID = Guid.NewGuid(),
                         EnterpriseLookup = entLookup,
                         Registry = email,
-                        Encrypt = !tokenEncodingKey.IsNullOrEmpty(),
                         Key = key,
                         Token = token
                     };
@@ -421,8 +414,6 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                 }
                 else
                 {
-                    tpi.Encrypt = !tokenEncodingKey.IsNullOrEmpty();
-
                     tpi.Token = token;
 
                     tpi = await g.V<ThirdPartyToken>(tpi.ID)
