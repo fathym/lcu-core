@@ -350,11 +350,11 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
                         .Where(e => e.Container == container)
                         .FirstOrDefaultAsync();
 
-                    await ensureEdgeRelationship<Consumes>(ide.ID, activity.ID);
+                    await EnsureEdgeRelationship<Consumes>(ide.ID, activity.ID);
 
-                    await ensureEdgeRelationship<Manages>(ide.ID, activity.ID);
+                    await EnsureEdgeRelationship<Manages>(ide.ID, activity.ID);
 
-                    await ensureEdgeRelationship<Owns>(ide.ID, activity.ID);
+                    await EnsureEdgeRelationship<Owns>(ide.ID, activity.ID);
                 }
                 else
                 {
@@ -390,11 +390,11 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
                         .Where(e => e.Container == container)
                         .FirstOrDefaultAsync();
 
-                    await ensureEdgeRelationship<Consumes>(ide.ID, lcu.ID);
+                    await EnsureEdgeRelationship<Consumes>(ide.ID, lcu.ID);
 
-                    await ensureEdgeRelationship<Manages>(ide.ID, lcu.ID);
+                    await EnsureEdgeRelationship<Manages>(ide.ID, lcu.ID);
 
-                    await ensureEdgeRelationship<Owns>(ide.ID, lcu.ID);
+                    await EnsureEdgeRelationship<Owns>(ide.ID, lcu.ID);
                 }
                 else
                 {
@@ -426,11 +426,11 @@ namespace LCU.Graphs.Registry.Enterprises.IDE
 
                     var activity = await GetActivity(entLookup, container, activityLookup);
 
-                    await ensureEdgeRelationship<Consumes>(activity.ID, action.ID);
+                    await EnsureEdgeRelationship<Consumes>(activity.ID, action.ID);
 
-                    await ensureEdgeRelationship<Manages>(activity.ID, action.ID);
+                    await EnsureEdgeRelationship<Manages>(activity.ID, action.ID);
 
-                    await ensureEdgeRelationship<Owns>(activity.ID, action.ID);
+                    await EnsureEdgeRelationship<Owns>(activity.ID, action.ID);
                 }
                 else
                 {

@@ -36,7 +36,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
                 .Where(da => da.Registry == entLookup)
                 .FirstOrDefaultAsync();
 
-                await ensureEdgeRelationship<Consumes>(defApps.ID, appId);
+                await EnsureEdgeRelationship<Consumes>(defApps.ID, appId);
 
                 return Status.Success;
             });
@@ -64,11 +64,11 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
                 })
                 .FirstOrDefaultAsync();
 
-                await ensureEdgeRelationship<Consumes>(ent.ID, defApps.ID);
+                await EnsureEdgeRelationship<Consumes>(ent.ID, defApps.ID);
 
-                await ensureEdgeRelationship<Manages>(ent.ID, defApps.ID);
+                await EnsureEdgeRelationship<Manages>(ent.ID, defApps.ID);
 
-                await ensureEdgeRelationship<Owns>(ent.ID, defApps.ID);
+                await EnsureEdgeRelationship<Owns>(ent.ID, defApps.ID);
 
                 return Status.Success;
             });
@@ -286,11 +286,11 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
                     .Where(e => e.Registry == application.EnterpriseLookup)
                     .FirstOrDefaultAsync();
 
-                await ensureEdgeRelationship<Consumes>(ent.ID, application.ID);
+                await EnsureEdgeRelationship<Consumes>(ent.ID, application.ID);
 
-                await ensureEdgeRelationship<Manages>(ent.ID, application.ID);
+                await EnsureEdgeRelationship<Manages>(ent.ID, application.ID);
 
-                await ensureEdgeRelationship<Owns>(ent.ID, application.ID);
+                await EnsureEdgeRelationship<Owns>(ent.ID, application.ID);
 
                 return application;
             });
@@ -328,7 +328,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
                         .Where(a => a.Registry == entLookup)
                         .FirstOrDefaultAsync();
 
-                    await ensureEdgeRelationship<Provides>(app.ID, dafApp.ID);
+                    await EnsureEdgeRelationship<Provides>(app.ID, dafApp.ID);
                 }
                 catch (Exception ex)
                 {
@@ -410,7 +410,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
                     .Where(e => e.Registry == targetEntLookup)
                     .FirstOrDefaultAsync();
 
-                await ensureEdgeRelationship<Offers>(ent.ID, defaultApp.ID);
+                await EnsureEdgeRelationship<Offers>(ent.ID, defaultApp.ID);
 
                 return Status.Success;
             });

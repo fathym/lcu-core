@@ -193,11 +193,11 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
                     .Where(e => e.Lookup == envLookup)
                     .FirstOrDefaultAsync();
 
-                await ensureEdgeRelationship<Consumes>(env.ID, dataFlow.ID);
+                await EnsureEdgeRelationship<Consumes>(env.ID, dataFlow.ID);
 
-                await ensureEdgeRelationship<Manages>(env.ID, dataFlow.ID);
+                await EnsureEdgeRelationship<Manages>(env.ID, dataFlow.ID);
 
-                await ensureEdgeRelationship<Owns>(env.ID, dataFlow.ID);
+                await EnsureEdgeRelationship<Owns>(env.ID, dataFlow.ID);
 
                 return dataFlow;
             });
@@ -233,11 +233,11 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
                         .Update(module.Pack)
                         .FirstOrDefaultAsync();
 
-                await ensureEdgeRelationship<Consumes>(dataFlow.ID, module.Pack.ID);
+                await EnsureEdgeRelationship<Consumes>(dataFlow.ID, module.Pack.ID);
 
-                await ensureEdgeRelationship<Manages>(dataFlow.ID, module.Pack.ID);
+                await EnsureEdgeRelationship<Manages>(dataFlow.ID, module.Pack.ID);
 
-                await ensureEdgeRelationship<Owns>(dataFlow.ID, module.Pack.ID);
+                await EnsureEdgeRelationship<Owns>(dataFlow.ID, module.Pack.ID);
 
                 await g.V<ModulePack>(module.Pack.ID)
                     .Out<Owns>()
@@ -289,11 +289,11 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
                     .Update(option)
                     .FirstOrDefaultAsync();
 
-            await ensureEdgeRelationship<Consumes>(modulePack.ID, option.ID);
+            await EnsureEdgeRelationship<Consumes>(modulePack.ID, option.ID);
 
-            await ensureEdgeRelationship<Manages>(modulePack.ID, option.ID);
+            await EnsureEdgeRelationship<Manages>(modulePack.ID, option.ID);
 
-            await ensureEdgeRelationship<Owns>(modulePack.ID, option.ID);
+            await EnsureEdgeRelationship<Owns>(modulePack.ID, option.ID);
 
             return option;
         }
@@ -325,11 +325,11 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
                     .Update(display)
                     .FirstOrDefaultAsync();
 
-            await ensureEdgeRelationship<Consumes>(modulePack.ID, display.ID);
+            await EnsureEdgeRelationship<Consumes>(modulePack.ID, display.ID);
 
-            await ensureEdgeRelationship<Manages>(modulePack.ID, display.ID);
+            await EnsureEdgeRelationship<Manages>(modulePack.ID, display.ID);
 
-            await ensureEdgeRelationship<Owns>(modulePack.ID, display.ID);
+            await EnsureEdgeRelationship<Owns>(modulePack.ID, display.ID);
 
             return display;
         }
