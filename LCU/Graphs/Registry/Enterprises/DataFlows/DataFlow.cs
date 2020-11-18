@@ -11,7 +11,7 @@ namespace LCU.Graphs.Registry.Enterprises.DataFlows
 	public class DataFlow : LCUVertex //BusinessModel<Guid>
 	{
 		[DataMember]
-		public virtual bool IsEditable { get; set; }
+		public virtual bool PreventEditing { get; set; }
 
 		[DataMember]
 		public virtual string Description { get; set; }
