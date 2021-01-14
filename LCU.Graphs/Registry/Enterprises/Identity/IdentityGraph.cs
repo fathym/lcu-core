@@ -261,7 +261,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             });
         }
 
-        public virtual async Task<List<LicenseAccessToken>> ListLicenseAccessTokensByType(string entLookup, string lookup)
+        public virtual async Task<List<LicenseAccessToken>> ListLicenseAccessTokensByLookup(string entLookup, string lookup)
         {
             return await withCommonGraphBoundary(async () =>
             {
