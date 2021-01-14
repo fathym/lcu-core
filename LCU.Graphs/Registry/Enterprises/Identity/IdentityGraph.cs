@@ -202,6 +202,21 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             });
         }
 
+        //public virtual async Task<Dictionary<string, LicenseAccessToken>> GetLicenseAccessTokenForUsers(string entLookup, List<string> usernames, string lookup)
+        //{
+        //    return await withCommonGraphBoundary(async () =>
+        //    {
+
+        //        var lat = await g.V<LicenseAccessToken>()
+        //          .Where(e => e.EnterpriseLookup == entLookup)
+        //          .Where(e => e.Registry == $"{entLookup}|{username}")
+        //          .Where(e => e.Lookup == lookup)
+        //          .FirstOrDefaultAsync();
+
+        //        return lat;
+        //    });
+        //}
+
         public virtual async Task<List<Account>> ListAccountsByOrg(string entLookup)
         {
             return await withCommonGraphBoundary(async () =>
@@ -240,6 +255,19 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             {
                 var lats = await g.V<LicenseAccessToken>()
                   .Where(e => e.EnterpriseLookup == entLookup)
+                  .ToListAsync();
+
+                return lats;
+            });
+        }
+
+        public virtual async Task<List<LicenseAccessToken>> ListLicenseAccessTokensByLookup(string entLookup, string lookup)
+        {
+            return await withCommonGraphBoundary(async () =>
+            {
+                var lats = await g.V<LicenseAccessToken>()
+                  .Where(e => e.EnterpriseLookup == entLookup)
+                  .Where(e => e.Lookup == lookup)
                   .ToListAsync();
 
                 return lats;
