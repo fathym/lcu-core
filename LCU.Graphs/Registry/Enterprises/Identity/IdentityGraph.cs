@@ -97,11 +97,11 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
         {
             return await withCommonGraphBoundary(async () =>
             {
-                var lat = await GetLicenseAccessToken(entLookup, username, lookup);
+                var passport = await GetLicenseAccessToken(entLookup, username, lookup);
 
-                if (lat != null)
+                if (passport != null)
                 {
-                    await g.V<LicenseAccessToken>(lat.ID)
+                    await g.V<Passport>(passport.ID)
                         .Where(e => e.EnterpriseLookup == entLookup)
                         .Drop();
 
@@ -109,7 +109,7 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
                 }
                 else
                 {
-                    return Status.GeneralError.Clone("Unable to locate license access token");
+                    return Status.GeneralError.Clone("Unable to locate user passport");
                 }
             });
         }
