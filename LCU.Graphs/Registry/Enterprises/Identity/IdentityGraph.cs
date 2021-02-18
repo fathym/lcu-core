@@ -93,6 +93,27 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             });
         }
 
+        public virtual async Task<Status> DeletePassport(string entLookup, string username)
+        {
+            return await withCommonGraphBoundary(async () =>
+            {
+                var passport = await GetPassport(username, entLookup);
+
+                if (passport != null)
+                {
+                    await g.V<Passport>(passport.ID)
+                        .Where(e => e.EnterpriseLookup == entLookup)
+                        .Drop();
+
+                    return Status.Success;
+                }
+                else
+                {
+                    return Status.GeneralError.Clone("Unable to locate user passport");
+                }
+            });
+        }
+
         public virtual async Task<Status> Exists(string email, string entLookup = null)
         {
             return await withCommonGraphBoundary(async () =>
