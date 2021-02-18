@@ -93,11 +93,11 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             });
         }
 
-        public virtual async Task<Status> DeletePassport(string entLookup, string username, string lookup)
+        public virtual async Task<Status> DeletePassport(string entLookup, string username)
         {
             return await withCommonGraphBoundary(async () =>
             {
-                var passport = await GetLicenseAccessToken(entLookup, username, lookup);
+                var passport = await GetPassport(username, entLookup);
 
                 if (passport != null)
                 {
