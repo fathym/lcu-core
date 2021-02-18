@@ -93,6 +93,27 @@ namespace LCU.Graphs.Registry.Enterprises.Identity
             });
         }
 
+        public virtual async Task<Status> DeletePassport(string entLookup, string username, string lookup)
+        {
+            return await withCommonGraphBoundary(async () =>
+            {
+                var lat = await GetLicenseAccessToken(entLookup, username, lookup);
+
+                if (lat != null)
+                {
+                    await g.V<LicenseAccessToken>(lat.ID)
+                        .Where(e => e.EnterpriseLookup == entLookup)
+                        .Drop();
+
+                    return Status.Success;
+                }
+                else
+                {
+                    return Status.GeneralError.Clone("Unable to locate license access token");
+                }
+            });
+        }
+
         public virtual async Task<Status> Exists(string email, string entLookup = null)
         {
             return await withCommonGraphBoundary(async () =>
