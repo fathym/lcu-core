@@ -79,12 +79,12 @@ namespace LCU.Graphs.Registry.Enterprises
         {
             return await withCommonGraphBoundary(async () =>
             {
-                if (entLookup == "3ebd1c0d-22d0-489e-a46f-3260103c8cd7")
+                if (entLookup == "3ebd1c0d-22d0-489e-a46f-3260103c8cd7" || entLookup == "a0939981-21bb-4fdf-b3c5-13660b48e24f")
                     throw new Exception("This would blow up everything, so don't do it");
 
                 var ent = await LoadByLookup(entLookup);
 
-                if (ent != null && ent.EnterpriseLookup != "3ebd1c0d-22d0-489e-a46f-3260103c8cd7")
+                if (ent != null && ent.EnterpriseLookup != "3ebd1c0d-22d0-489e-a46f-3260103c8cd7" && ent.EnterpriseLookup != "a0939981-21bb-4fdf-b3c5-13660b48e24f")
                 {
                     //	TODO:  We should be archiving the Enterprise records somewhere for potential reimport?
 
