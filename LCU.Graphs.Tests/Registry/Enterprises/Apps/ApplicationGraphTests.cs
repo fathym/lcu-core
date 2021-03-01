@@ -188,6 +188,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
                         Version = "latest"
                     }.JSONConvert<MetadataModel>(),
                     PackageType = DAFApplicationPackageTypes.NPM,
+                    RegScripts = "function() { alert('Hey'); }",
                     StateConfig = new MetadataModel()
                     {
                         Metadata = new Dictionary<string, JToken>()
