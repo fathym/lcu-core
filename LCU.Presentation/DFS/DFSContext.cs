@@ -16,6 +16,8 @@ namespace LCU.Presentation.DFS
 
 		public virtual string DFSRoot { get; set; }
 
+		public virtual string RegHandlers { get; set; }
+
 		public virtual MetadataModel StateConfig { get; set; }
 	}
 }
