@@ -24,6 +24,9 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
         public virtual DAFApplicationPackageTypes PackageType { get; set; }
 
         [DataMember]
+        public virtual string RegScripts { get; set; }
+
+        [DataMember]
         public virtual MetadataModel StateConfig { get; set; }
 
         //[Obsolete]
