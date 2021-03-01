@@ -368,6 +368,12 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.IDE
             Assert.AreEqual(0, lcus.Count);
             Assert.IsFalse(lcus.Any(a => a.ID == lcu.ID));
         }
+
+        [TestMethod]
+        public async Task ListActivitiesSpecificTest()
+        {
+            var activities = await ideGraph.ListActivities("a0939981-21bb-4fdf-b3c5-13660b48e24f", "Default");
+        }
         #endregion
 
         #region Helpers
