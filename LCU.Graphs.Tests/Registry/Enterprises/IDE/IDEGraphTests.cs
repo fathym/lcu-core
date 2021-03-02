@@ -319,6 +319,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.IDE
                         Toolkit = "toolkit"
                     }
                 },
+                RegScripts = "function () {}",
                 Solutions = new[]
                 {
                     new IdeSettingsConfigSolution()
@@ -346,6 +347,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.IDE
             Assert.AreEqual(expected.Package.Metadata["Version"], lcu.Package.Metadata["Version"]);
             Assert.AreEqual(expected.Lookup, lcu.Lookup);
             Assert.AreEqual(expected.Registry, lcu.Registry);
+            Assert.AreEqual(expected.RegScripts, lcu.RegScripts);
             Assert.IsNotNull(lcu.Modules);
             Assert.IsFalse(lcu.Modules.Displays.IsNullOrEmpty());
             Assert.IsFalse(lcu.Modules.Options.IsNullOrEmpty());
