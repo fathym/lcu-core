@@ -274,7 +274,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
                     if (application.ID.IsEmpty())
                         application.ID = Guid.NewGuid();
 
-                    application = await g.AddV(application).FirstOrDefaultAsync();
+                        application = await g.AddV(application).FirstOrDefaultAsync();
                 }
                 else
                     application = await g.V<Application>(existingApp.ID)

@@ -1,4 +1,5 @@
 using Fathym;
+using LCU.Graphs.Registry.Enterprises;
 using LCU.Graphs.Registry.Enterprises.Apps;
 using LCU.Testing.Graphs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -52,25 +53,30 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
 
             var app = await appGraph.Save(mainEnt.EnterpriseLookup, expected);
 
+            var appConfig = app.Config.JSONConvert<ApplicationLookupConfiguration>();
+
+            var expectedConfig = expected.Config.JSONConvert<ApplicationLookupConfiguration>();
+
             Assert.IsNotNull(app);
             Assert.AreNotEqual(Guid.Empty, app.ID);
             Assert.AreEqual(expected.Container, app.Container);
             Assert.AreEqual(expected.Description, app.Description);
             Assert.AreEqual(expected.EnterpriseLookup, app.EnterpriseLookup);
-            Assert.IsTrue(expected.IsPrivate);
-            Assert.IsTrue(expected.IsReadOnly);
+            Assert.IsTrue(expectedConfig.IsPrivate);
+            Assert.IsTrue(expectedConfig.IsReadOnly);
             Assert.AreEqual(expected.Name, app.Name);
-            Assert.AreEqual(expected.PathRegex, app.PathRegex);
+            Assert.AreEqual(expectedConfig.PathRegex, appConfig.PathRegex);
             Assert.AreEqual(expected.Priority, app.Priority);
-            Assert.AreEqual(expected.QueryRegex, app.QueryRegex);
+            Assert.AreEqual(expectedConfig.QueryRegex, appConfig.QueryRegex);
             Assert.AreEqual(expected.Registry, app.Registry);
-            Assert.AreEqual(expected.UserAgentRegex, app.UserAgentRegex);
-            Assert.IsTrue(app.AccessRights.Contains(accessRight));
-            Assert.AreEqual(1, app.AccessRights.Length);
+            Assert.AreEqual(expectedConfig.UserAgentRegex, appConfig.UserAgentRegex);
+            Assert.IsTrue(appConfig.AccessRights.Contains(accessRight));
+            Assert.AreEqual(1, appConfig.AccessRights.Count);
+            Assert.AreEqual(expectedConfig.AccessRightsAllAny, appConfig.AccessRightsAllAny);
             Assert.IsTrue(app.Hosts.Contains(mainHost));
             Assert.AreEqual(1, app.Hosts.Length);
-            Assert.IsTrue(app.Licenses.Contains(license));
-            Assert.AreEqual(1, app.Licenses.Length);
+            Assert.IsTrue(appConfig.Licenses.Contains(license));
+            Assert.AreEqual(1, appConfig.Licenses.Count);
 
             expected = createTestApplication();
 
@@ -158,15 +164,19 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
                 Name = $"{GetType().FullName}-Test-{rand}",
                 Description = "A description",
                 Container = "test-data-app",
-                IsPrivate = true,
-                IsReadOnly = true,
-                PathRegex = "*",
+                Config = new ApplicationLookupConfiguration()
+                {
+                    IsPrivate = true,
+                    IsReadOnly = true,
+                    PathRegex = "*",
+                    Licenses = new List<string>() { license },
+                    QueryRegex = "*",
+                    UserAgentRegex = "*",
+                    AccessRights = new List<string>() { accessRight },
+                    AccessRightsAllAny = AllAnyTypes.Any
+                }.JSONConvert<MetadataModel>(),
                 Priority = 100,
-                QueryRegex = "*",
-                UserAgentRegex = "*",
-                AccessRights = new string[] { accessRight },
-                Hosts = new string[] { mainHost },
-                Licenses = new string[] { license }
+                Hosts = new string[] { mainHost }
             };
         }
 
