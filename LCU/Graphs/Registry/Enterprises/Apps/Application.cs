@@ -1,4 +1,6 @@
 ﻿using Fathym.Business.Models;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -11,6 +13,10 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 	{
 		[DataMember]
 		public virtual string[] AccessRights { get; set; }
+
+		[DataMember]
+		[JsonConverter(typeof(StringEnumConverter))]
+		public virtual AllAnyTypes AccessRightsAllAny { get; set; } = AllAnyTypes.Any;
 
 		[DataMember]
 		public virtual string Container { get; set; }
@@ -26,6 +32,13 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 
 		[DataMember]
 		public virtual bool IsReadOnly { get; set; }
+
+		[DataMember]
+		public virtual bool IsTriggerSignIn { get; set; }
+
+		[DataMember]
+		[JsonConverter(typeof(StringEnumConverter))]
+		public virtual AllAnyTypes LicensesAllAny { get; set; } = AllAnyTypes.All;
 
 		[DataMember]
 		public virtual string[] Licenses { get; set; }
