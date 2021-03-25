@@ -93,39 +93,39 @@ namespace LCU.Graphs.Tests.Registry.Enterprises
         //    });
         //}
 
-        [TestMethod]
-        public async Task MigrateApplicationLookups()
-        {
-            //	Update all DAF Applications so that extra details are on the .Details property
+        //[TestMethod]
+        //public async Task MigrateApplicationLookups()
+        //{
+        //    //	Update all DAF Applications so that extra details are on the .Details property
 
-            var allApps = await entGraph.g.V<Application>().ToListAsync();
+        //    var allApps = await entGraph.g.V<Application>().ToListAsync();
 
-            await allApps.Each(async app =>
-            {
-                var config = app.Config?.JSONConvert<ApplicationLookupConfiguration>();
+        //    await allApps.Each(async app =>
+        //    {
+        //        var config = app.Config?.JSONConvert<ApplicationLookupConfiguration>();
 
-                if (config == null || config.PathRegex.IsNullOrEmpty())
-                {
-                    app.Config = new ApplicationLookupConfiguration()
-                    {
-                        AccessRights = app.AccessRights.ToList(),
-                        AccessRightsAllAny = AllAnyTypes.Any,
-                        IsPrivate = app.IsPrivate,
-                        IsReadOnly = app.IsReadOnly,
-                        IsTriggerSignIn = app.IsPrivate,
-                        Licenses = app.Licenses.ToList(),
-                        LicensesAllAny = AllAnyTypes.All,
-                        PathRegex = app.PathRegex,
-                        QueryRegex = app.QueryRegex,
-                        UserAgentRegex = app.UserAgentRegex
-                    }.JSONConvert<MetadataModel>();
+        //        if (config == null || config.PathRegex.IsNullOrEmpty())
+        //        {
+        //            app.Config = new ApplicationLookupConfiguration()
+        //            {
+        //                AccessRights = app.AccessRights.ToList(),
+        //                AccessRightsAllAny = AllAnyTypes.Any,
+        //                IsPrivate = app.IsPrivate,
+        //                IsReadOnly = app.IsReadOnly,
+        //                IsTriggerSignIn = app.IsPrivate,
+        //                Licenses = app.Licenses.ToList(),
+        //                LicensesAllAny = AllAnyTypes.All,
+        //                PathRegex = app.PathRegex,
+        //                QueryRegex = app.QueryRegex,
+        //                UserAgentRegex = app.UserAgentRegex
+        //            }.JSONConvert<MetadataModel>();
 
-                    await entGraph.g.V<Application>(app.ID)
-                        .Update(app)
-                        .FirstOrDefaultAsync();
-                }
-            });
-        }
+        //            await entGraph.g.V<Application>(app.ID)
+        //                .Update(app)
+        //                .FirstOrDefaultAsync();
+        //        }
+        //    });
+        //}
 
         //[TestMethod]
         //public async Task MigrateDAFApplications()
