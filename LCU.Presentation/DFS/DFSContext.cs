@@ -3,7 +3,7 @@ using System;
 
 namespace LCU.Presentation.DFS
 {
-	[Serializable]
+    [Serializable]
 	public class DFSContext
 	{
 		public const string Lookup = "<DAF:DFS>";
