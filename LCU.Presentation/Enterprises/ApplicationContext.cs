@@ -1,16 +1,13 @@
 ﻿using Fathym;
+using LCU.Graphs.Registry.Enterprises.Apps;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Linq;
-using System.Collections.Generic;
 using System.Security.Claims;
-using System.Text;
-using LCU.Graphs.Registry.Enterprises;
-using LCU.Graphs.Registry.Enterprises.Apps;
 
 namespace LCU.Presentation.Enterprises
 {
-	[Serializable]
+    [Serializable]
 	public class ApplicationContext
 	{
 		protected const string Lookup = "<DAF:Application>";
@@ -25,9 +22,9 @@ namespace LCU.Presentation.Enterprises
 
 		public virtual Guid ID { get; set; }
 
-		public virtual ApplicationLookupConfiguration LookupConfig { get; set; }
+        public virtual ApplicationLookupConfiguration LookupConfig { get; set; }
 
-		public virtual string Name { get; set; }
+        public virtual string Name { get; set; }
 
 		public virtual int Priority { get; set; }
 
