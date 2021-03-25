@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace LCU.Presentation.Enterprises
+namespace LCU.Graphs.Registry.Enterprises
 {
     [DataContract]
 	public enum AllAnyTypes
