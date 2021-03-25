@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text;
 using LCU.Graphs.Registry.Enterprises;
+using LCU.Graphs.Registry.Enterprises.Apps;
 
 namespace LCU.Presentation.Enterprises
 {
