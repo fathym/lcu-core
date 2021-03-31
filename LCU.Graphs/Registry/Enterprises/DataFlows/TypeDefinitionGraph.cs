@@ -18,7 +18,7 @@
 //		public TypeDefinitionGraph(GremlinClientPoolManager clientPool)
 //			: base(clientPool)
 //		{
-			
+
 //		}
 //		#endregion
 
