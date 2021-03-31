@@ -57,6 +57,8 @@ namespace LCU.Graphs
                             {
                                 cs.Add(new GenericGraphElementPropertySerializer<MetadataModel>());
 
+                                cs.Add(new GenericGraphElementPropertySerializer<ApplicationLookupConfiguration>());
+
                                 cs.Add(new GenericGraphElementPropertySerializer<Audit>());
 
                                 cs.Add(new GenericGraphElementPropertySerializer<DataFlowOutput>());
