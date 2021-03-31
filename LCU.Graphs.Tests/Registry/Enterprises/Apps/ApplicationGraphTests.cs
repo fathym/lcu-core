@@ -174,7 +174,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises.Apps
                     UserAgentRegex = "*",
                     AccessRights = new List<string>() { accessRight },
                     AccessRightsAllAny = AllAnyTypes.Any
-                }.JSONConvert<MetadataModel>(),
+                },
                 Priority = 100,
                 Hosts = new string[] { mainHost }
             };
