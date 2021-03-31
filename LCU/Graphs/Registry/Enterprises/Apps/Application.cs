@@ -26,33 +26,33 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 
 		[DataMember]
 		public virtual int Priority { get; set; }
-		
-		//[Obsolete]
-		//[DataMember]
-		//public virtual string[] AccessRights { get; set; }
 
-		//[Obsolete]
-		//[DataMember]
-		//public virtual bool IsPrivate { get; set; }
+        [Obsolete]
+        [DataMember]
+        public virtual string[] AccessRights { get; set; }
 
-		//[Obsolete]
-		//[DataMember]
-		//public virtual bool IsReadOnly { get; set; }
+        [Obsolete]
+        [DataMember]
+        public virtual bool IsPrivate { get; set; }
 
-		//[Obsolete]
-		//[DataMember]
-		//public virtual string[] Licenses { get; set; }
+        [Obsolete]
+        [DataMember]
+        public virtual bool IsReadOnly { get; set; }
 
-		//[Obsolete]
-		//[DataMember]
-		//public virtual string PathRegex { get; set; }
+        [Obsolete]
+        [DataMember]
+        public virtual string[] Licenses { get; set; }
 
-		//[Obsolete]
-		//[DataMember]
-		//public virtual string QueryRegex { get; set; }
+        [Obsolete]
+        [DataMember]
+        public virtual string PathRegex { get; set; }
 
-		//[Obsolete]
-		//[DataMember]
-		//public virtual string UserAgentRegex { get; set; }
-	}
+        [Obsolete]
+        [DataMember]
+        public virtual string QueryRegex { get; set; }
+
+        [Obsolete]
+        [DataMember]
+        public virtual string UserAgentRegex { get; set; }
+    }
 }
