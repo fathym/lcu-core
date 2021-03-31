@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Fathym;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
 {
     [Serializable]
 	[DataContract]
-	public class ApplicationLookupConfiguration
+	public class ApplicationLookupConfiguration : MetadataModel
 	{
 		[DataMember]
 		public virtual List<string> AccessRights { get; set; }
