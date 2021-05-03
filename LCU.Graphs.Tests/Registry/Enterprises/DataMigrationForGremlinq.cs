@@ -104,7 +104,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises
         //    {
         //        var config = app.Config?.JSONConvert<ApplicationLookupConfiguration>();
 
-        //        if (config == null || config.PathRegex.IsNullOrEmpty())
+        //        //if (config == null || config.PathRegex.IsNullOrEmpty())
         //        {
         //            app.Config = new ApplicationLookupConfiguration()
         //            {
@@ -118,7 +118,7 @@ namespace LCU.Graphs.Tests.Registry.Enterprises
         //                PathRegex = app.PathRegex,
         //                QueryRegex = app.QueryRegex,
         //                UserAgentRegex = app.UserAgentRegex
-        //            }.JSONConvert<MetadataModel>();
+        //            };
 
         //            await entGraph.g.V<Application>(app.ID)
         //                .Update(app)
