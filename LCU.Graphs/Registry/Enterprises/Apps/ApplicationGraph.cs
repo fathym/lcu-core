@@ -182,11 +182,11 @@ namespace LCU.Graphs.Registry.Enterprises.Apps
             return await withCommonGraphBoundary(async () =>
             {
                 var appsQuery = g.V<Enterprise>()
-                .Where(e => e.EnterpriseLookup == entLookup)
-                .Where(e => e.Registry == entLookup)
-                .Out<Consumes>()
-                .OfType<Application>()
-                .Where(a => a.Hosts.Contains(host));
+                    .Where(e => e.EnterpriseLookup == entLookup)
+                    .Where(e => e.Registry == entLookup)
+                    .Out<Consumes>()
+                    .OfType<Application>()
+                    .Where(a => a.Hosts.Contains(host));
 
                 //	TODO:  Turn on and enable as part of next wave of data apps
                 //if (!container.IsNullOrEmpty())
