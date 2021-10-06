@@ -1,32 +1,32 @@
-﻿using ExRam.Gremlinq.Core;
-using ExRam.Gremlinq.Core.AspNet;
-using ExRam.Gremlinq.Providers.WebSocket;
+﻿using Azure.Storage.Blobs;
+using ExRam.Gremlinq.Core;
 using Fathym;
 using Fathym.Design;
 using Gremlin.Net.Driver.Exceptions;
-using Gremlin.Net.Structure;
-using LCU.Graphs.Registry.Enterprises;
-using LCU.Graphs.Registry.Enterprises.Apps;
-using LCU.Graphs.Registry.Enterprises.DataFlows;
-using LCU.Graphs.Registry.Enterprises.IDE;
-using LCU.Graphs.Registry.Enterprises.Identity;
+using LCU.Configuration;
+using LCU.Graphs;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-
-using static ExRam.Gremlinq.Core.GremlinQuerySource;
 
 namespace LCU.Graphs
 {
     public class LCUGraph
     {
         #region Fields
+        protected readonly IConfiguration config;
+
+        protected readonly BlobContainerClient containerClient;
+
+        protected readonly LCUGraphConfig graphConfig;
+
+        protected readonly ILogger logger;
         #endregion
 
         #region Properties
@@ -34,13 +34,138 @@ namespace LCU.Graphs
         #endregion
 
         #region Constructors
-        public LCUGraph(LCUGraphConfig graphConfig, ILogger logger)
+        public LCUGraph(LCUGraphConfig graphConfig, IConfiguration config, ILogger logger)
         {
-            g = GremlinQuerySource.g.ConfigureEnvironment(env =>
+            this.config = config ?? throw new ArgumentNullException(nameof(config));
+
+            this.graphConfig = graphConfig ?? throw new ArgumentNullException(nameof(graphConfig));
+
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+            containerClient = buildGraphAuditContainerClient(graphConfig?.Audit, config);
+
+            g = buildGremlinQuerySource(graphConfig);
+        }
+        #endregion
+
+        #region API Methods
+        public virtual async Task EnsureEdgeRelationship<TEdge>(Guid fromId, Guid toId, string tenantLookup)
+            where TEdge : LCUEdge, new()
+        {
+            var outEdges = await g.V(fromId)
+                .Out<TEdge>()
+                .OfType<LCUVertex>()
+                .ToListAsync();
+
+            var existing = outEdges.FirstOrDefault(oe => oe.ID == toId);
+
+            if (existing == null)
+            {
+                var edge = await g.V(fromId)
+                    .AddE(new TEdge()
+                    {
+                        ID = Guid.NewGuid(),
+                        TenantLookup = tenantLookup
+                    })
+                    .To(__ => __.V(toId))
+                    .FirstOrDefaultAsync();
+
+                await writeEdgeAudit(edge, description: $"Edge added in {GetType().FullName}",
+                    metadata: new Dictionary<string, JToken>() { { "AuditType", "Create" } });
+            }
+        }
+
+        public virtual async Task RemoveEdgeRelationship<TEdge>(Guid fromId, Guid toId, string tenantLookup)
+            where TEdge : LCUEdge, new()
+        {
+            var outEdges = await g.V(fromId)
+                .OutE<TEdge>()
+                .ToListAsync();
+
+            if (outEdges.FirstOrDefault()?.OutV == null)
+                throw new ArgumentNullException("This didn't work");
+
+            var existing = outEdges.FirstOrDefault(oe => oe.OutV == toId);
+
+            if (existing != null)
+            {
+                var edge = await g.E<LCUEdge>().FirstOrDefaultAsync();
+
+                await g.E(existing.ID)
+                    .Drop();
+
+                await writeEdgeAudit(edge, description: $"Edge deleted in {GetType().FullName}",
+                    metadata: new Dictionary<string, JToken>() { { "AuditType", "Delete" } });
+            }
+        }
+
+        public virtual async Task RemoveEdgeRelationships<TEdge>(Guid fromId, string tenantLookup)
+            where TEdge : LCUEdge, new()
+        {
+            await g.V(fromId)
+                .OutE<TEdge>()
+                .Drop();
+        }
+        #endregion
+
+        #region Helpers
+        protected virtual Audit buildAudit<T>(T detail, string by = null, string description = null,
+            IDictionary<string, JToken> metadata = null)
+        {
+            by = by ?? "LCU System";
+
+            description = description ?? GetType().FullName;
+
+            //  TODO:  Use data protection services here to securely write json so sensitive data isn't exposed...
+            //      Maybe secured with SALT of the TenantLookup
+            var details = detail.ToJSON();
+
+            return new Audit()
+            {
+                By = by,
+                Description = description,
+                Details = details,
+                Metadata = metadata
+            };
+        }
+
+        protected virtual string buildAuditPath(string tenantLookup, string auditType, string auditId)
+        {
+            var datePath = DateTime.UtcNow.ToString("yyyy-MM-dd-HH-mm-ss");
+
+            var id = Guid.NewGuid();
+
+            return $"{tenantLookup}/{graphConfig.Database}/{graphConfig.Graph}/{auditType}/{auditId}/{datePath}-{id}";
+        }
+
+        protected virtual BlobContainerClient buildGraphAuditContainerClient(LCUBlobStorageConfig blobStrgConfig,
+            IConfiguration config)
+        {
+            if (blobStrgConfig != null)
+            {
+                var connStr = config[blobStrgConfig.StorageConnectionString] ??
+                    blobStrgConfig.StorageConnectionString;
+
+                var containerClient = new BlobContainerClient(connStr, blobStrgConfig.Container);
+
+                containerClient.CreateIfNotExists();
+
+                return containerClient;
+            }
+            else
+                return null;
+        }
+
+        protected virtual IGremlinQuerySource buildGremlinQuerySource(LCUGraphConfig graphConfig)
+        {
+            return GremlinQuerySource.g.ConfigureEnvironment(env =>
             {
                 var graphModel = GraphModel.FromBaseTypes<LCUVertex, LCUEdge>(lookup =>
                 {
-                    return lookup.IncludeAssembliesOfBaseTypes();
+                    return lookup
+                        .IncludeAssembliesOfBaseTypes()
+                        .IncludeAssembliesFromStackTrace()
+                        .IncludeAssembliesFromAppDomain();
                 });
 
                 return env
@@ -52,35 +177,43 @@ namespace LCU.Graphs
                             {
                                 return conf
                                     .IgnoreOnUpdate(x => x.Registry);
-                            })
-                            .ConfigureCustomSerializers(cs =>
-                            {
-                                cs.Add(new GenericGraphElementPropertySerializer<MetadataModel>());
-
-                                cs.Add(new GenericGraphElementPropertySerializer<ApplicationLookupConfiguration>());
-
-                                cs.Add(new GenericGraphElementPropertySerializer<Audit>());
-
-                                cs.Add(new GenericGraphElementPropertySerializer<DataFlowOutput>());
-
-                                cs.Add(new GenericGraphElementPropertySerializer<ModulePackSetup>());
-
-                                cs.Add(new GenericGraphElementPropertySerializer<IdeSettingsConfigSolution[]>());
-
-                                cs.Add(new GenericGraphElementPropertySerializer<AccessConfiguration[]>());
-
-                                cs.Add(new GenericGraphElementPropertySerializer<AccessRight[]>());
-
-                                cs.Add(new GenericGraphElementPropertySerializer<Provider[]>());
-
-                                return cs;
                             });
+                        //.ConfigureCustomSerializers(cs =>
+                        //{
+                        //    graphConfig.CustomSerializers.Each(csType =>
+                        //    {
+                        //        var type = Type.GetType(csType);
+
+                        //        if (type != null)
+                        //            cs.Add(new GenericGraphElementPropertySerializer(type));
+                        //    });
+
+                        //    //cs.Add(new GenericGraphElementPropertySerializer<MetadataModel>());
+
+                        //    //cs.Add(new GenericGraphElementPropertySerializer<Audit>());
+
+                        //    //cs.Add(new GenericGraphElementPropertySerializer<DataFlowOutput>());
+
+                        //    //cs.Add(new GenericGraphElementPropertySerializer<ModulePackSetup>());
+
+                        //    //cs.Add(new GenericGraphElementPropertySerializer<IdeSettingsConfigSolution[]>());
+
+                        //    //cs.Add(new GenericGraphElementPropertySerializer<AccessConfiguration[]>());
+
+                        //    //cs.Add(new GenericGraphElementPropertySerializer<AccessRight[]>());
+
+                        //    //cs.Add(new GenericGraphElementPropertySerializer<Provider[]>());
+
+                        //    return cs;
+                        //});
                     }))
                     .UseCosmosDb(builder =>
                     {
+                        var apiKey = config[graphConfig.APIKey] ?? graphConfig.APIKey;
+
                         return builder
                             .At(new Uri(graphConfig.Host), graphConfig.Database, graphConfig.Graph)
-                            .AuthenticateBy(graphConfig.APIKey)
+                            .AuthenticateBy(apiKey)
                             .ConfigureWebSocket(builder =>
                             {
                                 return builder;
@@ -89,40 +222,137 @@ namespace LCU.Graphs
                     .ConfigureModel(m => m.ConfigureNativeTypes(t => t.Add(typeof(Guid))));
             });
         }
-        #endregion
 
-        #region API Methods
-        public virtual async Task EnsureEdgeRelationship<TEdge>(Guid fromId, Guid toId)
-            where TEdge : new()
+        protected virtual async Task<T> createOrUpdateVertex<T>(T vertex,
+            Func<IVertexGremlinQuery<T>> isExistingFilter = null, Action<T> configureVertex = null,
+            bool failOnExists = false, bool failOnNotExists = false)
+            where T : LCUVertex
         {
-            var outEdges = await g.V(fromId)
-                .Out<TEdge>()
-                .OfType<LCUVertex>()
-                .ToListAsync();
-
-            var existing = outEdges.FirstOrDefault(oe => oe.ID == toId);
-
-            if (existing == null)
-                await g.V(fromId)
-                    .AddE<TEdge>()
-                    .To(__ => __.V(toId))
-                    .FirstOrDefaultAsync();
+            return await createOrUpdateVertex<LCUVertex, LCUEdge, T>(vertex, null,
+                isExistingFilter: isExistingFilter, configureVertex: configureVertex, failOnExists: failOnExists,
+                failOnNotExists: failOnNotExists);
         }
 
-        #endregion
-
-        #region Helpers
-        protected virtual Audit buildAudit(string by = null, string description = null)
+        protected virtual async Task<T> createOrUpdateVertex<TParent, TParentEdge, T>(T vertex, Guid? parentId,
+            Func<IVertexGremlinQuery<T>> isExistingFilter = null, Action<T> configureVertex = null,
+            bool failOnExists = false, bool failOnNotExists = false)
+            where T : LCUVertex
+            where TParentEdge : LCUEdge, new()
         {
-            by = by ?? "LCU System";
+            logger.LogInformation($"Creating or updating vertex {vertex.GetType().Name}");
 
-            description = description ?? GetType().FullName;
+            if (vertex == null)
+                throw new ArgumentNullException(nameof(vertex));
 
-            return new Audit()
+            if (configureVertex != null)
+                configureVertex(vertex);
+
+            if (vertex.TenantLookup.IsNullOrEmpty())
+                throw new ArgumentNullException(nameof(vertex.TenantLookup));
+
+            if (vertex.Registry.IsNullOrEmpty())
+                throw new ArgumentNullException(nameof(vertex.Registry));
+
+            logger.LogInformation($"Checking for existing vertex {vertex.GetType().Name}");
+
+            var existingBuilder = isExistingFilter == null ? g.V<T>(vertex.ID) : isExistingFilter();
+
+            var existing = await existingBuilder
+                .Where(vert => vert.TenantLookup == vertex.TenantLookup)
+                .FirstOrDefaultAsync();
+
+            var vertexName = vertex.GetType().Name;
+
+            string auditType;
+
+            if (existing == null)
             {
-                By = by,
-                Description = description
-            };
+                if (failOnNotExists)
+                    throw new Exception($"The vertex {vertexName} does not exist");
+
+                if (vertex.ID.IsEmpty())
+                    vertex.ID = Guid.NewGuid();
+
+                logger.LogInformation($"Creating vertex {vertexName}: {vertex.ID}");
+
+                vertex = await g.AddV(vertex)
+                    .FirstOrDefaultAsync();
+
+                auditType = "Create";
+            }
+            else
+            {
+                if (failOnExists)
+                    throw new Exception($"The vertex for {vertexName} already exists");
+
+                vertex.ID = existing.ID;
+
+                vertex.Label = existing.Label;
+
+                vertex.Registry = existing.Registry;
+
+                vertex.TenantLookup = existing.TenantLookup;
+
+                logger.LogInformation($"Updating vertex {vertexName}: {vertex.ID}");
+
+                vertex = await g.V<T>(vertex.ID)
+                    .Update(vertex)
+                    .FirstOrDefaultAsync();
+
+                auditType = "Update";
+            }
+
+            logger.LogInformation($"Completed vertex create/update for {vertexName}: {vertex.ID}");
+
+            await writeVertexAudit(vertex, description: $"Vertex saved in {GetType().FullName}",
+                    metadata: new Dictionary<string, JToken>() { { "AuditType", auditType } });
+
+            if (parentId.HasValue)
+            {
+                var app = await g.V<TParent>(parentId.Value)
+                    .FirstOrDefaultAsync();
+
+                await EnsureEdgeRelationship<TParentEdge>(parentId.Value, vertex.ID, vertex.TenantLookup);
+            }
+
+            return vertex;
+        }
+
+        protected virtual async Task<Status> deleteVertex<T>(Guid id,
+            Func<IVertexGremlinQuery<T>> isExistingFilter = null)
+            where T : LCUVertex
+        {
+            logger.LogInformation($"Deleting vertex {typeof(T).Name}");
+
+            if (id.IsEmpty())
+                throw new ArgumentNullException(nameof(id));
+
+            logger.LogInformation($"Checking for existing vertex {typeof(T).Name} to delete for ID {id}");
+
+            var existingBuilder = isExistingFilter == null ? g.V<T>(id) : isExistingFilter();
+
+            var existing = await existingBuilder.FirstOrDefaultAsync();
+
+            if (existing != null)
+            {
+                logger.LogInformation($"Deleting existing vertex: {existing.ID}");
+
+                await g.V<T>(id)
+                    .Drop();
+
+                logger.LogInformation($"Completed vertex {typeof(T).Name} delete for ID {id}");
+
+                await writeVertexAudit(existing, description: $"Vertex deleted in {GetType().FullName}",
+                    metadata: new Dictionary<string, JToken>() { { "AuditType", "Delete" } });
+
+                return Status.Success;
+            }
+            else
+            {
+                logger.LogInformation($"Unable to locate vertex {typeof(T).Name} with ID {id} to delete");
+
+                return Status.GeneralError.Clone($"Unable to locate vertex {typeof(T).Name} with ID {id} to delete");
+            }
         }
 
         protected virtual async Task withCommonGraphBoundary(Func<Task> action)
@@ -144,6 +374,8 @@ namespace LCU.Graphs
                 {
                     try
                     {
+                        logger.LogDebug($"Executing common graph boundary");
+
                         result = await action();
 
                         return false;
@@ -154,8 +386,12 @@ namespace LCU.Graphs
 
                         var retriableExceptionCodes = new List<int>() { 409, 412, 429, 1007, 1008 };
 
+                        logger.LogError(ex, $"There was an error while executing the common graph boundary");
+
                         if (ex is ResponseException rex)
                         {
+                            logger.LogInformation($"Determining if exception is retriable");
+
                             var code = rex.StatusAttributes["x-ms-status-code"].As<int>();
 
                             retriable = retriableExceptionCodes.Contains(code);
@@ -164,9 +400,15 @@ namespace LCU.Graphs
                             {
                                 var retryMsWait = rex.StatusAttributes["x-ms-retry-after-ms"].As<int>();
 
+                                logger.LogInformation($"Delaying the retry based on headers: {retryMsWait}");
+
                                 await Task.Delay(retryMsWait);
                             }
                         }
+
+                        var retriableTxt = retriable ? "" : "NOT ";
+
+                        logger.LogInformation($"The common graph boundary exception was determined {retriableTxt}to be retriable");
 
                         if (!retriable)
                             throw;
@@ -181,8 +423,95 @@ namespace LCU.Graphs
 
             return result;
         }
+
+        protected virtual async Task writeEdgeAudit<T>(T edge, string by = null, string description = null,
+            IDictionary<string, JToken> metadata = null)
+            where T : LCUEdge
+        {
+            try
+            {
+                logger.LogDebug($"Writing audit for vertex");
+
+                var auditBlobName = buildAuditPath(edge.TenantLookup, edge.GetType().Name, edge.ID.ToString());
+
+                await writeAudit(auditBlobName, edge, by: by, description: description, metadata: metadata);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "There was an unhandled error during the vertex audit process");
+            }
+        }
+
+        protected virtual async Task writeVertexAudit<T>(T vertex, string by = null, string description = null,
+            IDictionary<string, JToken> metadata = null)
+            where T : LCUVertex
+        {
+            try
+            {
+                logger.LogDebug($"Writing audit for vertex");
+
+                var auditBlobName = buildAuditPath(vertex.TenantLookup, vertex.GetType().Name, vertex.ID.ToString());
+
+                await writeAudit(auditBlobName, vertex, by: by, description: description, metadata: metadata);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "There was an unhandled error during the vertex audit process");
+            }
+        }
+
+        protected virtual async Task writeAudit<T>(string auditBlobName, T detail, string by = null,
+            string description = null, IDictionary<string, JToken> metadata = null)
+        {
+            try
+            {
+                logger.LogDebug($"Writing audit for detail");
+
+                var audit = buildAudit(detail, by: by, description: description, metadata: metadata);
+
+                await writeAudit(auditBlobName, audit);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "There was an unhandled error during the detail audit process");
+            }
+        }
+
+        protected virtual async Task writeAudit(string auditBlobName, Audit audit)
+        {
+            try
+            {
+                if (containerClient != null)
+                {
+                    logger.LogDebug($"Writing audit");
+
+                    try
+                    {
+                        logger.LogDebug($"Writing audit for {auditBlobName}: {audit.ToJSON()}");
+
+                        var blobClient = containerClient.GetBlobClient(auditBlobName);
+
+                        var auditDetailsStream = new MemoryStream(Encoding.Default.GetBytes(audit.Details));
+
+                        await blobClient.UploadAsync(auditDetailsStream);
+
+                        var auditMetadata = audit.JSONConvert<Dictionary<string, string>>();
+
+                        auditMetadata.Remove("Details");
+
+                        await blobClient.SetMetadataAsync(auditMetadata);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, $"There was an error during the audit process for {auditBlobName}: {audit.ToJSON()}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "There was an unhandled error during the audit process");
+            }
+        }
         #endregion
     }
-
-
 }

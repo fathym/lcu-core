@@ -1,14 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>netcoreapp3.1</TargetFramework>
-		<Copyright>2019</Copyright>
-		<Company>Fathym, Inc</Company>
-		<Product>LCU Core</Product>
-		<Authors />
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.9.1" />
+    <PackageReference Include="ExRam.Gremlinq.Providers.CosmosDb.AspNet" Version="8.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--<ProjectReference Include="..\..\..\Open Source\fathym-it\ExRam.Gremlinq\src\ExRam.Gremlinq.Providers.CosmosDb.AspNet\ExRam.Gremlinq.Providers.CosmosDb.AspNet.csproj" />-->
     <ProjectReference Include="..\LCU\LCU.csproj" />
   </ItemGroup>
 

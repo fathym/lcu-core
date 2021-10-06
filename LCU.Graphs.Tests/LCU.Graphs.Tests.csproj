@@ -33,8 +33,4 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\LCU.Testing\LCU.Testing.csproj" />
-  </ItemGroup>
-
 </Project>

@@ -16,10 +16,4 @@
     <PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\LCU.Graphs\LCU.Graphs.csproj" />
-    <ProjectReference Include="..\LCU.Presentation\LCU.Presentation.csproj" />
-    <ProjectReference Include="..\LCU\LCU.csproj" />
-  </ItemGroup>
-
 </Project>

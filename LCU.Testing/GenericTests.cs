@@ -1,57 +1,84 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Azure.Extensions.AspNetCore.Configuration.Secrets;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 
 namespace LCU.Testing
 {
-	public class GenericTests
-	{
-		#region Fields
-		protected IConfiguration config;
-		#endregion
+    public class GenericTests
+    {
+        #region Fields
+        protected IConfiguration config;
 
-		#region Constructors
-		public GenericTests()
-		{
-			setupConfiguration();
-		}
-		#endregion
+        protected IConfigurationRoot hostConfig;
+        #endregion
 
-		#region Helpers
-		protected virtual ILogger<T> createLogger<T>()
-		{
-			return new LoggerFactory().CreateLogger<T>();
-		}
+        #region Constructors
+        public GenericTests()
+        {
+            setupHostConfiguration();
 
-		protected virtual DirectoryInfo getDirectory(string path)
-		{
-			var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            setupConfiguration();
+        }
+        #endregion
 
-			var dirPath = Path.Combine(localAppData, path);
+        #region Helpers
+        protected virtual ILogger<T> createLogger<T>()
+        {
+            return new LoggerFactory().CreateLogger<T>();
+        }
 
-			return new DirectoryInfo(path);
-		}
+        protected virtual DirectoryInfo getDirectory(string path)
+        {
+            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
-		protected virtual FileInfo getFile(string path)
-		{
-			var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var dirPath = Path.Combine(localAppData, path);
 
-			var dirPath = Path.Combine(localAppData, path);
+            return new DirectoryInfo(path);
+        }
 
-			return new FileInfo(path);
-		}
+        protected virtual FileInfo getFile(string path)
+        {
+            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
-		protected virtual void setupConfiguration()
-		{
-			var config = new ConfigurationBuilder()
-				.AddJsonFile("test.settings.json")
-				.AddUserSecrets(GetType().Assembly)
-				.AddEnvironmentVariables()
-				.Build();
+            var dirPath = Path.Combine(localAppData, path);
 
-			this.config = config;
-		}
-		#endregion
-	}
+            return new FileInfo(path);
+        }
+
+        protected virtual void setupConfiguration()
+        {
+            var keyVaultName = hostConfig["LCU:Azure:KeyVault:Name"];
+
+            var configBuilder = new ConfigurationBuilder()
+                .AddJsonFile("test.settings.json");
+
+            if (!keyVaultName.IsNullOrEmpty())
+            {
+                var secretClient = new SecretClient(new Uri($"https://{keyVaultName}.vault.azure.net/"), 
+                    new DefaultAzureCredential(includeInteractiveCredentials: false));
+
+                configBuilder = configBuilder.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
+            }
+            else
+            {
+                configBuilder = configBuilder.AddUserSecrets(GetType().Assembly);
+            }
+
+            config = configBuilder
+                .AddEnvironmentVariables()
+                .Build();
+        }
+
+        protected virtual void setupHostConfiguration()
+        {
+            hostConfig = new ConfigurationBuilder()
+               .AddJsonFile("host.settings.json")
+               .Build();
+        }
+        #endregion
+    }
 }
