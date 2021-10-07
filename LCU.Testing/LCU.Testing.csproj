@@ -2,15 +2,28 @@
 
 	<PropertyGroup>
 		<TargetFramework>net5.0</TargetFramework>
+		
+		<!-- Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+		<!-- Embed source files that are not tracked by the source control manager in the PDB -->
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+
+		<!-- Recommended: Embed symbols containing Source Link in the main file (exe/dll) -->
+		<DebugType>embedded</DebugType>
 	</PropertyGroup>
 
 	<ItemGroup>
 	  <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.2.1" />
-	  <PackageReference Include="Fathym.Testing" Version="2.3.21279.4" />
+	  <PackageReference Include="Fathym.Testing" Version="2.10.21280.4" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\LCU.Graphs\LCU.Graphs.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" Version="1.0.0" PrivateAssets="All"/>
 	</ItemGroup>
 
 </Project>
