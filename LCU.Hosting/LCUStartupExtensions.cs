@@ -355,9 +355,9 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     logger.LogInformation($"Using forced HTTPs");
 
-                    options = options.AddRedirectToHttpsPermanent();
+                    //options = options.AddRedirectToHttpsPermanent();
 
-                    //app.UseHttpsRedirection();
+                    app.UseHttpsRedirection();
                 }
 
                 if (urlRewriteOpts.ForceWWW)
@@ -365,9 +365,9 @@ namespace Microsoft.AspNetCore.Builder
                     logger.LogInformation($"Using forced WWW");
 
                     options = options.AddRedirectToWwwPermanent();
-                }
 
-                app.UseRewriter(options);
+                    app.UseRewriter(options);
+                }             
             }
         }
         #endregion
