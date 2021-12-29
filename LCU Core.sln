@@ -7,6 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{DB608D78
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
+		LCU.nrproj = LCU.nrproj
 		NuGet.config = NuGet.config
 		README.md = README.md
 	EndProjectSection
@@ -30,7 +31,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LCU.Hosting", "LCU.Hosting\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LCU.Testing", "LCU.Testing\LCU.Testing.csproj", "{08A6A061-F0D8-43AD-96E3-45A9EE7D40A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LCU.Graphs.Tests", "LCU.Graphs.Tests\LCU.Graphs.Tests.csproj", "{DBDC1F3F-542D-415A-BA95-A6F66A0952C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LCU.Graphs.Tests", "LCU.Graphs.Tests\LCU.Graphs.Tests.csproj", "{DBDC1F3F-542D-415A-BA95-A6F66A0952C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
