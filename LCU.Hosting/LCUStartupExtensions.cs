@@ -49,6 +49,20 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         #region Add Helpers
+        public static void AddConfig<T>(this IServiceCollection services, string key, IConfiguration config)
+            where T : class, new()
+        {
+            var configSec = config.GetSection(key);
+
+            services.Configure<T>(configSec);
+
+            var cfg = new T();
+
+            configSec.Bind(cfg);
+
+            services.AddSingleton(cfg);
+        }
+
         public static void AddLCUAPI(this IServiceCollection services, LCUStartupAPIOptions apiOpts)
         {
             if (apiOpts != null)
