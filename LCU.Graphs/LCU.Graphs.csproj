@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.9.1" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.10.0" />
     <PackageReference Include="ExRam.Gremlinq.Providers.CosmosDb.AspNet" Version="8.6.0" />
   </ItemGroup>
 
@@ -24,7 +24,7 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" Version="1.0.0" PrivateAssets="All"/>
+		<PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" Version="1.1.1" PrivateAssets="All" />
 	</ItemGroup>
 
 </Project>
