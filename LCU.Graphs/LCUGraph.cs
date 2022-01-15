@@ -392,18 +392,23 @@ namespace LCU.Graphs
                         {
                             logger.LogInformation($"Determining if exception is retriable");
 
-                            var code = rex.StatusAttributes["x-ms-status-code"].As<int>();
-
-                            retriable = retriableExceptionCodes.Contains(code);
-
-                            if (retriable && rex.StatusAttributes.ContainsKey("x-ms-retry-after-ms"))
+                            if (rex.StatusAttributes.ContainsKey("x-ms-status-code"))
                             {
-                                var retryMsWait = rex.StatusAttributes["x-ms-retry-after-ms"].As<int>();
+                                var code = rex.StatusAttributes["x-ms-status-code"].As<int>();
 
-                                logger.LogInformation($"Delaying the retry based on headers: {retryMsWait}");
+                                retriable = retriableExceptionCodes.Contains(code);
 
-                                await Task.Delay(retryMsWait);
+                                if (retriable && rex.StatusAttributes.ContainsKey("x-ms-retry-after-ms"))
+                                {
+                                    var retryMsWait = rex.StatusAttributes["x-ms-retry-after-ms"].As<int>();
+
+                                    logger.LogInformation($"Delaying the retry based on headers: {retryMsWait}");
+
+                                    await Task.Delay(retryMsWait);
+                                }
                             }
+                            else
+                                logger.LogInformation(rex.StatusCode.ToString());
                         }
 
                         var retriableTxt = retriable ? "" : "NOT ";
