@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Http
 
         public static string GetProxiedAddress(this HttpContext context, string inboundPath, string apiRoot, string security, string path)
         {
-            var apiPath = !inboundPath.IsNullOrEmpty() ? path.Replace(inboundPath, String.Empty) : path;
+            var apiPath = !inboundPath.IsNullOrEmpty() ? Regex.Replace(path, $"^{inboundPath}", String.Empty) : path;
 
             var proxyPath = loadProxyAPIUri(apiPath, apiRoot, context.Request.QueryString.ToString());
 
@@ -122,20 +123,23 @@ namespace Microsoft.AspNetCore.Http
             {
                 var securityParts = security.Split('~');
 
-                var securityKey = securityParts[0];
-
-                var securityValue = securityParts[1];
-
-                if (securityValue.StartsWith("@SharedAccessSignature="))
+                if (securityParts.Length >= 2)
                 {
-                    //securityValue = SharedAccessSignatureTokenProvider.GetSharedAccessSignature("ide", securityValue.Replace("@SharedAccessSignature=", ""), 
-                    //    proxyPath, TimeSpan.FromMinutes(60));
+                    var securityKey = securityParts[0];
 
-                    throw new NotSupportedException("@SharedAccessSignature= is not supported for API Proxy");
+                    var securityValue = securityParts[1];
+
+                    if (securityValue.StartsWith("@SharedAccessSignature="))
+                    {
+                        //securityValue = SharedAccessSignatureTokenProvider.GetSharedAccessSignature("ide", securityValue.Replace("@SharedAccessSignature=", ""), 
+                        //    proxyPath, TimeSpan.FromMinutes(60));
+
+                        throw new NotSupportedException("@SharedAccessSignature= is not supported for API Proxy");
+                    }
+
+                    if (!securityKey.IsNullOrEmpty() && !securityValue.IsNullOrEmpty())
+                        context.Request.Headers[securityKey] = securityValue;
                 }
-
-                if (!securityKey.IsNullOrEmpty() && !securityValue.IsNullOrEmpty())
-                    context.Request.Headers[securityKey] = securityValue;
             }
         }
         #endregion
