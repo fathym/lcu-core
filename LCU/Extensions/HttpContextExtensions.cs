@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http
@@ -67,7 +68,7 @@ namespace Microsoft.AspNetCore.Http
 
         public static string GetProxiedAddress(this HttpContext context, string inboundPath, string apiRoot, string security, string path)
         {
-            var apiPath = !inboundPath.IsNullOrEmpty() ? path.Replace(inboundPath, String.Empty) : path;
+            var apiPath = !inboundPath.IsNullOrEmpty() ? Regex.Replace(path, $"^{inboundPath}", String.Empty) : path;
 
             var proxyPath = loadProxyAPIUri(apiPath, apiRoot, context.Request.QueryString.ToString());
 
