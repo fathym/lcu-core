@@ -18,5 +18,7 @@ namespace LCU.Hosting.Options
         public virtual LCUStartupURLRewriterOptions URLRewriter { get; set; }
 
         public virtual bool UseForwardedHeaders { get; set; }
+
+        public virtual bool UseMockHost { get; set; }
     }
 }
