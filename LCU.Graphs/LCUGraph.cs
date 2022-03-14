@@ -273,6 +273,10 @@ namespace LCU.Graphs
                 if (vertex.ID.IsEmpty())
                     vertex.ID = Guid.NewGuid();
 
+                vertex.Created = DateTimeOffset.Now;
+
+                vertex.Updated = DateTimeOffset.Now;
+
                 logger.LogInformation($"Creating vertex {vertexName}: {vertex.ID}");
 
                 vertex = await g.AddV(vertex)
@@ -292,6 +296,10 @@ namespace LCU.Graphs
                 vertex.Registry = existing.Registry;
 
                 vertex.TenantLookup = existing.TenantLookup;
+
+                vertex.Created = existing.Created;
+
+                vertex.Updated = DateTimeOffset.Now;
 
                 logger.LogInformation($"Updating vertex {vertexName}: {vertex.ID}");
 
