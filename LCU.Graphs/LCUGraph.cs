@@ -273,9 +273,9 @@ namespace LCU.Graphs
                 if (vertex.ID.IsEmpty())
                     vertex.ID = Guid.NewGuid();
 
-                vertex.Created = DateTimeOffset.Now;
+                vertex.Created = DateTime.Now;
 
-                vertex.Updated = DateTimeOffset.Now;
+                vertex.Updated = DateTime.Now;
 
                 logger.LogInformation($"Creating vertex {vertexName}: {vertex.ID}");
 
@@ -299,7 +299,7 @@ namespace LCU.Graphs
 
                 vertex.Created = existing.Created;
 
-                vertex.Updated = DateTimeOffset.Now;
+                vertex.Updated = DateTime.Now;
 
                 logger.LogInformation($"Updating vertex {vertexName}: {vertex.ID}");
 
