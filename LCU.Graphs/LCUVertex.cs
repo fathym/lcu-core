@@ -4,7 +4,7 @@ namespace LCU.Graphs
 {
     public class LCUVertex
     {
-        public virtual DateTimeOffset Created { get; set; }
+        public virtual DateTime Created { get; set; }
 
         public virtual Guid ID { get; set; }
 
@@ -14,6 +14,6 @@ namespace LCU.Graphs
 
         public virtual string TenantLookup { get; set; }
 
-        public virtual DateTimeOffset Updated { get; set; }
+        public virtual DateTime Updated { get; set; }
     }
 }
