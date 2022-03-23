@@ -49,25 +49,29 @@ namespace LCU.Graphs
         #endregion
 
         #region API Methods
-        public virtual async Task EnsureEdgeRelationship<TEdge>(Guid fromId, Guid toId, string tenantLookup)
+        public virtual async Task EnsureEdgeRelationship<TFrom, TEdge, TTo>(TFrom from, TTo to)
+            where TFrom : LCUVertex
             where TEdge : LCUEdge, new()
+            where TTo : LCUVertex
         {
-            var outEdges = await g.V(fromId)
+            var existing = await g.V<TFrom>(from.ID)
+                .Where(v => v.Registry == from.Registry)
                 .Out<TEdge>()
-                .OfType<LCUVertex>()
-                .ToListAsync();
-
-            var existing = outEdges.FirstOrDefault(oe => oe.ID == toId);
+                .OfType<TTo>()
+                .Where(v => v.ID == to.ID)
+                .Where(v => v.Registry == to.Registry)
+                .FirstOrDefaultAsync();
 
             if (existing == null)
             {
-                var edge = await g.V(fromId)
+                var edge = await g.V<TFrom>(from.ID)
+                    .Where(v => v.Registry == from.Registry)
                     .AddE(new TEdge()
                     {
                         ID = Guid.NewGuid(),
-                        TenantLookup = tenantLookup
+                        TenantLookup = from.TenantLookup
                     })
-                    .To(__ => __.V(toId))
+                    .To(__ => __.V<TTo>(to.ID).Where(v => v.Registry == to.Registry))
                     .FirstOrDefaultAsync();
 
                 await writeEdgeAudit(edge, description: $"Edge added in {GetType().FullName}",
@@ -238,6 +242,7 @@ namespace LCU.Graphs
             bool failOnExists = false, bool failOnNotExists = false)
             where T : LCUVertex
             where TParentEdge : LCUEdge, new()
+            where TParent : LCUVertex
         {
             logger.LogInformation($"Creating or updating vertex {vertex.GetType().Name}");
 
@@ -317,10 +322,10 @@ namespace LCU.Graphs
 
             if (parentId.HasValue)
             {
-                var app = await g.V<TParent>(parentId.Value)
+                var parent = await g.V<TParent>(parentId.Value)
                     .FirstOrDefaultAsync();
 
-                await EnsureEdgeRelationship<TParentEdge>(parentId.Value, vertex.ID, vertex.TenantLookup);
+                await EnsureEdgeRelationship<TParent, TParentEdge, T>(parent, vertex);
             }
 
             return vertex;
