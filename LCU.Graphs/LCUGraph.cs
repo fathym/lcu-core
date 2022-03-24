@@ -49,6 +49,33 @@ namespace LCU.Graphs
         #endregion
 
         #region API Methods
+        public virtual async Task EnsureEdgeRelationship<TEdge>(Guid fromId, Guid toId, string tenantLookup, string toTenantLookup)
+            where TEdge : LCUEdge, new()
+        {
+            var existing = await g.V<LCUVertex>(fromId)
+                .Where(v => v.Registry == tenantLookup)
+                .Out<TEdge>()
+                .OfType<LCUVertex>()
+                .Where(v => v.ID == toId)
+                .Where(v => v.Registry == (toTenantLookup ?? tenantLookup))
+                .FirstOrDefaultAsync();
+
+            if (existing == null)
+            {
+                var edge = await g.V(fromId)
+                    .AddE(new TEdge()
+                    {
+                        ID = Guid.NewGuid(),
+                        TenantLookup = tenantLookup
+                    })
+                    .To(__ => __.V(toId))
+                    .FirstOrDefaultAsync();
+
+                await writeEdgeAudit(edge, description: $"Edge added in {GetType().FullName}",
+                    metadata: new Dictionary<string, JToken>() { { "AuditType", "Create" } });
+            }
+        }
+
         public virtual async Task EnsureEdgeRelationship<TFrom, TEdge, TTo>(TFrom from, TTo to)
             where TFrom : LCUVertex
             where TEdge : LCUEdge, new()
