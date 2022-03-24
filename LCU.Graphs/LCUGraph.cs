@@ -79,6 +79,37 @@ namespace LCU.Graphs
             }
         }
 
+        public virtual async Task EnsureEdgeRelationship<TEdge>(Guid fromId, Guid toId, string registry, string toRegistry)
+            where TEdge : LCUEdge, new()
+        {
+            var existingQuery = g.V<LCUVertex>(fromId)
+                .Where(v => v.Registry == registry)
+                .Out<TEdge>()
+                .OfType<LCUVertex>()
+                .Where(v => v.ID == toId);
+
+            if (!toRegistry.IsNullOrEmpty())
+                existingQuery = existingQuery.Where(v => v.Registry == toRegistry);
+
+            var existing = await existingQuery
+                .FirstOrDefaultAsync();
+
+            if (existing == null)
+            {
+                var edge = await g.V(fromId)
+                    .AddE(new TEdge()
+                    {
+                        ID = Guid.NewGuid(),
+                        TenantLookup = registry
+                    })
+                    .To(__ => __.V(toId))
+                    .FirstOrDefaultAsync();
+
+                await writeEdgeAudit(edge, description: $"Edge added in {GetType().FullName}",
+                    metadata: new Dictionary<string, JToken>() { { "AuditType", "Create" } });
+            }
+        }
+
         public virtual async Task RemoveEdgeRelationship<TEdge>(Guid fromId, Guid toId, string tenantLookup)
             where TEdge : LCUEdge, new()
         {
@@ -263,7 +294,7 @@ namespace LCU.Graphs
             var existingBuilder = isExistingFilter == null ? g.V<T>(vertex.ID) : isExistingFilter();
 
             var existing = await existingBuilder
-                .Where(vert => vert.TenantLookup == vertex.TenantLookup)
+                .Where(vert => vert.Registry == vertex.Registry)
                 .FirstOrDefaultAsync();
 
             var vertexName = vertex.GetType().Name;
