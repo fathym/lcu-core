@@ -294,7 +294,7 @@ namespace LCU.Graphs
             var existingBuilder = isExistingFilter == null ? g.V<T>(vertex.ID) : isExistingFilter();
 
             var existing = await existingBuilder
-                .Where(vert => vert.TenantLookup == vertex.TenantLookup)
+                .Where(vert => vert.Registry == vertex.Registry)
                 .FirstOrDefaultAsync();
 
             var vertexName = vertex.GetType().Name;
