@@ -4,6 +4,8 @@ namespace LCU.Graphs
 {
     public class LCUVertex
     {
+        public virtual bool Archived { get; set; }
+
         public virtual DateTime Created { get; set; }
 
         public virtual Guid ID { get; set; }
