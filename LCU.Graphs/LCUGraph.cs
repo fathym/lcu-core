@@ -563,4 +563,14 @@ namespace LCU.Graphs
         }
         #endregion
     }
+
+    public static class LCUGraphExtensions
+    {
+        public static IVertexGremlinQuery<TVertex> Registry<TVertex>(
+            this IVertexGremlinQuery<TVertex> query, string registry)
+            where TVertex : LCUVertex
+        {
+            return query.Where(e => e.Registry == registry);
+        }
+    }
 }
