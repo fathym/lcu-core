@@ -364,7 +364,7 @@ namespace LCU.Graphs
             return vertex;
         }
 
-        protected virtual async Task<Status> deleteVertex<T>(Guid id,
+        protected virtual async Task<Status> deleteVertex<T>(Guid id, string registry,
             Func<IVertexGremlinQuery<T>> isExistingFilter = null)
             where T : LCUVertex
         {
@@ -375,7 +375,7 @@ namespace LCU.Graphs
 
             logger.LogInformation($"Checking for existing vertex {typeof(T).Name} to delete for ID {id}");
 
-            var existingBuilder = isExistingFilter == null ? g.V<T>(id) : isExistingFilter();
+            var existingBuilder = isExistingFilter == null ? g.V<T>(id).Registry(registry) : isExistingFilter();
 
             var existing = await existingBuilder.FirstOrDefaultAsync();
 
@@ -383,8 +383,11 @@ namespace LCU.Graphs
             {
                 logger.LogInformation($"Deleting existing vertex: {existing.ID}");
 
+                existing.Archived = true;
+
                 await g.V<T>(id)
-                    .Drop();
+                    .Registry(registry)
+                    .Update(existing);
 
                 logger.LogInformation($"Completed vertex {typeof(T).Name} delete for ID {id}");
 
