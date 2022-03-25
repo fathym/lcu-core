@@ -337,6 +337,8 @@ namespace LCU.Graphs
 
                 vertex.Updated = DateTime.Now;
 
+                vertex.Archived = false;
+
                 logger.LogInformation($"Updating vertex {vertexName}: {vertex.ID}");
 
                 vertex = await g.V<T>(vertex.ID)
