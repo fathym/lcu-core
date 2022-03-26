@@ -110,10 +110,11 @@ namespace LCU.Graphs
             }
         }
 
-        public virtual async Task RemoveEdgeRelationship<TEdge>(Guid fromId, Guid toId, string tenantLookup)
+        public virtual async Task RemoveEdgeRelationship<TEdge>(Guid fromId, Guid toId, string registry)
             where TEdge : LCUEdge, new()
         {
-            var outEdges = await g.V(fromId)
+            var outEdges = await g.V<LCUVertex>(fromId)
+                .Registry(registry)
                 .OutE<TEdge>()
                 .ToListAsync();
 
@@ -134,11 +135,20 @@ namespace LCU.Graphs
             }
         }
 
-        public virtual async Task RemoveEdgeRelationships<TEdge>(Guid fromId, string tenantLookup)
+        public virtual async Task RemoveEdgeRelationships<TEdge>(Guid fromId, string registry)
             where TEdge : LCUEdge, new()
         {
-            await g.V(fromId)
+            await g.V<LCUVertex>(fromId)
+                .Registry(registry)
                 .OutE<TEdge>()
+                .Drop();
+        }
+
+        public virtual async Task RemoveEdgeRelationships(Guid fromId, string registry)
+        {
+            await g.V<LCUVertex>(fromId)
+                .Registry(registry)
+                .OutE()
                 .Drop();
         }
         #endregion
@@ -390,6 +400,8 @@ namespace LCU.Graphs
                     .Update(existing);
 
                 logger.LogInformation($"Completed vertex {typeof(T).Name} delete for ID {id}");
+
+                await RemoveEdgeRelationships(id, registry);
 
                 await writeVertexAudit(existing, description: $"Vertex deleted in {GetType().FullName}",
                     metadata: new Dictionary<string, JToken>() { { "AuditType", "Delete" } });
