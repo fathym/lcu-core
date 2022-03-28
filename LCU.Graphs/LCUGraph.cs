@@ -301,10 +301,10 @@ namespace LCU.Graphs
 
             logger.LogInformation($"Checking for existing vertex {vertex.GetType().Name}");
 
-            var existingBuilder = isExistingFilter == null ? g.V<T>(vertex.ID) : isExistingFilter();
+            var existingBuilder = isExistingFilter == null ? g.V<T>(vertex.ID).Registry(vertex.Registry).Archived() : isExistingFilter();
 
             var existing = await existingBuilder
-                .Where(vert => vert.Registry == vertex.Registry)
+                .Registry(vertex.Registry)
                 .FirstOrDefaultAsync();
 
             var vertexName = vertex.GetType().Name;
