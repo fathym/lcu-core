@@ -401,7 +401,7 @@ namespace LCU.Graphs
 
                 logger.LogInformation($"Completed vertex {typeof(T).Name} delete for ID {id}");
 
-                await RemoveEdgeRelationships(id, registry);
+                //await RemoveEdgeRelationships(id, registry);
 
                 await writeVertexAudit(existing, description: $"Vertex deleted in {GetType().FullName}",
                     metadata: new Dictionary<string, JToken>() { { "AuditType", "Delete" } });
