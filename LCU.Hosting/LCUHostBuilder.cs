@@ -110,7 +110,14 @@ namespace LCU.Hosting
         {
             logger.LogInformation($"Configuring web host for {GetType().FullName}");
 
-            innerHostBuilder = innerHostBuilder.ConfigureWebHostDefaults(configureWebHost);
+            innerHostBuilder = innerHostBuilder.ConfigureWebHostDefaults(configureWebHost)
+                .ConfigureAppConfiguration((hostCtxt, builder) =>
+                {
+                    if (!hostCtxt.HostingEnvironment.IsDevelopment())
+                    {
+                        builder.AddUserSecrets<TStartup>();
+                    }
+                });
 
             logger.LogInformation($"Configured host for {GetType().FullName}");
         }
@@ -126,7 +133,7 @@ namespace LCU.Hosting
                 var secretClient = new SecretClient(new Uri($"https://{keyVaultName}.vault.azure.net/"),
                     new DefaultAzureCredential(includeInteractiveCredentials: false));
 
-                //configBuilder.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
+                configBuilder.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
             }
         }
 
@@ -140,6 +147,7 @@ namespace LCU.Hosting
 
             logBuilder.AddConsole();
 
+            //  TODO:  How to conditionally add this when hosted on windows
             //logBuilder.AddEventLog();
 
             logBuilder.AddFilter<ApplicationInsightsLoggerProvider>(typeof(LCUHostBuilder<TStartup>).FullName,

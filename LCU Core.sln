@@ -37,7 +37,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LCU.Graphs.Tests", "LCU.Gra
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deploy", "Deploy", "{80B2BD59-9B7D-4701-AD0C-AFDB7D2C470E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LCU.Hosting.Test.Web", "LCU.Hosting.Test.Web\LCU.Hosting.Test.Web.csproj", "{C44D5765-AA00-4306-9612-5D6BFD1237ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LCU.Hosting.Test.Web", "LCU.Hosting.Test.Web\LCU.Hosting.Test.Web.csproj", "{C44D5765-AA00-4306-9612-5D6BFD1237ED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplication1", "WebApplication1\WebApplication1.csproj", "{F4303CF3-CFDD-4510-92B4-FC968307A861}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +71,10 @@ Global
 		{C44D5765-AA00-4306-9612-5D6BFD1237ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C44D5765-AA00-4306-9612-5D6BFD1237ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C44D5765-AA00-4306-9612-5D6BFD1237ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4303CF3-CFDD-4510-92B4-FC968307A861}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4303CF3-CFDD-4510-92B4-FC968307A861}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4303CF3-CFDD-4510-92B4-FC968307A861}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4303CF3-CFDD-4510-92B4-FC968307A861}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -80,6 +86,7 @@ Global
 		{08A6A061-F0D8-43AD-96E3-45A9EE7D40A6} = {D6404F8C-B497-46CC-8A16-666BE8E3D611}
 		{DBDC1F3F-542D-415A-BA95-A6F66A0952C5} = {2934BD99-4DF4-4B0D-B8CB-72DC0ED2B64C}
 		{C44D5765-AA00-4306-9612-5D6BFD1237ED} = {80B2BD59-9B7D-4701-AD0C-AFDB7D2C470E}
+		{F4303CF3-CFDD-4510-92B4-FC968307A861} = {80B2BD59-9B7D-4701-AD0C-AFDB7D2C470E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D0A1F403-B69B-40C0-9AFF-2FB7AB422DF0}

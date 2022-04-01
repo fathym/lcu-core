@@ -1,5 +1,7 @@
 using LCU.Hosting;
 using LCU.Hosting.Test.Web;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 await LCUHostBuilder<Startup>.StartWebHost(args);
 

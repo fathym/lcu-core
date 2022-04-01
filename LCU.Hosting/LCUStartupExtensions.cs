@@ -329,18 +329,18 @@ namespace Microsoft.AspNetCore.Builder
         {
             logger.LogInformation($"Configuring exceptions");
 
-            if (exOpts == null || exOpts.HandlerPath.IsNullOrEmpty() || env.IsDevelopment())
-            {
-                logger.LogInformation($"Using developer exception page");
+            //if (exOpts == null || exOpts.HandlerPath.IsNullOrEmpty() || env.IsDevelopment())
+            //{
+            //    logger.LogInformation($"Using developer exception page");
 
                 app.UseDeveloperExceptionPage();
-            }
-            else if (!exOpts.HandlerPath.IsNullOrEmpty())
-            {
-                logger.LogInformation($"Using custom exception handler: {exOpts.HandlerPath}");
+            //}
+            //else if (!exOpts.HandlerPath.IsNullOrEmpty())
+            //{
+            //    logger.LogInformation($"Using custom exception handler: {exOpts.HandlerPath}");
 
-                app.UseExceptionHandler(exOpts.HandlerPath);
-            }
+            //    app.UseExceptionHandler(exOpts.HandlerPath);
+            //}
         }
 
         public static void UseLCUForwardedHeaders(this IApplicationBuilder app, ILogger logger, bool useForwardedHeaders)
