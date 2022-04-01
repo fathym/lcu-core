@@ -1,0 +1,12 @@
+{
+    "LCU": {
+        "Azure": {
+            "ApplicationInsights": {
+                "InstrumentationKey": "ede1ddb3-39b8-489a-bae8-55ef08dd3d3e"
+            },
+            "KeyVault": {
+                "Name": "fathym-cloud-prd"
+            }
+        }
+    }
+}

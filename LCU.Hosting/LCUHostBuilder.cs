@@ -110,7 +110,15 @@ namespace LCU.Hosting
         {
             logger.LogInformation($"Configuring web host for {GetType().FullName}");
 
-            innerHostBuilder = innerHostBuilder.ConfigureWebHostDefaults(configureWebHost);
+            innerHostBuilder = innerHostBuilder.ConfigureWebHostDefaults(configureWebHost)
+                .ConfigureAppConfiguration((hostCtxt, builder) =>
+                {
+                    //  This supports an issue where secrets aren't fully attached in the right context unless environment is set explicitly to 'Development'
+                    if (!hostCtxt.HostingEnvironment.IsDevelopment())
+                    {
+                        builder.AddUserSecrets<TStartup>();
+                    }
+                });
 
             logger.LogInformation($"Configured host for {GetType().FullName}");
         }
@@ -140,7 +148,8 @@ namespace LCU.Hosting
 
             logBuilder.AddConsole();
 
-            logBuilder.AddEventLog();
+            //  TODO:  How to conditionally add this when hosted on windows
+            //logBuilder.AddEventLog();
 
             logBuilder.AddFilter<ApplicationInsightsLoggerProvider>(typeof(LCUHostBuilder<TStartup>).FullName,
                 LogLevel.Trace);
