@@ -140,7 +140,7 @@ namespace LCU.Hosting
 
             logBuilder.AddConsole();
 
-            logBuilder.AddEventLog();
+            //logBuilder.AddEventLog();
 
             logBuilder.AddFilter<ApplicationInsightsLoggerProvider>(typeof(LCUHostBuilder<TStartup>).FullName,
                 LogLevel.Trace);
@@ -164,7 +164,7 @@ namespace LCU.Hosting
             logger?.LogInformation("Configuring web host");
 
             webBuilder
-                .ConfigureAppConfiguration(configureAppConfig)
+                //.ConfigureAppConfiguration(configureAppConfig)
                 .ConfigureLogging(configureLogging)
                 .ConfigureServices(configureServices)
                 .UseStartup<TStartup>();
