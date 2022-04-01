@@ -119,15 +119,15 @@ namespace LCU.Hosting
         #region Helpers
         protected virtual void configureAppConfig(IConfigurationBuilder configBuilder)
         {
-            //var keyVaultName = hostConfig["LCU:Azure:KeyVault:Name"];
+            var keyVaultName = hostConfig["LCU:Azure:KeyVault:Name"];
 
-            //if (!keyVaultName.IsNullOrEmpty())
-            //{
-            //    var secretClient = new SecretClient(new Uri($"https://{keyVaultName}.vault.azure.net/"),
-            //        new DefaultAzureCredential(includeInteractiveCredentials: false));
+            if (!keyVaultName.IsNullOrEmpty())
+            {
+                var secretClient = new SecretClient(new Uri($"https://{keyVaultName}.vault.azure.net/"),
+                    new DefaultAzureCredential(includeInteractiveCredentials: false));
 
-            //    configBuilder.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
-            //}
+                //configBuilder.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
+            }
         }
 
         protected virtual void configureLogging(ILoggingBuilder logBuilder)
