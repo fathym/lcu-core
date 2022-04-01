@@ -113,6 +113,7 @@ namespace LCU.Hosting
             innerHostBuilder = innerHostBuilder.ConfigureWebHostDefaults(configureWebHost)
                 .ConfigureAppConfiguration((hostCtxt, builder) =>
                 {
+                    //  This supports an issue where secrets aren't fully attached in the right context unless environment is set explicitly to 'Development'
                     if (!hostCtxt.HostingEnvironment.IsDevelopment())
                     {
                         builder.AddUserSecrets<TStartup>();
