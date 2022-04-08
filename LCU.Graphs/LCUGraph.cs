@@ -121,11 +121,11 @@ namespace LCU.Graphs
             if (outEdges.FirstOrDefault()?.OutV == null)
                 throw new ArgumentNullException("This didn't work");
 
-            var existing = outEdges.FirstOrDefault(oe => oe.OutV == toId);
+            var existing = outEdges.FirstOrDefault(oe => oe.InV == toId);
 
             if (existing != null)
             {
-                var edge = await g.E<LCUEdge>().FirstOrDefaultAsync();
+                var edge = await g.E<LCUEdge>(existing.ID).FirstOrDefaultAsync();
 
                 await g.E(existing.ID)
                     .Drop();
