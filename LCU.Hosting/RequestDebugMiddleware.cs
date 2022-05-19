@@ -85,7 +85,7 @@ namespace LCU.Hosting
             log.AppendLine($"\tHost: {httpContext.Request.Host}");
             log.AppendLine($"\tPath: {httpContext.Request.Path}");
             log.AppendLine($"\tQueryString: {httpContext.Request.QueryString}");
-            log.AppendLine($"\tHeaders: {httpContext.Request.Headers.ToJSON(Formatting.Indented)}");
+            log.AppendLine($"\tHeaders: {httpContext.Request.Headers.ToJSON()}");
             log.AppendLine($"\tRequest Body: {readStreamInChunks(requestStream)}");
 
             logger.LogDebug(log.ToString());
@@ -112,7 +112,7 @@ namespace LCU.Hosting
             log.AppendLine($"\tHost: {httpContext.Request.Host}");
             log.AppendLine($"\tPath: {httpContext.Request.Path}");
             log.AppendLine($"\tQueryString: {httpContext.Request.QueryString}");
-            log.AppendLine($"\tHeaders: {httpContext.Request.Headers.ToJSON(Formatting.Indented)}");
+            log.AppendLine($"\tHeaders: {httpContext.Request.Headers.ToJSON()}");
             //log.AppendLine($"\tResponse Body: {text}");
 
             logger.LogDebug(log.ToString());
@@ -146,7 +146,7 @@ namespace LCU.Hosting
             log.AppendLine($"\tHost: {httpContext.Request.Host}");
             log.AppendLine($"\tPath: {httpContext.Request.Path}");
             log.AppendLine($"\tQueryString: {httpContext.Request.QueryString}");
-            log.AppendLine($"\tHeaders: {httpContext.Request.Headers.ToJSON(Formatting.Indented)}");
+            log.AppendLine($"\tHeaders: {httpContext.Request.Headers.ToJSON()}");
             log.AppendLine($"\tException: {ex}");
 
             logger.LogDebug(log.ToString());
