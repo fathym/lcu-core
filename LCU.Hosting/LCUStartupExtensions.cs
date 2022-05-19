@@ -1,4 +1,5 @@
-﻿using LCU.Hosting;
+﻿using Fathym.Design;
+using LCU.Hosting;
 using LCU.Hosting.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -70,8 +71,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 services.AddControllers()
                     .AddJsonOptions(o =>
                     {
-                        if (!apiOpts.EnableCamelCasing)
-                            o.JsonSerializerOptions.PropertyNamingPolicy = null;
+                        DesignOutline.Instance.BuildCommonDefaultJSONSerialization(o);
+
+                        if (apiOpts.EnableCamelCasing)
+                            o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                     });
                     //.AddNewtonsoftJson(o =>
                     //{
