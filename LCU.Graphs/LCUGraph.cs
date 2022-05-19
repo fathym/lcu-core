@@ -7,7 +7,6 @@ using LCU.Configuration;
 using LCU.Graphs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;

@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IO;
-using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Text;
@@ -15,8 +14,6 @@ namespace LCU.Hosting
     public class RequestDebugMiddleware : LCUMiddleware
     {
         #region Fields
-        protected readonly JsonSerializerSettings prettyJson;
-
         protected readonly RecyclableMemoryStreamManager recyclableMemoryStreamManager;
 
         protected readonly LCUStartupOptions startupOptions;
@@ -26,11 +23,6 @@ namespace LCU.Hosting
         public RequestDebugMiddleware(RequestDelegate next, ILogger<RequestDebugMiddleware> logger, IOptions<LCUStartupOptions> startupOptions)
             : base(next, logger)
         {
-            prettyJson = new JsonSerializerSettings()
-            {
-
-            };
-
             recyclableMemoryStreamManager = new RecyclableMemoryStreamManager();
 
             this.startupOptions = startupOptions?.Value ?? throw new ArgumentNullException(nameof(startupOptions));

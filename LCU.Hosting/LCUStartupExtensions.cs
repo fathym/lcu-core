@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Serialization;
 using Polly;
 using Polly.Registry;
 using Refit;
@@ -67,12 +66,12 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (apiOpts != null)
             {
-                services.AddControllers()
-                    .AddNewtonsoftJson(o =>
-                    {
-                        if (!apiOpts.EnableCamelCasing)
-                            o.SerializerSettings.ContractResolver = new DefaultContractResolver();
-                    });
+                //services.AddControllers()
+                //    .AddNewtonsoftJson(o =>
+                //    {
+                //        if (!apiOpts.EnableCamelCasing)
+                //            o.SerializerSettings.ContractResolver = new DefaultContractResolver();
+                //    });
 
                 if (apiOpts.Swagger != null)
                 {
@@ -81,7 +80,7 @@ namespace Microsoft.Extensions.DependencyInjection
                         c.SwaggerDoc(apiOpts.Swagger.Info.Version, apiOpts.Swagger.Info);
                     });
 
-                    services.AddSwaggerGenNewtonsoftSupport();
+                    //services.AddSwaggerGenNewtonsoftSupport();
                 }
             }
         }
@@ -145,7 +144,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 {
                     return new RefitSettings()
                     {
-                        ContentSerializer = new NewtonsoftJsonContentSerializer()
+                        //ContentSerializer = new NewtonsoftJsonContentSerializer()
                     };
                 })
                 .ConfigureHttpClient(client =>
