@@ -29,4 +29,8 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.SourceLink.AzureRepos.Git" Version="1.1.1" PrivateAssets="All" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Hosting\Options\" />
+	</ItemGroup>
 </Project>
