@@ -83,7 +83,7 @@ namespace LCU.Hosting
             logger.LogDebug(log.ToString());
 
             if (httpContext.Response.Body.CanSeek)
-            httpContext.Request.Body.Seek(0, SeekOrigin.Begin);
+                httpContext.Request.Body.Seek(0, SeekOrigin.Begin);
         }
 
         protected virtual async Task logResponse(HttpContext httpContext)
