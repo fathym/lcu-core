@@ -14,6 +14,7 @@ using Refit;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.Json;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -66,12 +67,17 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (apiOpts != null)
             {
-                //services.AddControllers()
-                //    .AddNewtonsoftJson(o =>
-                //    {
-                //        if (!apiOpts.EnableCamelCasing)
-                //            o.SerializerSettings.ContractResolver = new DefaultContractResolver();
-                //    });
+                services.AddControllers()
+                    .AddJsonOptions(o =>
+                    {
+                        //if (!apiOpts.EnableCamelCasing)
+                        //    o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.TitleCase;
+                    });
+                    //.AddNewtonsoftJson(o =>
+                    //{
+                    //    if (!apiOpts.EnableCamelCasing)
+                    //        o.SerializerSettings.ContractResolver = new DefaultContractResolver();
+                    //});
 
                 if (apiOpts.Swagger != null)
                 {
