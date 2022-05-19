@@ -71,7 +71,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 services.AddControllers()
                     .AddJsonOptions(o =>
                     {
-                        DesignOutline.Instance.BuildCommonDefaultJSONSerialization(o);
+                        DesignOutline.Instance.BuildCommonDefaultJSONSerialization(o.JsonSerializerOptions);
 
                         if (apiOpts.EnableCamelCasing)
                             o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
