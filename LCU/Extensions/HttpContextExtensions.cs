@@ -1,8 +1,9 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -93,7 +94,7 @@ namespace Microsoft.AspNetCore.Http
             }.SendAsync(proxiedRequest, HttpCompletionOption.ResponseHeadersRead);//, context.RequestAborted);
         }
 
-        public static async Task SetJSONResponse(this HttpContext context, JToken body)
+        public static async Task SetJSONResponse(this HttpContext context, JsonNode body)
         {
             var response = context.Response;
 
@@ -104,7 +105,7 @@ namespace Microsoft.AspNetCore.Http
             response.Headers.Remove("transfer-encoding");
 
             using (var streamWriter = new StreamWriter(response.Body))
-                await streamWriter.WriteAsync(body.ToObject<object>().ToJSON());
+                await streamWriter.WriteAsync(body.AsObject().ToJSON());
         }
 
         #region Helpers

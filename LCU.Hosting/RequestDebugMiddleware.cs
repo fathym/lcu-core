@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IO;
-using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Text;
@@ -15,8 +14,6 @@ namespace LCU.Hosting
     public class RequestDebugMiddleware : LCUMiddleware
     {
         #region Fields
-        protected readonly JsonSerializerSettings prettyJson;
-
         protected readonly RecyclableMemoryStreamManager recyclableMemoryStreamManager;
 
         protected readonly LCUStartupOptions startupOptions;
@@ -26,11 +23,6 @@ namespace LCU.Hosting
         public RequestDebugMiddleware(RequestDelegate next, ILogger<RequestDebugMiddleware> logger, IOptions<LCUStartupOptions> startupOptions)
             : base(next, logger)
         {
-            prettyJson = new JsonSerializerSettings()
-            {
-
-            };
-
             recyclableMemoryStreamManager = new RecyclableMemoryStreamManager();
 
             this.startupOptions = startupOptions?.Value ?? throw new ArgumentNullException(nameof(startupOptions));
@@ -85,13 +77,13 @@ namespace LCU.Hosting
             log.AppendLine($"\tHost: {httpContext.Request.Host}");
             log.AppendLine($"\tPath: {httpContext.Request.Path}");
             log.AppendLine($"\tQueryString: {httpContext.Request.QueryString}");
-            log.AppendLine($"\tHeaders: {httpContext.Request.Headers.ToJSON(Formatting.Indented)}");
+            log.AppendLine($"\tHeaders: {httpContext.Request.Headers.ToJSON()}");
             log.AppendLine($"\tRequest Body: {readStreamInChunks(requestStream)}");
 
             logger.LogDebug(log.ToString());
 
             if (httpContext.Response.Body.CanSeek)
-            httpContext.Request.Body.Seek(0, SeekOrigin.Begin);
+                httpContext.Request.Body.Seek(0, SeekOrigin.Begin);
         }
 
         protected virtual async Task logResponse(HttpContext httpContext)
@@ -112,7 +104,7 @@ namespace LCU.Hosting
             log.AppendLine($"\tHost: {httpContext.Request.Host}");
             log.AppendLine($"\tPath: {httpContext.Request.Path}");
             log.AppendLine($"\tQueryString: {httpContext.Request.QueryString}");
-            log.AppendLine($"\tHeaders: {httpContext.Request.Headers.ToJSON(Formatting.Indented)}");
+            log.AppendLine($"\tHeaders: {httpContext.Request.Headers.ToJSON()}");
             //log.AppendLine($"\tResponse Body: {text}");
 
             logger.LogDebug(log.ToString());
@@ -146,7 +138,7 @@ namespace LCU.Hosting
             log.AppendLine($"\tHost: {httpContext.Request.Host}");
             log.AppendLine($"\tPath: {httpContext.Request.Path}");
             log.AppendLine($"\tQueryString: {httpContext.Request.QueryString}");
-            log.AppendLine($"\tHeaders: {httpContext.Request.Headers.ToJSON(Formatting.Indented)}");
+            log.AppendLine($"\tHeaders: {httpContext.Request.Headers.ToJSON()}");
             log.AppendLine($"\tException: {ex}");
 
             logger.LogDebug(log.ToString());
