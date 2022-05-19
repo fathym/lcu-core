@@ -70,8 +70,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 services.AddControllers()
                     .AddJsonOptions(o =>
                     {
-                        //if (!apiOpts.EnableCamelCasing)
-                        //    o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.TitleCase;
+                        if (!apiOpts.EnableCamelCasing)
+                            o.JsonSerializerOptions.PropertyNamingPolicy = null;
                     });
                     //.AddNewtonsoftJson(o =>
                     //{
