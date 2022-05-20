@@ -1,5 +1,6 @@
 ﻿using Azure.Storage.Blobs;
 using ExRam.Gremlinq.Core;
+using ExRam.Gremlinq.Core.Models;
 using Fathym;
 using Fathym.Design;
 using Gremlin.Net.Driver.Exceptions;
@@ -14,6 +15,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using ExRam.Gremlinq.Providers.CosmosDb;
 
 namespace LCU.Graphs
 {
@@ -252,19 +254,19 @@ namespace LCU.Graphs
                         //    return cs;
                         //});
                     }))
-                    .UseCosmosDb(builder =>
-                    {
-                        var apiKey = config[graphConfig.APIKey] ?? graphConfig.APIKey;
-
-                        return builder
-                            .At(new Uri(graphConfig.Host), graphConfig.Database, graphConfig.Graph)
-                            .AuthenticateBy(apiKey)
-                            .ConfigureWebSocket(builder =>
-                            {
-                                return builder;
-                            });
-                    })
                     .ConfigureModel(m => m.ConfigureNativeTypes(t => t.Add(typeof(Guid))));
+            })
+            .UseCosmosDb(builder =>
+            {
+                var apiKey = config[graphConfig.APIKey] ?? graphConfig.APIKey;
+
+                return builder
+                    .At(new Uri(graphConfig.Host), graphConfig.Database, graphConfig.Graph)
+                    .AuthenticateBy(apiKey)
+                    .ConfigureWebSocket(builder =>
+                    {
+                        return builder;
+                    });
             });
         }
 
