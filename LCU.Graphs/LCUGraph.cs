@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using ExRam.Gremlinq.Providers.CosmosDb;
 
 namespace LCU.Graphs
 {
@@ -252,6 +253,7 @@ namespace LCU.Graphs
                         //    return cs;
                         //});
                     }))
+                    .ConfigureModel(m => m.ConfigureNativeTypes(t => t.Add(typeof(Guid))))
                     .UseCosmosDb(builder =>
                     {
                         var apiKey = config[graphConfig.APIKey] ?? graphConfig.APIKey;
@@ -263,8 +265,7 @@ namespace LCU.Graphs
                             {
                                 return builder;
                             });
-                    })
-                    .ConfigureModel(m => m.ConfigureNativeTypes(t => t.Add(typeof(Guid))));
+                    });
             });
         }
 
