@@ -21,18 +21,18 @@ namespace LCU.Graphs
                 return query.Where(e => e.Archived == archived.Value);
         }
 
-        public static GraphTraversal<Vertex, Vertex> AttachMetadataProperties<T>(this GraphTraversal<Vertex, Vertex> query, T entity)
-            where T : MetadataModel
-        {
-            var properties = entity.Metadata;
+        //public static GraphTraversal<Vertex, Vertex> AttachMetadataProperties<T>(this GraphTraversal<Vertex, Vertex> query, T entity)
+        //    where T : MetadataModel
+        //{
+        //    var properties = entity.Metadata;
 
-            foreach (string key in properties.Keys)
-            {
-                query = query.Property(key, properties[key].ToString());
-            }
+        //    foreach (string key in properties.Keys)
+        //    {
+        //        query = query.Property(key, properties[key].ToString());
+        //    }
 
-            return query;
-        }
+        //    return query;
+        //}
 
         public static GraphTraversal<Vertex, Vertex> AttachList<T>(this GraphTraversal<Vertex, Vertex> query, string propertyName, List<T> entities,
             bool distinct = true)
