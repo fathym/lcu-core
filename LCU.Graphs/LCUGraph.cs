@@ -77,7 +77,7 @@ namespace LCU.Graphs
                     .FirstOrDefaultAsync();
 
                 await writeEdgeAudit(edge, description: $"Edge added in {GetType().FullName}",
-                    metadata: new Dictionary<string, JsonNode>() { { "AuditType", "Create" } });
+                    metadata: new JsonObject() { { "AuditType", "Create" } });
             }
         }
 
@@ -108,7 +108,7 @@ namespace LCU.Graphs
                     .FirstOrDefaultAsync();
 
                 await writeEdgeAudit(edge, description: $"Edge added in {GetType().FullName}",
-                    metadata: new Dictionary<string, JsonNode>() { { "AuditType", "Create" } });
+                    metadata: new JsonObject() { { "AuditType", "Create" } });
             }
         }
 
@@ -133,7 +133,7 @@ namespace LCU.Graphs
                     .Drop();
 
                 await writeEdgeAudit(edge, description: $"Edge deleted in {GetType().FullName}",
-                    metadata: new Dictionary<string, JsonNode>() { { "AuditType", "Delete" } });
+                    metadata: new JsonObject() { { "AuditType", "Delete" } });
             }
         }
 
@@ -157,7 +157,7 @@ namespace LCU.Graphs
 
         #region Helpers
         protected virtual Audit buildAudit<T>(T detail, string by = null, string description = null,
-            IDictionary<string, JsonNode> metadata = null)
+            JsonObject metadata = null)
         {
             by = by ?? "LCU System";
 
@@ -363,7 +363,7 @@ namespace LCU.Graphs
             logger.LogInformation($"Completed vertex create/update for {vertexName}: {vertex.ID}");
 
             await writeVertexAudit(vertex, description: $"Vertex saved in {GetType().FullName}",
-                    metadata: new Dictionary<string, JsonNode>() { { "AuditType", auditType } });
+                    metadata: new JsonObject() { { "AuditType", auditType } });
 
             if (parentId.HasValue)
             {
@@ -406,7 +406,7 @@ namespace LCU.Graphs
                 //await RemoveEdgeRelationships(id, registry);
 
                 await writeVertexAudit(existing, description: $"Vertex deleted in {GetType().FullName}",
-                    metadata: new Dictionary<string, JsonNode>() { { "AuditType", "Delete" } });
+                    metadata: new JsonObject() { { "AuditType", "Delete" } });
 
                 return Status.Success;
             }
@@ -493,7 +493,7 @@ namespace LCU.Graphs
         }
 
         protected virtual async Task writeEdgeAudit<T>(T edge, string by = null, string description = null,
-            IDictionary<string, JsonNode> metadata = null)
+            JsonObject metadata = null)
             where T : LCUEdge
         {
             try
@@ -511,7 +511,7 @@ namespace LCU.Graphs
         }
 
         protected virtual async Task writeVertexAudit<T>(T vertex, string by = null, string description = null,
-            IDictionary<string, JsonNode> metadata = null)
+            JsonObject metadata = null)
             where T : LCUVertex
         {
             try
@@ -529,7 +529,7 @@ namespace LCU.Graphs
         }
 
         protected virtual async Task writeAudit<T>(string auditBlobName, T detail, string by = null,
-            string description = null, IDictionary<string, JsonNode> metadata = null)
+            string description = null, JsonObject metadata = null)
         {
             try
             {
