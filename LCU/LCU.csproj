@@ -15,7 +15,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Azure.Identity" Version="1.6.0" />
-		<PackageReference Include="Fathym" Version="3.3.22140.6" />
+		<PackageReference Include="Fathym" Version="3.4.22145.3" />
 		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
 		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.5" />
