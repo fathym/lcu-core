@@ -15,8 +15,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.2.2" />
-		<PackageReference Include="Fathym.API" Version="3.4.22145.3" />
-		<PackageReference Include="Fathym.Presentation" Version="3.4.22145.3" />
+		<PackageReference Include="Fathym.API" Version="3.5.22146.2-prerelease" />
+		<PackageReference Include="Fathym.Presentation" Version="3.5.22146.2-prerelease" />
 		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.20.0" />
 		<PackageReference Include="Microsoft.AspNetCore.HttpOverrides" Version="2.2.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
