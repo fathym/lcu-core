@@ -16,6 +16,7 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using ExRam.Gremlinq.Providers.CosmosDb;
 using ExRam.Gremlinq.Core.Models;
+using System.Text.Json;
 
 namespace LCU.Graphs
 {
@@ -172,7 +173,7 @@ namespace LCU.Graphs
                 By = by,
                 Description = description,
                 Details = details,
-                Metadata = metadata
+                Metadata = metadata.JSONConvert<Dictionary<string, JsonElement>>()
             };
         }
 
