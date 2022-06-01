@@ -173,7 +173,7 @@ namespace LCU.Graphs
                 By = by,
                 Description = description,
                 Details = details,
-                Metadata = metadata.JSONConvert<Dictionary<string, JsonElement>>()
+                Metadata = metadata.JSONConvert<Dictionary<string, object>>()
             };
         }
 
