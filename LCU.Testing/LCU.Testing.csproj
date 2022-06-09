@@ -15,7 +15,7 @@
 
 	<ItemGroup>
 	  <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.2.2" />
-	  <PackageReference Include="Fathym.Testing" Version="3.8.22152.4" />
+	  <PackageReference Include="Fathym.Testing" Version="3.9.22160.4" />
 	</ItemGroup>
 
 	<ItemGroup>
