@@ -13,6 +13,8 @@ namespace LCU.Hosting.Options
 
     public class LCUMicrosoftIdentityOptions
     {
+        public string ClientId { get; set; }
+
         /// <summary>
         /// Gets or sets the Azure Active Directory instance, e.g. "https://login.microsoftonline.com".
         /// </summary>
