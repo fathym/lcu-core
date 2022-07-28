@@ -12,9 +12,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{DB608D78
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Develop", "Develop", "{D6404F8C-B497-46CC-8A16-666BE8E3D611}"
-	ProjectSection(SolutionItems) = preProject
-		.gitignore = .gitignore
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{2934BD99-4DF4-4B0D-B8CB-72DC0ED2B64C}"
 EndProject
@@ -37,7 +34,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LCU.Graphs.Tests", "LCU.Gra
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deploy", "Deploy", "{80B2BD59-9B7D-4701-AD0C-AFDB7D2C470E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LCU.Hosting.OpenId", "LCU.Hosting.OpenId\LCU.Hosting.OpenId.csproj", "{186F9809-7CD8-4530-B916-15931647184D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LCU.Hosting.OpenId", "LCU.Hosting.OpenId\LCU.Hosting.OpenId.csproj", "{186F9809-7CD8-4530-B916-15931647184D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
