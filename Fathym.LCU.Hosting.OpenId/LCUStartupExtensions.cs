@@ -236,8 +236,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     {
                         DesignOutline.Instance.BuildCommonDefaultJSONSerialization(o.JsonSerializerOptions);
 
-                        if (apiOpts.EnableCamelCasing)
-                            o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                        o.JsonSerializerOptions.PropertyNameCaseInsensitive = false;
                     });
                 //.AddNewtonsoftJson(o =>
                 //{
