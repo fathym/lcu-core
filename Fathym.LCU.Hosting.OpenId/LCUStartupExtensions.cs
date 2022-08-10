@@ -236,7 +236,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     {
                         DesignOutline.Instance.BuildCommonDefaultJSONSerialization(o.JsonSerializerOptions);
 
-                        o.JsonSerializerOptions.PropertyNameCaseInsensitive = false;
+                        o.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
                     });
                 //.AddNewtonsoftJson(o =>
                 //{
