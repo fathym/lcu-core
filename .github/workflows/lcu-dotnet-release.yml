@@ -2,9 +2,9 @@ name: Dotnet - Release
 
 on:
   push:
-    branches: [master,integration,feature/**]
+    branches: [feature/**]
   pull_request:
-    branches: [master,integration,feature/**]
+    branches: [master,integration]
 
 env:
   Branches: master,integration,feature/**
