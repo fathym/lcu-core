@@ -1,0 +1,25 @@
+version: 2
+
+registries:
+  nuget-org:
+    type: nuget-feed
+    url: https://api.nuget.org/v3/index.json    
+    key: ${{ secrets.NUGET_API_KEY }}
+
+updates:
+  - package-ecosystem: Nuget
+    directory: "/"
+    schedule:
+      interval: hourly      
+    allow:
+      # Allow updates for Lodash
+      - dependency-name: "Fathym*"           
+    pull-request-branch-name:
+      separator: "-"   
+    # currently disabled because we cannot update the docs theme and its dependencies
+    open-pull-requests-limit: 10
+    reviewers:
+      - "toddgerman1"
+    labels:
+      - type:dependencies
+
