@@ -77,7 +77,7 @@ jobs:
         run: dotnet build '${{ env.SolutionFile }}' --configuration ${{ env.BuildConfiguration }} -p:Version=${{ steps.versionBump.outputs.new_tag }} --no-restore
         
       - name: Publish        
-        run: nuget push **\*.nupkg -Source ${{ env.NugetSource }} -ApiKey ${{secrets.NUGET_API_KEY}} -Verbosity detailed  
+        run: nuget push **\*.nupkg -Source ${{ env.NugetSource }} -ApiKey ${{secrets.NUGET_API_KEY}} -SkipDuplicate -Verbosity detailed  
 
       # bump version and push tag
       - name: Bump version and push tag
