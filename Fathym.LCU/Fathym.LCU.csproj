@@ -8,7 +8,7 @@
 
     <!-- Embed source files that are not tracked by the source control manager in the PDB -->
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <IncludeSymbols>false</IncludeSymbols>
+    <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
     <!-- Recommended: Embed symbols containing Source Link in the main file (exe/dll) -->
@@ -25,6 +25,14 @@
     <Description>The Fathym LCU Core projects provide the foundation for building Fathym's dotnet LCU applications.</Description>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>portable</DebugType>
+  </PropertyGroup>    
 
   <ItemGroup>
     <None Include="..\LICENSE">
@@ -42,11 +50,11 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Azure.Identity" Version="1.6.0" />
-		<PackageReference Include="Fathym" Version="3.12.22208" />
+		<PackageReference Include="Azure.Identity" Version="1.6.1" />
+		<PackageReference Include="Fathym" Version="3.13.7" />
 		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
 		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.1" />
-		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.7" />
+		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="6.0.8" />
 		<PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
 		<PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />

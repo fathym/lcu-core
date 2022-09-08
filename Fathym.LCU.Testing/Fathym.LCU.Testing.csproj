@@ -8,7 +8,7 @@
 
     <!-- Embed source files that are not tracked by the source control manager in the PDB -->
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <IncludeSymbols>false</IncludeSymbols>
+    <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
     <!-- Recommended: Embed symbols containing Source Link in the main file (exe/dll) -->
@@ -24,6 +24,14 @@
   <PropertyGroup>
     <Description>The Fathym LCU Core projects provide the foundation for building Fathym's dotnet LCU applications.</Description>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>portable</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -43,7 +51,7 @@
 
 	<ItemGroup>
 	  <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.2.2" />
-	  <PackageReference Include="Fathym.Testing" Version="3.12.22208" />
+	  <PackageReference Include="Fathym.Testing" Version="3.13.7" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
 	</ItemGroup>
 
