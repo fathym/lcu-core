@@ -128,18 +128,30 @@ namespace Microsoft.AspNetCore.Http
                 {
                     var securityKey = securityParts[0];
 
+                    var isQuerySecurity = securityKey.StartsWith("?");
+
+                    if (isQuerySecurity)
+                        securityKey = securityKey.Substring(1);
+
                     var securityValue = securityParts[1];
 
-                    if (securityValue.StartsWith("@SharedAccessSignature="))
+                    if (!isQuerySecurity)
                     {
-                        //securityValue = SharedAccessSignatureTokenProvider.GetSharedAccessSignature("ide", securityValue.Replace("@SharedAccessSignature=", ""), 
-                        //    proxyPath, TimeSpan.FromMinutes(60));
+                        if (securityValue.StartsWith("@SharedAccessSignature="))
+                        {
+                            //securityValue = SharedAccessSignatureTokenProvider.GetSharedAccessSignature("ide", securityValue.Replace("@SharedAccessSignature=", ""), 
+                            //    proxyPath, TimeSpan.FromMinutes(60));
 
-                        throw new NotSupportedException("@SharedAccessSignature= is not supported for API Proxy");
+                            throw new NotSupportedException("@SharedAccessSignature= is not supported for API Proxy");
+                        }
+
+                        if (!securityKey.IsNullOrEmpty() && !securityValue.IsNullOrEmpty())
+                            context.Request.Headers[securityKey] = securityValue;
                     }
-
-                    if (!securityKey.IsNullOrEmpty() && !securityValue.IsNullOrEmpty())
-                        context.Request.Headers[securityKey] = securityValue;
+                    else
+                    {
+                        context.Request.QueryString.Add(securityKey, securityValue);
+                    }
                 }
             }
         }
