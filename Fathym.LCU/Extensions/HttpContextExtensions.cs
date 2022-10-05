@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Http
             var proxyPath = loadProxyAPIUri(apiPath, apiRoot, context.Request.QueryString.ToString());
 
             if (!proxyPath.IsNullOrEmpty())
-                loadSecurity(proxyPath, security, context);
+                proxyPath = loadSecurity(proxyPath, security, context);
 
             return proxyPath;
         }
