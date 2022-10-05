@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Http
 
                         uri.Query = query.ToString();
 
-                        proxyPath = uri.Query;
+                        proxyPath = uri.ToString();
                     }
                 }
             }
