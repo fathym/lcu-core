@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -118,7 +119,7 @@ namespace Microsoft.AspNetCore.Http
             return apiUri.ToString();
         }
 
-        private static void loadSecurity(string proxyPath, string security, HttpContext context)
+        private static string loadSecurity(string proxyPath, string security, HttpContext context)
         {
             if (!security.IsNullOrEmpty())
             {
@@ -150,10 +151,20 @@ namespace Microsoft.AspNetCore.Http
                     }
                     else
                     {
-                        context.Request.QueryString.Add(securityKey, securityValue);
+                        var uri = new UriBuilder(proxyPath);
+
+                        var query = HttpUtility.ParseQueryString(uri.Query);
+
+                        query[securityKey] = securityValue;
+
+                        uri.Query = query.ToString();
+
+                        proxyPath = uri.Query;
                     }
                 }
             }
+
+            return proxyPath;
         }
         #endregion
     }
