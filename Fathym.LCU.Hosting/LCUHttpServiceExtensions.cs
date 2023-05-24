@@ -82,12 +82,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var clientOptions = httpOpts.Options[clientName];
 
-            return clientOptions.BaseAddress.IsNullOrEmpty() ? null : services.AddLCUHTTPClient<TClient>(registry, new Uri(clientOptions.BaseAddress));
+            return clientOptions.BaseAddress.IsNullOrEmpty() ? null : services.AddLCUHTTPClient<TClient>(registry, new Uri(clientOptions.BaseAddress), timeoutSeconds: httpOpts.TimeoutSeconds);
         }
 
         public static IHttpClientBuilder AddLCUHTTPClient<TClient>(this IServiceCollection services,
             IPolicyRegistry<string> registry, Uri baseAddress, int retryCycles = 3, int retrySleepDurationMilliseconds = 500,
-            int circuitFailuresAllowed = 5, int circuitBreakDurationSeconds = 5)
+            int circuitFailuresAllowed = 5, int circuitBreakDurationSeconds = 5, int timeoutSeconds = 600)
             where TClient : class
         {
             return services
@@ -101,6 +101,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 .ConfigureHttpClient(client =>
                 {
                     client.BaseAddress = baseAddress;
+
+                    client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
                 });
             //.AddLCUTimeoutPolicy(registry)
             //.AddTransientHttpErrorPolicy(p =>
